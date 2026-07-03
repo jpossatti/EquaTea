@@ -1,0 +1,21 @@
+# Configuração de URL Amigável
+RewriteEngine On
+RewriteRule ^$ index.php [L]
+
+# Proteger pastas sensíveis
+<FilesMatch "\.(sql|log|ini|conf)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Proteger pasta app
+<Directory "app">
+    Order allow,deny
+    Deny from all
+</Directory>
+
+# Permitir acesso apenas à pasta public
+<Directory "public">
+    Order allow,deny
+    Allow from all
+</Directory>

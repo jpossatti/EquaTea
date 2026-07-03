@@ -1,0 +1,509 @@
+/* ============================================================
+ * dashboard-professor.css - Estilos do dashboard do professor
+ * ============================================================ */
+
+.dashboard-professor-container {
+    padding: 20px 0;
+}
+
+/* ============================================================
+ * HEADER DO DASHBOARD
+ * ============================================================ */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 30px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.page-title {
+    font-size: 28px;
+    margin: 0;
+}
+
+.page-title strong {
+    color: #f1c40f;
+}
+
+.page-subtitle {
+    font-size: 18px;
+    margin: 4px 0 0 0;
+    opacity: 0.9;
+}
+
+.data-hora {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+/* ============================================================
+ * CARDS DE ESTATÍSTICAS
+ * ============================================================ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s ease;
+    opacity: 0;
+    transform: translateY(10px);
+    border-left: 4px solid #3498db;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.stat-icon {
+    font-size: 28px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #888;
+}
+
+.stat-card-alunos { border-left-color: #3498db; }
+.stat-card-equacoes { border-left-color: #9b59b6; }
+.stat-card-concluidas { border-left-color: #2ecc71; }
+.stat-card-taxa { border-left-color: #f39c12; }
+.stat-card-erros { border-left-color: #e74c3c; }
+
+/* ============================================================
+ * AÇÕES RÁPIDAS
+ * ============================================================ */
+.acoes-rapidas {
+    margin-bottom: 30px;
+}
+
+.acoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.acao-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    text-decoration: none;
+    color: #2c3e50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.acao-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border-color: #3498db;
+}
+
+.acao-card span:first-child {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.acao-titulo {
+    display: block;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.acao-descricao {
+    display: block;
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* ============================================================
+ * TABELAS
+ * ============================================================ */
+.section-title {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 16px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.alunos-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.alunos-table thead {
+    background: #f8f9fa;
+}
+
+.alunos-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #555;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.alunos-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.alunos-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.nivel-badge {
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.nivel-badge.suporte1 {
+    background: #d4edda;
+    color: #155724;
+}
+
+.nivel-badge.suporte2 {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-nunca {
+    color: #888;
+    font-style: italic;
+}
+
+.btn-icone {
+    text-decoration: none;
+    font-size: 18px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-icone:hover {
+    background: #e9ecef;
+}
+
+.ver-todos {
+    text-align: center;
+    margin-top: 12px;
+}
+
+.btn-ver-todos {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-ver-todos:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+ * ANÁLISE DE ERROS
+ * ============================================================ */
+.analises-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.erros-comuns-section,
+.alunos-erros-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.erros-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.erro-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.erro-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.erro-label {
+    font-size: 14px;
+    color: #333;
+}
+
+.erro-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+}
+
+.erro-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.erro-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #3498db, #e74c3c);
+    transition: width 1s ease;
+}
+
+/* ============================================================
+ * ALUNOS COM MAIS ERROS
+ * ============================================================ */
+.alunos-erros-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aluno-erro-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.aluno-erro-nome {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.aluno-erro-count {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+/* ============================================================
+ * DICA
+ * ============================================================ */
+.dica-card {
+    background: linear-gradient(135deg, #e8f4fd 0%, #d4edda 100%);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.dica-card p {
+    flex: 1;
+    font-size: 17px;
+    line-height: 1.6;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.dica-emoji {
+    font-size: 40px;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+ * EMPTY STATE
+ * ============================================================ */
+.empty-state {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.empty-state.small {
+    padding: 20px;
+}
+
+.empty-state span {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+}
+
+.empty-state .empty-hint {
+    font-size: 14px;
+    color: #999;
+    margin-top: 4px;
+}
+
+/* ============================================================
+ * ALTO CONTRASTE
+ * ============================================================ */
+.alto-contraste .dashboard-header {
+    background: #000000;
+    border: 2px solid #ffffff;
+}
+
+.alto-contraste .stat-card {
+    background: #000000;
+    border: 1px solid #ffffff;
+}
+
+.alto-contraste .stat-value {
+    color: #ffffff;
+}
+
+.alto-contraste .section-title {
+    color: #ffffff;
+}
+
+.alto-contraste .alunos-table {
+    background: #000000;
+    border: 1px solid #ffffff;
+}
+
+.alto-contraste .alunos-table th {
+    background: #222222;
+    color: #ffffff;
+}
+
+.alto-contraste .alunos-table td {
+    color: #ffffff;
+    border-color: #444444;
+}
+
+.alto-contraste .alunos-table tbody tr:hover {
+    background: #222222;
+}
+
+.alto-contraste .acao-card {
+    background: #000000;
+    border-color: #666666;
+    color: #ffffff;
+}
+
+.alto-contraste .acao-card:hover {
+    border-color: #ffff00;
+}
+
+.alto-contraste .erros-comuns-section,
+.alto-contraste .alunos-erros-section {
+    background: #000000;
+    border: 1px solid #ffffff;
+}
+
+.alto-contraste .erro-label {
+    color: #ffffff;
+}
+
+.alto-contraste .dica-card {
+    background: #000000;
+    border: 1px solid #ffffff;
+}
+
+.alto-contraste .dica-card p {
+    color: #ffffff;
+}
+
+/* ============================================================
+ * RESPONSIVIDADE
+ * ============================================================ */
+@media (max-width: 992px) {
+    .analises-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .acoes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .alunos-table {
+        font-size: 13px;
+    }
+    
+    .alunos-table th,
+    .alunos-table td {
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .acoes-grid {
+        grid-template-columns: 1fr;
+    }
+}

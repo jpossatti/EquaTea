@@ -1,0 +1,342 @@
+================================================================================
+                            SYSTEM LOG - EQUATEA
+                            Sistema de Ensino de Equações para TEA
+================================================================================
+Data de criação: 2026-06-01 08:00:00
+Última atualização: 2026-07-03 23:59:59
+================================================================================
+
+[2026-06-01 08:00:00] [INFO] ====================================================
+[2026-06-01 08:00:00] [INFO] INÍCIO DO SISTEMA - EquaTEA v1.0.0
+[2026-06-01 08:00:00] [INFO] Ambiente: PRODUÇÃO
+[2026-06-01 08:00:00] [INFO] Servidor: Apache/2.4.54 (Win64) PHP/8.1.10
+[2026-06-01 08:00:00] [INFO] Banco de Dados: MySQL 8.0.31
+[2026-06-01 08:00:00] [INFO] ====================================================
+
+================================================================================
+                            EVENTOS DE SISTEMA
+================================================================================
+
+[2026-06-01 08:05:23] [INFO] [SISTEMA] Conexão com o banco de dados estabelecida com sucesso.
+[2026-06-01 08:05:23] [INFO] [SISTEMA] Verificação de integridade das tabelas: OK.
+[2026-06-01 08:05:24] [INFO] [SISTEMA] Cache de equações carregado: 30 equações disponíveis.
+[2026-06-01 08:05:24] [INFO] [SISTEMA] Serviço de sessão inicializado.
+
+[2026-06-01 08:10:15] [INFO] [AUTH] Professor Carlos Silva (ID: 1) realizou login. IP: 192.168.1.100
+[2026-06-01 08:10:45] [INFO] [AUTH] Professor Carlos Silva (ID: 1) acessou o painel administrativo.
+[2026-06-01 08:11:02] [INFO] [ADMIN] Professor Carlos Silva visualizou lista de alunos. Total: 10 alunos.
+[2026-06-01 08:11:15] [INFO] [ADMIN] Professor Carlos Silva cadastrou novo aluno: Lucas Mendes (lucas@escola.com).
+[2026-06-01 08:11:30] [INFO] [ADMIN] Professor Carlos Silva cadastrou nova equação: 4x - 2 = 14 (Médio).
+[2026-06-01 08:12:00] [INFO] [AUTH] Professor Carlos Silva (ID: 1) realizou logout.
+
+[2026-06-01 09:30:22] [INFO] [AUTH] Aluna Ana Silva (ID: 3) realizou login. IP: 192.168.1.102
+[2026-06-01 09:30:45] [INFO] [EXERCICIO] Aluna Ana Silva (ID: 3) iniciou exercício. Equação: x + 3 = 7 (ID: 1)
+[2026-06-01 09:30:50] [INFO] [EXERCICIO] Aluna Ana Silva (ID: 3) - PASSO 1: Resposta correta.
+[2026-06-01 09:31:05] [INFO] [EXERCICIO] Aluna Ana Silva (ID: 3) - PASSO 2: Resposta correta.
+[2026-06-01 09:31:20] [INFO] [EXERCICIO] Aluna Ana Silva (ID: 3) - PASSO 3: Resposta correta.
+[2026-06-01 09:31:35] [INFO] [EXERCICIO] Aluna Ana Silva (ID: 3) - PASSO 4: Resposta correta.
+[2026-06-01 09:31:40] [INFO] [EXERCICIO] Aluna Ana Silva concluiu o exercício. Equação: x + 3 = 7. Tempo: 55 segundos.
+[2026-06-01 09:31:45] [INFO] [AUTH] Aluna Ana Silva (ID: 3) realizou logout.
+
+[2026-06-01 10:15:10] [INFO] [AUTH] Aluno Carlos Souza (ID: 4) realizou login. IP: 192.168.1.103
+[2026-06-01 10:15:30] [INFO] [EXERCICIO] Aluno Carlos Souza (ID: 4) iniciou exercício. Equação: 2x + 1 = 9 (ID: 2)
+[2026-06-01 10:15:35] [WARNING] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-01 10:15:40] [INFO] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 1: Resposta correta (2ª tentativa).
+[2026-06-01 10:16:00] [WARNING] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 2: Resposta incorreta. Tipo: operacao_inversa
+[2026-06-01 10:16:10] [WARNING] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 2: Resposta incorreta. Tipo: operacao_inversa
+[2026-06-01 10:16:25] [INFO] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 2: Resposta correta (3ª tentativa).
+[2026-06-01 10:16:40] [INFO] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 3: Resposta correta.
+[2026-06-01 10:16:55] [WARNING] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 4: Resposta incorreta. Tipo: divisao_incorreta
+[2026-06-01 10:17:10] [INFO] [EXERCICIO] Aluno Carlos Souza (ID: 4) - PASSO 4: Resposta correta (2ª tentativa).
+[2026-06-01 10:17:15] [INFO] [EXERCICIO] Aluno Carlos Souza concluiu o exercício. Equação: 2x + 1 = 9. Tempo: 105 segundos.
+[2026-06-01 10:17:20] [INFO] [AUTH] Aluno Carlos Souza (ID: 4) realizou logout.
+
+[2026-06-01 11:00:00] [INFO] [SISTEMA] Backup automático iniciado.
+[2026-06-01 11:00:15] [INFO] [BACKUP] Backup criado com sucesso: backup_equatea_db_2026-06-01_11-00-00.sql.gz (2.4 MB)
+[2026-06-01 11:00:15] [INFO] [SISTEMA] Backup automático concluído.
+
+[2026-06-01 13:45:30] [INFO] [AUTH] Professora Ana Santos (ID: 2) realizou login. IP: 192.168.1.101
+[2026-06-01 13:46:00] [INFO] [ADMIN] Professora Ana Santos visualizou relatório de erros.
+[2026-06-01 13:46:30] [INFO] [ADMIN] Professora Ana Santos exportou relatório de erros para CSV. Tipo: todos os alunos.
+[2026-06-01 13:47:00] [INFO] [ADMIN] Professora Ana Santos visualizou perfil do aluno João Pereira.
+[2026-06-01 13:47:15] [INFO] [ADMIN] Professora Ana Santos resetou senha do aluno João Pereira. Nova senha: 4H8K2M
+[2026-06-01 13:48:00] [INFO] [AUTH] Professora Ana Santos (ID: 2) realizou logout.
+
+[2026-06-01 14:20:10] [INFO] [AUTH] Aluna Mariana Costa (ID: 5) realizou login. IP: 192.168.1.104
+[2026-06-01 14:20:30] [INFO] [EXERCICIO] Aluna Mariana Costa (ID: 5) iniciou exercício. Equação: 5x + 3 = 18 (ID: 6)
+[2026-06-01 14:20:35] [INFO] [EXERCICIO] Aluna Mariana Costa (ID: 5) - PASSO 1: Resposta correta.
+[2026-06-01 14:20:50] [INFO] [EXERCICIO] Aluna Mariana Costa (ID: 5) - PASSO 2: Resposta correta.
+[2026-06-01 14:21:05] [INFO] [EXERCICIO] Aluna Mariana Costa (ID: 5) - PASSO 3: Resposta correta.
+[2026-06-01 14:21:20] [INFO] [EXERCICIO] Aluna Mariana Costa (ID: 5) - PASSO 4: Resposta correta.
+[2026-06-01 14:21:25] [INFO] [EXERCICIO] Aluna Mariana Costa concluiu o exercício. Equação: 5x + 3 = 18. Tempo: 55 segundos.
+[2026-06-01 14:21:30] [INFO] [AUTH] Aluna Mariana Costa (ID: 5) realizou logout.
+
+[2026-06-01 15:00:00] [INFO] [SISTEMA] Limpeza de sessões expiradas executada. 5 sessões removidas.
+
+[2026-06-01 16:30:15] [INFO] [AUTH] Aluno João Pereira (ID: 6) realizou login. IP: 192.168.1.105
+[2026-06-01 16:30:35] [INFO] [EXERCICIO] Aluno João Pereira (ID: 6) iniciou exercício. Equação: x + 3 = 7 (ID: 1)
+[2026-06-01 16:30:40] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-01 16:30:45] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-01 16:30:50] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-01 16:30:55] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-01 16:31:00] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-01 16:31:05] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-01 16:31:10] [INFO] [AJUDA] Aluno João Pereira solicitou ajuda no PASSO 1. Exemplo exibido.
+[2026-06-01 16:31:25] [INFO] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 1: Resposta correta (7ª tentativa).
+[2026-06-01 16:31:40] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 2: Resposta incorreta. Tipo: operacao_inversa
+[2026-06-01 16:31:55] [INFO] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 2: Resposta correta (2ª tentativa).
+[2026-06-01 16:32:10] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 3: Resposta incorreta. Tipo: calculo_errado
+[2026-06-01 16:32:25] [INFO] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 3: Resposta correta (2ª tentativa).
+[2026-06-01 16:32:40] [WARNING] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 4: Resposta incorreta. Tipo: divisao_incorreta
+[2026-06-01 16:32:55] [INFO] [EXERCICIO] Aluno João Pereira (ID: 6) - PASSO 4: Resposta correta (2ª tentativa).
+[2026-06-01 16:33:00] [INFO] [EXERCICIO] Aluno João Pereira concluiu o exercício. Equação: x + 3 = 7. Tempo: 145 segundos.
+[2026-06-01 16:33:05] [INFO] [AUTH] Aluno João Pereira (ID: 6) realizou logout.
+
+================================================================================
+                            RELATÓRIO DIÁRIO - 01/06/2026
+================================================================================
+
+[2026-06-01 23:59:59] [INFO] [RELATORIO] Resumo do dia:
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Total de logins: 12
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Total de exercícios iniciados: 8
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Total de exercícios concluídos: 6
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Taxa de conclusão: 75%
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Total de erros registrados: 18
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Erro mais comum: operacao_inversa (8 ocorrências)
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Aluno com mais erros: João Pereira (9 erros)
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Backups realizados: 1
+[2026-06-01 23:59:59] [INFO] [RELATORIO]   - Sessões expiradas: 5
+
+================================================================================
+                            EVENTOS DE SISTEMA - DIA 02/06/2026
+================================================================================
+
+[2026-06-02 07:30:00] [INFO] [SISTEMA] Inicialização do sistema concluída. Tempo: 2.4 segundos.
+
+[2026-06-02 08:00:15] [INFO] [AUTH] Professor Carlos Silva (ID: 1) realizou login. IP: 192.168.1.100
+[2026-06-02 08:01:00] [INFO] [ADMIN] Professor Carlos Silva visualizou estatísticas gerais do sistema.
+[2026-06-02 08:01:30] [INFO] [ADMIN] Professor Carlos Silva editou dados do aluno Ana Silva.
+[2026-06-02 08:02:00] [INFO] [ADMIN] Professor Carlos Silva cadastrou nova equação: -4x - 5 = -17 (Difícil).
+[2026-06-02 08:02:30] [INFO] [AUTH] Professor Carlos Silva (ID: 1) realizou logout.
+
+[2026-06-02 09:45:10] [INFO] [AUTH] Aluna Beatriz Lima (ID: 7) realizou login. IP: 192.168.1.106
+[2026-06-02 09:45:30] [INFO] [EXERCICIO] Aluna Beatriz Lima (ID: 7) iniciou exercício. Equação: 3x + 2 = 14 (ID: 4)
+[2026-06-02 09:45:35] [INFO] [EXERCICIO] Aluna Beatriz Lima (ID: 7) - PASSO 1: Resposta correta.
+[2026-06-02 09:45:50] [WARNING] [EXERCICIO] Aluna Beatriz Lima (ID: 7) - PASSO 2: Resposta incorreta. Tipo: sinal_trocado
+[2026-06-02 09:46:05] [INFO] [EXERCICIO] Aluna Beatriz Lima (ID: 7) - PASSO 2: Resposta correta (2ª tentativa).
+[2026-06-02 09:46:20] [INFO] [EXERCICIO] Aluna Beatriz Lima (ID: 7) - PASSO 3: Resposta correta.
+[2026-06-02 09:46:35] [INFO] [EXERCICIO] Aluna Beatriz Lima (ID: 7) - PASSO 4: Resposta correta.
+[2026-06-02 09:46:40] [INFO] [EXERCICIO] Aluna Beatriz Lima concluiu o exercício. Equação: 3x + 2 = 14. Tempo: 70 segundos.
+[2026-06-02 09:46:45] [INFO] [AUTH] Aluna Beatriz Lima (ID: 7) realizou logout.
+
+[2026-06-02 10:20:00] [ERROR] [SISTEMA] Tentativa de acesso não autorizado ao arquivo config/database.php. IP: 45.33.22.11
+[2026-06-02 10:20:01] [WARNING] [SISTEMA] Tentativa bloqueada. IP banido por 30 minutos.
+[2026-06-02 10:20:02] [INFO] [SECURITY] Firewall registrou tentativa de ataque. Medidas aplicadas.
+
+[2026-06-02 11:30:00] [INFO] [AUTH] Aluno Rafael Santos (ID: 8) realizou login. IP: 192.168.1.107
+[2026-06-02 11:30:20] [INFO] [EXERCICIO] Aluno Rafael Santos (ID: 8) iniciou exercício. Equação: 6x - 11 = 7 (ID: 30)
+[2026-06-02 11:30:25] [INFO] [EXERCICIO] Aluno Rafael Santos (ID: 8) - PASSO 1: Resposta correta.
+[2026-06-02 11:30:40] [INFO] [EXERCICIO] Aluno Rafael Santos (ID: 8) - PASSO 2: Resposta correta.
+[2026-06-02 11:30:55] [INFO] [EXERCICIO] Aluno Rafael Santos (ID: 8) - PASSO 3: Resposta correta.
+[2026-06-02 11:31:10] [WARNING] [EXERCICIO] Aluno Rafael Santos (ID: 8) - PASSO 4: Resposta incorreta. Tipo: divisao_incorreta
+[2026-06-02 11:31:25] [INFO] [EXERCICIO] Aluno Rafael Santos (ID: 8) - PASSO 4: Resposta correta (2ª tentativa).
+[2026-06-02 11:31:30] [INFO] [EXERCICIO] Aluno Rafael Santos concluiu o exercício. Equação: 6x - 11 = 7. Tempo: 70 segundos.
+[2026-06-02 11:31:35] [INFO] [AUTH] Aluno Rafael Santos (ID: 8) realizou logout.
+
+[2026-06-02 12:00:00] [INFO] [BACKUP] Backup automático criado: backup_equatea_db_2026-06-02_12-00-00.sql.gz
+
+[2026-06-02 14:00:15] [INFO] [AUTH] Aluna Fernanda Oliveira (ID: 9) realizou login. IP: 192.168.1.108
+[2026-06-02 14:00:35] [INFO] [EXERCICIO] Aluna Fernanda Oliveira (ID: 9) iniciou exercício. Equação: 2x + 7 = 19 (ID: 12)
+[2026-06-02 14:00:40] [INFO] [EXERCICIO] Aluna Fernanda Oliveira (ID: 9) - PASSO 1: Resposta correta.
+[2026-06-02 14:00:55] [WARNING] [EXERCICIO] Aluna Fernanda Oliveira (ID: 9) - PASSO 2: Resposta incorreta. Tipo: operacao_inversa
+[2026-06-02 14:01:10] [INFO] [EXERCICIO] Aluna Fernanda Oliveira (ID: 9) - PASSO 2: Resposta correta (2ª tentativa).
+[2026-06-02 14:01:25] [INFO] [EXERCICIO] Aluna Fernanda Oliveira (ID: 9) - PASSO 3: Resposta correta.
+[2026-06-02 14:01:40] [WARNING] [EXERCICIO] Aluna Fernanda Oliveira (ID: 9) - PASSO 4: Resposta incorreta. Tipo: divisao_incorreta
+[2026-06-02 14:01:55] [INFO] [EXERCICIO] Aluna Fernanda Oliveira (ID: 9) - PASSO 4: Resposta correta (2ª tentativa).
+[2026-06-02 14:02:00] [INFO] [EXERCICIO] Aluna Fernanda Oliveira concluiu o exercício. Equação: 2x + 7 = 19. Tempo: 85 segundos.
+[2026-06-02 14:02:05] [INFO] [AUTH] Aluna Fernanda Oliveira (ID: 9) realizou logout.
+
+[2026-06-02 15:00:00] [INFO] [SISTEMA] Limpeza de sessões expiradas executada. 3 sessões removidas.
+
+[2026-06-02 16:15:00] [INFO] [AUTH] Aluno Lucas Mendes (ID: 10) realizou login. IP: 192.168.1.109
+[2026-06-02 16:15:20] [INFO] [EXERCICIO] Aluno Lucas Mendes (ID: 10) iniciou exercício. Equação: x + 8 = 15 (ID: 5)
+[2026-06-02 16:15:25] [WARNING] [EXERCICIO] Aluno Lucas Mendes (ID: 10) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-02 16:15:30] [INFO] [AJUDA] Aluno Lucas Mendes solicitou ajuda no PASSO 1. Exemplo exibido.
+[2026-06-02 16:15:45] [INFO] [EXERCICIO] Aluno Lucas Mendes (ID: 10) - PASSO 1: Resposta correta (2ª tentativa).
+[2026-06-02 16:16:00] [WARNING] [EXERCICIO] Aluno Lucas Mendes (ID: 10) - PASSO 2: Resposta incorreta. Tipo: operacao_inversa
+[2026-06-02 16:16:15] [INFO] [EXERCICIO] Aluno Lucas Mendes (ID: 10) - PASSO 2: Resposta correta (2ª tentativa).
+[2026-06-02 16:16:30] [INFO] [EXERCICIO] Aluno Lucas Mendes (ID: 10) - PASSO 3: Resposta correta.
+[2026-06-02 16:16:45] [INFO] [EXERCICIO] Aluno Lucas Mendes (ID: 10) - PASSO 4: Resposta correta.
+[2026-06-02 16:16:50] [INFO] [EXERCICIO] Aluno Lucas Mendes concluiu o exercício. Equação: x + 8 = 15. Tempo: 90 segundos.
+[2026-06-02 16:16:55] [INFO] [AUTH] Aluno Lucas Mendes (ID: 10) realizou logout.
+
+[2026-06-02 17:00:00] [INFO] [BACKUP] Backup automático criado: backup_equatea_db_2026-06-02_17-00-00.sql.gz
+
+================================================================================
+                            RELATÓRIO DIÁRIO - 02/06/2026
+================================================================================
+
+[2026-06-02 23:59:59] [INFO] [RELATORIO] Resumo do dia:
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Total de logins: 8
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Total de exercícios iniciados: 6
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Total de exercícios concluídos: 5
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Taxa de conclusão: 83.3%
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Total de erros registrados: 12
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Erro mais comum: operacao_inversa (5 ocorrências)
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Tentativas de acesso não autorizado: 1 (bloqueado)
+[2026-06-02 23:59:59] [INFO] [RELATORIO]   - Backups realizados: 2
+
+================================================================================
+                            EVENTOS DE SISTEMA - DIA 03/06/2026
+================================================================================
+
+[2026-06-03 08:00:00] [INFO] [SISTEMA] Inicialização do sistema concluída. Tempo: 1.9 segundos.
+[2026-06-03 08:00:00] [INFO] [SISTEMA] 30 equações carregadas no cache.
+
+[2026-06-03 08:30:15] [INFO] [AUTH] Aluna Júlia Rocha (ID: 11) realizou login. IP: 192.168.1.110
+[2026-06-03 08:30:35] [INFO] [EXERCICIO] Aluna Júlia Rocha (ID: 11) iniciou exercício. Equação: 3x + 1 = 10 (ID: 13)
+[2026-06-03 08:30:40] [WARNING] [EXERCICIO] Aluna Júlia Rocha (ID: 11) - PASSO 1: Resposta incorreta. Tipo: identificacao_errada
+[2026-06-03 08:30:45] [INFO] [AJUDA] Aluna Júlia Rocha solicitou ajuda no PASSO 1. Exemplo exibido.
+[2026-06-03 08:31:00] [INFO] [EXERCICIO] Aluna Júlia Rocha (ID: 11) - PASSO 1: Resposta correta (2ª tentativa).
+[2026-06-03 08:31:15] [INFO] [EXERCICIO] Aluna Júlia Rocha (ID: 11) - PASSO 2: Resposta correta.
+[2026-06-03 08:31:30] [INFO] [EXERCICIO] Aluna Júlia Rocha (ID: 11) - PASSO 3: Resposta correta.
+[2026-06-03 08:31:45] [INFO] [EXERCICIO] Aluna Júlia Rocha (ID: 11) - PASSO 4: Resposta correta.
+[2026-06-03 08:31:50] [INFO] [EXERCICIO] Aluna Júlia Rocha concluiu o exercício. Equação: 3x + 1 = 10. Tempo: 75 segundos.
+[2026-06-03 08:31:55] [INFO] [AUTH] Aluna Júlia Rocha (ID: 11) realizou logout.
+
+[2026-06-03 09:00:00] [INFO] [BACKUP] Backup automático criado: backup_equatea_db_2026-06-03_09-00-00.sql.gz
+
+[2026-06-03 10:00:15] [INFO] [AUTH] Professor Carlos Silva (ID: 1) realizou login. IP: 192.168.1.100
+[2026-06-03 10:00:45] [INFO] [ADMIN] Professor Carlos Silva visualizou relatório de progresso dos alunos.
+[2026-06-03 10:01:15] [INFO] [ADMIN] Professor Carlos Silva exportou relatório de progresso para CSV.
+[2026-06-03 10:01:30] [INFO] [AUTH] Professor Carlos Silva (ID: 1) realizou logout.
+
+[2026-06-03 11:30:00] [INFO] [AUTH] Aluno Pedro Alves (ID: 12) realizou login. IP: 192.168.1.111
+[2026-06-03 11:30:20] [INFO] [EXERCICIO] Aluno Pedro Alves (ID: 12) iniciou exercício. Equação: x + 3 = 7 (ID: 1)
+[2026-06-03 11:30:25] [INFO] [EXERCICIO] Aluno Pedro Alves (ID: 12) - PASSO 1: Resposta correta.
+[2026-06-03 11:30:40] [WARNING] [EXERCICIO] Aluno Pedro Alves (ID: 12) - PASSO 2: Resposta incorreta. Tipo: operacao_inversa
+[2026-06-03 11:30:55] [INFO] [EXERCICIO] Aluno Pedro Alves (ID: 12) - PASSO 2: Resposta correta (2ª tentativa).
+[2026-06-03 11:31:10] [INFO] [EXERCICIO] Aluno Pedro Alves (ID: 12) - PASSO 3: Resposta correta.
+[2026-06-03 11:31:25] [WARNING] [EXERCICIO] Aluno Pedro Alves (ID: 12) - PASSO 4: Resposta incorreta. Tipo: divisao_incorreta
+[2026-06-03 11:31:40] [INFO] [EXERCICIO] Aluno Pedro Alves (ID: 12) - PASSO 4: Resposta correta (2ª tentativa).
+[2026-06-03 11:31:45] [INFO] [EXERCICIO] Aluno Pedro Alves concluiu o exercício. Equação: x + 3 = 7. Tempo: 85 segundos.
+[2026-06-03 11:31:50] [INFO] [AUTH] Aluno Pedro Alves (ID: 12) realizou logout.
+
+================================================================================
+                            RELATÓRIO SEMANAL - 01/06 a 07/06/2026
+================================================================================
+
+[2026-06-07 23:59:59] [INFO] [RELATORIO] Resumo da semana (01/06 - 07/06):
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Total de usuários ativos: 12
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Total de logins: 45
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Total de exercícios iniciados: 32
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Total de exercícios concluídos: 28
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Taxa de conclusão global: 87.5%
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Total de erros registrados: 65
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Erro mais comum: operacao_inversa (28 ocorrências)
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Aluno com mais progresso: Ana Silva (8 equações)
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Aluno com mais erros: João Pereira (22 erros)
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Backups realizados: 14
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Sessões expiradas: 18
+[2026-06-07 23:59:59] [INFO] [RELATORIO]   - Tentativas de acesso não autorizado: 3 (todas bloqueadas)
+
+================================================================================
+                            RELATÓRIO MENSAL - JUNHO/2026
+================================================================================
+
+[2026-06-30 23:59:59] [INFO] [RELATORIO] Resumo do mês (JUNHO/2026):
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Total de usuários ativos: 12
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Total de logins: 187
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Total de exercícios iniciados: 142
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Total de exercícios concluídos: 118
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Taxa de conclusão global: 83.1%
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Total de erros registrados: 287
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Erro mais comum: operacao_inversa (124 ocorrências - 43.2%)
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Segundo erro mais comum: sinal_trocado (78 ocorrências - 27.2%)
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Aluno com mais progresso: Mariana Costa (25 equações)
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Aluno com mais erros: João Pereira (89 erros)
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Média de tentativas por equação: 2.3
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Tempo médio por equação: 78 segundos
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Backups realizados: 60
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Sessões expiradas: 72
+[2026-06-30 23:59:59] [INFO] [RELATORIO]   - Tentativas de acesso não autorizado: 8 (todas bloqueadas)
+
+================================================================================
+                            EVENTOS DE SEGURANÇA
+================================================================================
+
+[2026-06-02 10:20:00] [ERROR] [SECURITY] Tentativa de acesso não autorizado ao arquivo config/database.php. IP: 45.33.22.11
+[2026-06-02 10:20:01] [WARNING] [SECURITY] IP 45.33.22.11 banido por 30 minutos.
+
+[2026-06-05 14:15:30] [ERROR] [SECURITY] Múltiplas tentativas de login falhas para o email 'admin@equatea.com'. IP: 89.45.12.78
+[2026-06-05 14:15:35] [WARNING] [SECURITY] IP 89.45.12.78 banido por 60 minutos.
+
+[2026-06-10 22:45:12] [ERROR] [SECURITY] Injeção SQL detectada no campo 'email'. IP: 192.168.1.100
+[2026-06-10 22:45:13] [WARNING] [SECURITY] Acesso bloqueado. Requisição maliciosa descartada.
+
+[2026-06-15 09:30:00] [ERROR] [SECURITY] Tentativa de acesso à pasta /config/ via navegador. IP: 10.0.0.5
+[2026-06-15 09:30:01] [WARNING] [SECURITY] Acesso negado. .htaccess bloqueou a requisição.
+
+[2026-06-20 16:00:00] [INFO] [SECURITY] Verificação de integridade do sistema: OK. Nenhuma alteração não autorizada detectada.
+
+[2026-06-25 11:20:45] [ERROR] [SECURITY] Tentativa de upload de arquivo malicioso detectada. IP: 192.168.1.150
+[2026-06-25 11:20:46] [WARNING] [SECURITY] Arquivo bloqueado. Extensão não permitida: .php5
+
+================================================================================
+                            EVENTOS DE PERFORMANCE
+================================================================================
+
+[2026-06-03 14:30:00] [INFO] [PERFORMANCE] Consulta SQL lenta detectada: "SELECT * FROM registro_erros WHERE aluno_id = 6". Tempo: 2.3 segundos.
+[2026-06-03 14:30:01] [INFO] [PERFORMANCE] Índice sugerido: CREATE INDEX idx_aluno_id ON registro_erros(aluno_id);
+
+[2026-06-10 10:00:00] [INFO] [PERFORMANCE] Cache de equações atualizado. 30 equações em cache. Tempo de carregamento: 0.8 segundos.
+
+[2026-06-15 15:00:00] [INFO] [PERFORMANCE] Otimização de tabelas executada. Tabelas otimizadas: equacoes, progresso_aluno, registro_erros.
+
+[2026-06-20 12:00:00] [INFO] [PERFORMANCE] Pico de uso: 25 usuários simultâneos. Servidor respondendo normalmente.
+
+================================================================================
+                            MANUTENÇÃO E ATUALIZAÇÕES
+================================================================================
+
+[2026-06-01 06:00:00] [INFO] [MANUTENCAO] Manutenção programada: atualização do banco de dados.
+[2026-06-01 06:00:30] [INFO] [MANUTENCAO] Backup pré-atualização criado: pre_update_2026-06-01.sql.gz
+[2026-06-01 06:05:00] [INFO] [MANUTENCAO] Atualização concluída. Versão do banco: 1.0.1
+
+[2026-06-08 06:00:00] [INFO] [MANUTENCAO] Manutenção programada: correção de índices.
+[2026-06-08 06:02:00] [INFO] [MANUTENCAO] Índices recriados nas tabelas: progresso_aluno, registro_erros.
+
+[2026-06-15 06:00:00] [INFO] [MANUTENCAO] Manutenção programada: limpeza de logs antigos.
+[2026-06-15 06:00:30] [INFO] [MANUTENCAO] Logs anteriores a 2026-05-15 removidos. 1,245 registros removidos.
+
+[2026-06-22 06:00:00] [INFO] [MANUTENCAO] Manutenção programada: atualização do sistema para v1.0.2.
+[2026-06-22 06:00:15] [INFO] [MANUTENCAO] Backup pré-atualização criado: pre_update_2026-06-22.sql.gz
+[2026-06-22 06:05:00] [INFO] [MANUTENCAO] Atualização concluída com sucesso. Nova versão: 1.0.2
+
+================================================================================
+                            ERROS DO SISTEMA
+================================================================================
+
+[2026-06-04 09:15:23] [ERROR] [SISTEMA] Erro na conexão com o banco de dados: "SQLSTATE[HY000] [2002] Connection refused"
+[2026-06-04 09:15:24] [ERROR] [SISTEMA] Tentativa de reconexão... 
+[2026-06-04 09:15:25] [INFO] [SISTEMA] Reconexão bem-sucedida após 2 segundos.
+
+[2026-06-12 14:20:30] [ERROR] [EXERCICIO] Erro ao processar resposta: "Undefined index: aluno_id"
+[2026-06-12 14:20:31] [ERROR] [EXERCICIO] Arquivo: /app/controllers/ExercicioController.php, Linha: 87
+[2026-06-12 14:20:32] [INFO] [EXERCICIO] Erro corrigido automaticamente. Sessão recriada.
+
+[2026-06-18 11:45:00] [ERROR] [SISTEMA] Erro de permissão ao escrever arquivo de backup: "Permission denied"
+[2026-06-18 11:45:01] [ERROR] [BACKUP] Falha ao criar backup. Tentando novamente...
+[2026-06-18 11:45:05] [INFO] [BACKUP] Backup criado com sucesso na 2ª tentativa.
+
+[2026-06-25 08:30:00] [ERROR] [EXERCICIO] Equação ID 999 não encontrada no banco de dados.
+[2026-06-25 08:30:01] [ERROR] [EXERCICIO] Aluno tentou acessar equação inválida. IP: 192.168.1.105
+[2026-06-25 08:30:02] [INFO] [EXERCICIO] Aluno redirecionado para o dashboard.
+
+================================================================================
+                            FIM DO LOG DE SISTEMA
+================================================================================
+[2026-07-03 23:59:59] [INFO] [SISTEMA] Log finalizado. Total de registros: 847
+[2026-07-03 23:59:59] [INFO] [SISTEMA] Verificação de integridade do log: OK
+[2026-07-03 23:59:59] [INFO] [SISTEMA] Sistema encerrado normalmente.
+================================================================================
