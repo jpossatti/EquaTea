@@ -1,22 +1,83 @@
 <?php
-// Ponto de entrada da aplicação
-// Redireciona para a página inicial baseado no perfil do usuário
+/**
+ * index.php
+ * Ponto de entrada para testes visuais.
+ * 
+ * Acesso: http://localhost:3000/
+ * 
+ * Parâmetros: ?view=aluno|professor|login
+ */
 
-session_start();
-require_once 'config/config.php';
-require_once 'app/helpers/functions.php';
+// ============================================================
+// 1. DEFINIR CAMINHO BASE
+// ============================================================
 
-// Verifica se usuário está logado
-if (isset($_SESSION['usuario_id'])) {
-    $tipo = $_SESSION['tipo_perfil'];
-    if ($tipo == 'aluno') {
-        header('Location: app/views/aluno/dashboard.php');
-    } else {
-        header('Location: app/views/professor/dashboard.php');
-    }
-    exit;
+$base_path = __DIR__;
+
+// ============================================================
+// 2. CARREGAR DEPENDÊNCIAS
+// ============================================================
+
+require_once $base_path . '/app/config/Database.php';
+require_once $base_path . '/app/models/Aluno.php';
+require_once $base_path . '/app/models/Equacao.php';
+require_once $base_path . '/app/models/Progresso.php';
+require_once $base_path . '/app/models/RegistroErro.php';
+
+// ============================================================
+// 3. CRIAR INSTÂNCIAS DOS MODELOS
+// ============================================================
+
+$aluno = new Aluno();
+$equacao = new Equacao();
+$progresso = new Progresso();
+$registro = new RegistroErro();
+
+// ============================================================
+// 4. CARREGAR DADOS PARA AS VIEWS
+// ============================================================
+
+// Dados do aluno (para views do aluno)
+$aluno_id = 1;
+$dados_aluno = $aluno->getDadosCompletos(3); // ID do usuário do aluno
+$dados_alunos = $aluno->getAll();
+$dados_equacoes = $equacao->getAll();
+$dados_progresso = $progresso->getByAluno($aluno_id);
+$dados_erros = $registro->getEstatisticas($aluno_id);
+$dados_relatorio = $registro->getRelatorioCompleto();
+
+// ============================================================
+// 5. DEFINIR A VIEW A SER EXIBIDA
+// ============================================================
+
+$view = $_GET['view'] ?? 'login';
+
+// Mapeamento de views
+$views = [
+    'aluno' => 'aluno/dashboard.php',
+    'exercicio' => 'aluno/exercicio.php',
+    'parabens' => 'aluno/parabens.php',
+    'professor' => 'professor/dashboard.php',
+    'gerenciar_alunos' => 'professor/gerenciar_alunos.php',
+    'gerenciar_equacoes' => 'professor/gerenciar_equacoes.php',
+    'relatorio' => 'professor/relatorio.php',
+    'login' => 'auth/login.php'
+];
+
+// Verificar se a view existe
+if (!isset($views[$view])) {
+    $view = 'login';
 }
 
-// Se não estiver logado, redireciona para login
-header('Location: app/views/auth/login.php');
-exit;
+// ============================================================
+// 6. CARREGAR A VIEW
+// ============================================================
+
+$view_file = __DIR__ . '/app/views/' . $views[$view];
+
+if (file_exists($view_file)) {
+    include_once $view_file;
+} else {
+    echo "<h1>View não encontrada: $view</h1>";
+    echo "<p>Arquivo: $view_file</p>";
+}
