@@ -151,71 +151,45 @@ class Equacao
         return $stmt->execute([':id' => $id]);
     }
     
-   /**
- * Valida a resposta de um passo
- */
+   
 public function validarResposta($equacao_id, $passo, $resposta)
 {
     $equacao = $this->getById($equacao_id);
     if (!$equacao) return false;
-    
-    $a = $equacao['a'];
-    $b = $equacao['b'];
-    $c = $equacao['c'];
-    $resposta = trim($resposta);
-    
-    // Normaliza a resposta: remove espaços extras
-    $resposta = preg_replace('/\s+/', ' ', trim($resposta));
-    $resposta = strtolower($resposta);
-    
+
+    // Sanitização idêntica à do Controller
+    $resp = strtolower($resposta);
+    $resp = preg_replace('/[\s\x{200B}-\x{200D}\x{FEFF}]/u', '', $resp);
+    $resp = str_replace(['–', '—', '−'], '-', $resp);
+
+    $a = (int)$equacao['a'];
+    $b = (int)$equacao['b'];
+    $c = (int)$equacao['c'];
+
+    $termoX = ($a === 1) ? '(1?x)' : (($a === -1) ? '(-1?x)' : "({$a}x)");
+
     switch ($passo) {
-        case 1: // Identificar termos
-            $sinal = $b >= 0 ? '+' : '-';
-            $esperado1 = "{$a}x {$sinal} " . abs($b) . " = {$c}";
-            $esperado1 = strtolower(preg_replace('/\s+/', ' ', trim($esperado1)));
-            
-            if ($a == 1) {
-                $esperado2 = "x {$sinal} " . abs($b) . " = {$c}";
-                $esperado2 = strtolower(preg_replace('/\s+/', ' ', trim($esperado2)));
-                return $resposta === $esperado1 || $resposta === $esperado2;
-            }
-            
-            return $resposta === $esperado1;
-            
-        case 2: // Isolar termo com x
+        case 1:
+            return preg_match('/^' . $termoX . '$/i', $resp) === 1;
+
+        case 2:
+            $bAbs = abs($b);
+            $opOposta = ($b >= 0) ? '-' : '\+';
+            return preg_match('/^(' . $termoX . '=)?' . $c . $opOposta . $bAbs . '$/i', $resp) === 1;
+
+        case 3:
             $resultado = $c - $b;
-            $esperado1 = "{$a}x = {$resultado}";
-            $esperado1 = strtolower(preg_replace('/\s+/', ' ', trim($esperado1)));
-            
-            // Permite "x = 7 - 3" em vez de "x = 4"
-            $esperado2 = "{$a}x = {$c} - " . abs($b);
-            $esperado2 = strtolower(preg_replace('/\s+/', ' ', trim($esperado2)));
-            
-            // Permite "x = 7 - 3" em vez de "x = 4" (para a=1)
-            if ($a == 1) {
-                $esperado3 = "x = {$resultado}";
-                $esperado3 = strtolower(preg_replace('/\s+/', ' ', trim($esperado3)));
-                $esperado4 = "x = {$c} - " . abs($b);
-                $esperado4 = strtolower(preg_replace('/\s+/', ' ', trim($esperado4)));
-                return $resposta === $esperado1 || $resposta === $esperado2 || 
-                       $resposta === $esperado3 || $resposta === $esperado4;
-            }
-            
-            return $resposta === $esperado1 || $resposta === $esperado2;
-            
-        case 3: // Calcular lado direito
-            $esperado = $c - $b;
-            return (int)$resposta === $esperado;
-            
-        case 4: // Isolar x
-            $esperado = ($c - $b) / $a;
-            return (float)$resposta === (float)$esperado;
-            
+            return preg_match('/^(' . $termoX . '=)?' . $resultado . '$/i', $resp) === 1;
+
+        case 4:
+            if ($a === 0) return false;
+            $valorX = ($c - $b) / $a;
+            return preg_match('/^(x=)?' . $valorX . '$/i', $resp) === 1;
+
         default:
             return false;
     }
-}
-    
+} 
     /**
      * Obtém a resposta esperada para um passo
      */

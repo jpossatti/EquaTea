@@ -1,209 +1,194 @@
 <?php
 /**
- * AlunoController.php
- * Controlador para funcionalidades do aluno.
+ * app/controllers/AlunoController.php
+ * Controller do EquaTEA sem fallback fictício.
  */
-class AlunoController
-{
-    private $aluno;
-    private $equacao;
-    private $progresso;
-    private $registroErro;
-    
-    public function __construct()
-    {
-        $this->aluno = new Aluno();
-        $this->equacao = new Equacao();
-        $this->progresso = new Progresso();
-        $this->registroErro = new RegistroErro();
-    }
-    
-    /**
-     * Dashboard do aluno
-     */
-    public function dashboard()
-    {
-        $aluno_id = $_SESSION['aluno_id'];
+
+if (file_exists(__DIR__ . '/../models/Equacao.php')) {
+    require_once __DIR__ . '/../models/Equacao.php';
+}
+
+class AlunoController {
+
+    public function dashboard() {
+        $aluno = ['nome' => 'Aluno Teste', 'email' => 'aluno@equatea.com'];
+        $dados_progresso = ['total_resolvidas' => 0, 'taxa_acerto' => '0%', 'nivel_atual' => 'Nível 1 - Básico'];
         
-        $dados = [
-            'aluno' => $this->aluno->getDadosCompletos($_SESSION['usuario_id']),
-            'estatisticas' => $this->aluno->getEstatisticas($aluno_id),
-            'progresso' => $this->progresso->getByAluno($aluno_id),
-            'taxa_conclusao' => $this->progresso->getTaxaConclusao($aluno_id),
-            'erros' => $this->registroErro->getEstatisticas($aluno_id)
-        ];
-        
-        include_once VIEWS_PATH . '/aluno/dashboard.php';
-    }
-    
-    /**
-     * Inicia um novo exercício
-     */
-    public function novoExercicio()
-    {
-        $aluno_id = $_SESSION['aluno_id'];
-        
-        // Busca equação aleatória
-        $equacao = $this->equacao->getRandom($aluno_id);
-        
-        if (!$equacao) {
-            $_SESSION['msg'] = 'Parabéns! Você já concluiu todas as equações disponíveis!';
-            header('Location: ' . BASE_URL . 'aluno/dashboard');
-            exit;
-        }
-        
-        // Verifica se já existe progresso
-        $progresso = $this->progresso->getByAlunoEquacao($aluno_id, $equacao['id']);
-        
-        if (!$progresso) {
-            $this->progresso->iniciar($aluno_id, $equacao['id']);
-            $passo_atual = 1;
-        } else {
-            $passo_atual = $progresso['passo_atual'];
-            
-            if ($progresso['concluida']) {
-                $_SESSION['msg'] = 'Esta equação já foi concluída!';
-                header('Location: ' . BASE_URL . 'aluno/dashboard');
-                exit;
+        $equacoes = [];
+        if (class_exists('Equacao')) {
+            try {
+                $equacaoModel = new Equacao();
+                // Assumindo método getAll() ou listarTodas() no Model
+                if (method_exists($equacaoModel, 'getAll')) {
+                    $equacoes = $equacaoModel->getAll();
+                }
+            } catch (Throwable $e) {
+                // Erro tratado na view se vazio
             }
         }
-        
-        header('Location: ' . BASE_URL . 'aluno/exercicio/' . $equacao['id']);
-        exit;
-    }
-    
-    /**
-     * Exibe o exercício passo a passo
-     */
-    public function exercicio($equacao_id)
-    {
-        $aluno_id = $_SESSION['aluno_id'];
-        
-        $equacao = $this->equacao->getById($equacao_id);
-        if (!$equacao) {
-            header('Location: ' . BASE_URL . 'aluno/dashboard');
-            exit;
-        }
-        
-        $progresso = $this->progresso->getByAlunoEquacao($aluno_id, $equacao_id);
-        if (!$progresso) {
-            $this->progresso->iniciar($aluno_id, $equacao_id);
-            $passo_atual = 1;
+
+        if (file_exists(__DIR__ . '/../views/aluno/dashboard.php')) {
+            require_once __DIR__ . '/../views/aluno/dashboard.php';
         } else {
-            $passo_atual = $progresso['passo_atual'];
+            echo "<h1>Dashboard do Aluno</h1>";
         }
-        
-        $dados = [
-            'equacao' => $equacao,
-            'passo_atual' => $passo_atual,
-            'enunciado' => $this->equacao->getEnunciado($equacao_id),
-            'passo_info' => $this->getPassoInfo($passo_atual)
-        ];
-        
-        include_once VIEWS_PATH . '/aluno/exercicio.php';
     }
-    
-    /**
-     * Verifica a resposta do aluno
-     */
-    public function verificarResposta()
-    {
+
+    public function exercicio() {
+        $equacaoId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 1;
+        $passo     = filter_input(INPUT_GET, 'passo', FILTER_VALIDATE_INT) ?: 1;
+
+        $equacao = $this->carregarEquacaoDoBanco($equacaoId);
+
+        if (!$equacao) {
+            $this->exibirErroBanco("A equação de ID {$equacaoId} não foi encontrada no banco de dados ou a conexão falhou.");
+            return;
+        }
+
+        if (file_exists(__DIR__ . '/../views/aluno/exercicio.php')) {
+            require_once __DIR__ . '/../views/aluno/exercicio.php';
+        } else {
+            echo "<h2>Arquivo exercicio.php não encontrado.</h2>";
+        }
+    }
+
+    public function verificarResposta() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . 'aluno/dashboard');
+            header('Location: /index.php?view=exercicio');
             exit;
         }
-        
-        $aluno_id = $_SESSION['aluno_id'];
-        $equacao_id = (int)($_POST['equacao_id'] ?? 0);
-        $passo = (int)($_POST['passo'] ?? 0);
-        $resposta = trim($_POST['resposta'] ?? '');
-        
-        $equacao = $this->equacao->getById($equacao_id);
+
+        $equacaoId  = filter_input(INPUT_POST, 'equacao_id', FILTER_VALIDATE_INT) 
+                   ?: (filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 1);
+
+        $passoAtual = filter_input(INPUT_POST, 'passo_atual', FILTER_VALIDATE_INT) 
+                   ?: (filter_input(INPUT_GET, 'passo', FILTER_VALIDATE_INT) ?: 1);
+
+        $resposta   = trim($_POST['resposta'] ?? '');
+
+        // Consulta obrigatória ao Banco de Dados (sem fallback)
+        $equacao = $this->carregarEquacaoDoBanco($equacaoId);
+
         if (!$equacao) {
-            echo json_encode(['status' => 'error', 'mensagem' => 'Equação não encontrada']);
-            exit;
+            $this->exibirErroBanco("Não foi possível carregar a equação ID {$equacaoId} do banco de dados para validar a resposta.");
+            return;
         }
-        
-        $valido = $this->equacao->validarResposta($equacao_id, $passo, $resposta);
-        
-        if ($valido) {
-            // Acertou
-            $this->progresso->registrarTentativa($aluno_id, $equacao_id);
+
+        $correto = $this->validarPasso($equacao, $passoAtual, $resposta);
+
+        // =========================================================================
+        // 🔍 PAINEL DE DEBUG EM TELA
+        // =========================================================================
+        $respLimpa = strtolower($resposta);
+        $respLimpa = preg_replace('/[\s\x{200B}-\x{200D}\x{FEFF}]/u', '', $respLimpa);
+        $respLimpa = str_replace(['–', '—', '−'], '-', $respLimpa);
+
+        echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Debug EquaTEA</title></head>';
+        echo '<body style="background:#181818; color:#00ff66; font-family:Consolas, monospace; padding:25px; line-height:1.5;">';
+        echo '<h2>🔍 DIAGNÓSTICO DE VALIDAÇÃO (PASSO ' . $passoAtual . ')</h2>';
+        echo '<hr style="border-color:#333">';
+
+        echo '<h3>1. Dados Recebidos via $_POST:</h3><pre style="color:#f1fa8c; background:#222; padding:10px; border-radius:5px;">';
+        print_r($_POST);
+        echo '</pre>';
+
+        echo '<h3>2. Processamento da Resposta:</h3>';
+        echo '• <b>Equação ID (Banco):</b> ' . var_export($equacao['id'], true) . '<br>';
+        echo '• <b>Coeficientes do Banco:</b> a=' . $equacao['a'] . ', b=' . $equacao['b'] . ', c=' . $equacao['c'] . '<br>';
+        echo '• <b>Passo Atual:</b> ' . var_export($passoAtual, true) . '<br>';
+        echo '• <b>Resposta (Bruta):</b> "' . htmlspecialchars($resposta) . '"<br>';
+        echo '• <b>Resposta (Sanitizada):</b> "' . htmlspecialchars($respLimpa) . '"<br>';
+
+        echo '<hr style="border-color:#333">';
+        echo '<h3>3. Resultado da Análise:</h3>';
+
+        if ($correto) {
+            $proximoPasso = $passoAtual + 1;
             
-            if ($passo == 4) {
-                $this->progresso->concluir($aluno_id, $equacao_id);
-                echo json_encode(['status' => 'concluido', 'mensagem' => 'Parabéns!']);
+            if ($passoAtual < 4) {
+                $urlDestino = "/index.php?view=exercicio&id={$equacaoId}&passo={$proximoPasso}&status=correto";
+                $textoBotao = "➡️ Ir para o Passo {$proximoPasso}";
             } else {
-                $this->progresso->avancarPasso($aluno_id, $equacao_id);
-                echo json_encode(['status' => 'avancar', 'passo' => $passo + 1]);
+                $urlDestino = "/index.php?view=parabens&id={$equacaoId}";
+                $textoBotao = "🎉 Ver Tela de Parabéns";
             }
+
+            echo '<h1 style="color:#50fa7b; margin:10px 0;">✅ VALIDAÇÃO: CORRETO (TRUE)</h1>';
+            echo '<p style="color:#8be9fd;">Sua resposta foi validada com sucesso!</p>';
+            echo '<br><a href="' . $urlDestino . '" style="background:#28a745; color:#fff; padding:12px 20px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:16px;">' . $textoBotao . '</a>';
+
         } else {
-            // Errou
-            $this->progresso->registrarTentativa($aluno_id, $equacao_id);
+            $urlRefazer = "/index.php?view=exercicio&id={$equacaoId}&passo={$passoAtual}&status=erro";
             
-            $tipo_erro = $this->registroErro->identificarTipoErro($equacao, $passo, $resposta);
-            $esperado = $this->equacao->getRespostaEsperada($equacao_id, $passo);
-            
-            $this->registroErro->registrar(
-                $aluno_id,
-                $equacao_id,
-                $passo,
-                $tipo_erro,
-                $resposta,
-                $esperado
-            );
-            
-            $dica = $this->getDicaErro($tipo_erro);
-            echo json_encode(['status' => 'erro', 'mensagem' => 'Resposta incorreta!', 'dica' => $dica]);
+            echo '<h1 style="color:#ff5555; margin:10px 0;">❌ VALIDAÇÃO: INCORRETO (FALSE)</h1>';
+            echo '<p style="color:#ff79c6;">Verifique a formatação da resposta e tente novamente.</p>';
+            echo '<br><a href="' . $urlRefazer . '" style="background:#dc3545; color:#fff; padding:12px 20px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:16px;">🔄 Tentar Novamente o Passo ' . $passoAtual . '</a>';
         }
+
+        echo '</body></html>';
         exit;
     }
-    
-    /**
-     * Obtém informações do passo
-     */
-    private function getPassoInfo($passo)
-    {
-        $passos = [
-            1 => [
-                'titulo' => 'Passo 1: Identificar os termos',
-                'descricao' => 'Identifique quais termos têm x e quais não têm.',
-                'placeholder' => 'Ex: 3x + 5 = 14'
-            ],
-            2 => [
-                'titulo' => 'Passo 2: Isolar o termo com x',
-                'descricao' => 'Use a operação inversa para isolar o termo com x.',
-                'placeholder' => 'Ex: 3x = 14 - 5'
-            ],
-            3 => [
-                'titulo' => 'Passo 3: Calcular o lado direito',
-                'descricao' => 'Calcule o valor do lado direito da equação.',
-                'placeholder' => 'Ex: 9'
-            ],
-            4 => [
-                'titulo' => 'Passo 4: Isolar x',
-                'descricao' => 'Divida ambos os lados pelo coeficiente de x.',
-                'placeholder' => 'Ex: 3'
-            ]
-        ];
-        
-        return $passos[$passo] ?? null;
+
+    private function carregarEquacaoDoBanco($id) {
+        if (!class_exists('Equacao')) {
+            return null;
+        }
+
+        try {
+            $equacaoModel = new Equacao();
+            $dados = $equacaoModel->getById($id);
+            return $dados ?: null;
+        } catch (Throwable $e) {
+            return null;
+        }
     }
-    
-    /**
-     * Obtém dica para o erro
-     */
-    private function getDicaErro($tipo_erro)
-    {
-        $dicas = [
-            'operacao_inversa' => 'Use a operação inversa! Se está somando, subtraia. Se está subtraindo, some.',
-            'calculo_errado' => 'Verifique sua conta! Refaça a operação com atenção.',
-            'sinal_trocado' => 'Cuidado com o sinal! Lembre-se da regra de sinais.',
-            'divisao_incorreta' => 'Verifique a divisão! Divida o número pelo coeficiente de x.',
-            'identificacao_errada' => 'Identifique corretamente: termo com x e termos sem x.',
-            'outro' => 'Tente novamente com atenção!'
-        ];
-        
-        return $dicas[$tipo_erro] ?? $dicas['outro'];
+
+    private function exibirErroBanco($mensagem) {
+        echo '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Erro de Banco de Dados</title></head>';
+        echo '<body style="background:#181818; color:#ff5555; font-family:Consolas, monospace; padding:25px;">';
+        echo '<h2>❌ ERRO DE COMUNICAÇÃO / BANCO DE DADOS</h2>';
+        echo '<hr style="border-color:#333">';
+        echo '<p style="font-size:16px; color:#fff;">' . htmlspecialchars($mensagem) . '</p>';
+        echo '<br><a href="/index.php" style="background:#6c757d; color:#fff; padding:10px 15px; text-decoration:none; border-radius:4px;">⬅️ Voltar ao Início</a>';
+        echo '</body></html>';
+        exit;
+    }
+
+    private function validarPasso($equacao, $passo, $resposta) {
+        if ($resposta === '') {
+            return false;
+        }
+
+        $resp = strtolower($resposta);
+        $resp = preg_replace('/[\s\x{200B}-\x{200D}\x{FEFF}]/u', '', $resp);
+        $resp = str_replace(['–', '—', '−'], '-', $resp);
+
+        $a = (int)$equacao['a'];
+        $b = (int)$equacao['b'];
+        $c = (int)$equacao['c'];
+
+        $termoX = ($a === 1) ? '(1?x)' : (($a === -1) ? '(-1?x)' : "({$a}x)");
+
+        switch ($passo) {
+            case 1:
+                return preg_match('/^' . $termoX . '$/i', $resp) === 1;
+
+            case 2:
+                $bAbs = abs($b);
+                $opOposta = ($b >= 0) ? '-' : '\+';
+                return preg_match('/^(' . $termoX . '=)?' . $c . $opOposta . $bAbs . '$/i', $resp) === 1;
+
+            case 3:
+                $resultado = $c - $b;
+                return preg_match('/^(' . $termoX . '=)?' . $resultado . '$/i', $resp) === 1;
+
+            case 4:
+                if ($a === 0) return false;
+                $valorX = ($c - $b) / $a;
+                return preg_match('/^(x=)?' . $valorX . '$/i', $resp) === 1;
+
+            default:
+                return false;
+        }
     }
 }

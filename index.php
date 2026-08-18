@@ -1,83 +1,69 @@
 <?php
 /**
  * index.php
- * Ponto de entrada para testes visuais.
- * 
- * Acesso: http://localhost:3000/
- * 
- * Parâmetros: ?view=aluno|professor|login
+ * Roteador principal com gerenciamento de sessão e rotas
  */
 
-// ============================================================
-// 1. DEFINIR CAMINHO BASE
-// ============================================================
-
-$base_path = __DIR__;
-
-// ============================================================
-// 2. CARREGAR DEPENDÊNCIAS
-// ============================================================
-
-require_once $base_path . '/app/config/Database.php';
-require_once $base_path . '/app/models/Aluno.php';
-require_once $base_path . '/app/models/Equacao.php';
-require_once $base_path . '/app/models/Progresso.php';
-require_once $base_path . '/app/models/RegistroErro.php';
-
-// ============================================================
-// 3. CRIAR INSTÂNCIAS DOS MODELOS
-// ============================================================
-
-$aluno = new Aluno();
-$equacao = new Equacao();
-$progresso = new Progresso();
-$registro = new RegistroErro();
-
-// ============================================================
-// 4. CARREGAR DADOS PARA AS VIEWS
-// ============================================================
-
-// Dados do aluno (para views do aluno)
-$aluno_id = 1;
-$dados_aluno = $aluno->getDadosCompletos(3); // ID do usuário do aluno
-$dados_alunos = $aluno->getAll();
-$dados_equacoes = $equacao->getAll();
-$dados_progresso = $progresso->getByAluno($aluno_id);
-$dados_erros = $registro->getEstatisticas($aluno_id);
-$dados_relatorio = $registro->getRelatorioCompleto();
-
-// ============================================================
-// 5. DEFINIR A VIEW A SER EXIBIDA
-// ============================================================
-
-$view = $_GET['view'] ?? 'login';
-
-// Mapeamento de views
-$views = [
-    'aluno' => 'aluno/dashboard.php',
-    'exercicio' => 'aluno/exercicio.php',
-    'parabens' => 'aluno/parabens.php',
-    'professor' => 'professor/dashboard.php',
-    'gerenciar_alunos' => 'professor/gerenciar_alunos.php',
-    'gerenciar_equacoes' => 'professor/gerenciar_equacoes.php',
-    'relatorio' => 'professor/relatorio.php',
-    'login' => 'auth/login.php'
-];
-
-// Verificar se a view existe
-if (!isset($views[$view])) {
-    $view = 'login';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-// ============================================================
-// 6. CARREGAR A VIEW
-// ============================================================
+// Importa a conexão de Banco de Dados se existir
+if (file_exists(__DIR__ . '/app/config/Database.php')) {
+    require_once __DIR__ . '/app/config/Database.php';
+}
 
-$view_file = __DIR__ . '/app/views/' . $views[$view];
+// Caminho do controller
+$controllerPath = __DIR__ . '/app/controllers/AlunoController.php';
 
-if (file_exists($view_file)) {
-    include_once $view_file;
+if (file_exists($controllerPath)) {
+    require_once $controllerPath;
+}
+
+// Captura parâmetros de ação e navegação
+$action = $_GET['action'] ?? null;
+$view   = $_GET['view']   ?? 'dashboard';
+
+if (class_exists('AlunoController')) {
+    $alunoController = new AlunoController();
+
+    // Processa o envio do formulário de verificação
+    if ($action === 'verificar_resposta') {
+        $alunoController->verificarResposta();
+        exit;
+    }
+
+    // Direciona a exibição das views
+    switch ($view) {
+        case 'dashboard':
+        case 'aluno':
+            $alunoController->dashboard();
+            break;
+
+        case 'exercicio':
+            $alunoController->exercicio();
+            break;
+
+        case 'parabens':
+            if (file_exists(__DIR__ . '/app/views/aluno/parabens.php')) {
+                require_once __DIR__ . '/app/views/aluno/parabens.php';
+            } else {
+                echo "<h1>🎉 Parabéns! Você concluiu a equação!</h1><p><a href='index.php?view=exercicio'>Voltar ao exercício</a></p>";
+            }
+            break;
+
+        case 'login':
+            if (file_exists(__DIR__ . '/app/views/auth/login.php')) {
+                require_once __DIR__ . '/app/views/auth/login.php';
+            } else {
+                echo "<h1>Página de Login</h1>";
+            }
+            break;
+
+        default:
+            $alunoController->dashboard();
+            break;
+    }
 } else {
-    echo "<h1>View não encontrada: $view</h1>";
-    echo "<p>Arquivo: $view_file</p>";
+    echo "<h2>Erro: O arquivo AlunoController.php não foi localizado em /app/controllers/.</h2>";
 }
