@@ -1,55 +1,90 @@
 <?php
-require_once CONTROLLERS_PATH . '/../models/RegistroErro.php';
-require_once CONTROLLERS_PATH . '/../models/Progresso.php';
-require_once CONTROLLERS_PATH . '/../models/Aluno.php';
-
-class RelatorioController {
+/**
+ * RelatorioController.php
+ * Controlador para relatórios do professor.
+ */
+class RelatorioController
+{
     private $registroErro;
-    private $progresso;
     private $aluno;
+    private $progresso;
     
-    public function __construct() {
+    public function __construct()
+    {
         $this->registroErro = new RegistroErro();
-        $this->progresso = new Progresso();
         $this->aluno = new Aluno();
+        $this->progresso = new Progresso();
     }
     
-    public function getRelatorio($aluno_id = null, $passo = null) {
-        return $this->registroErro->getEstatisticas($aluno_id, $passo);
-    }
-    
-    public function getProgressoAlunos() {
-        // SQL para relatório completo
-        $sql = "SELECT 
-                    u.nome as aluno,
-                    COUNT(DISTINCT p.equacao_id) as total_equacoes,
-                    SUM(p.concluida) as concluidas,
-                    ROUND(AVG(p.tentativas), 2) as media_tentativas,
-                    (SELECT COUNT(*) FROM registro_erros re WHERE re.aluno_id = a.id) as total_erros
-                FROM alunos a
-                JOIN usuarios u ON a.usuario_id = u.id
-                LEFT JOIN progresso_aluno p ON a.id = p.aluno_id
-                GROUP BY a.id, u.nome
-                ORDER BY u.nome";
+    /**
+     * Exibe o relatório de erros
+     */
+    public function relatorio()
+    {
+        $aluno_id = isset($_GET['aluno_id']) ? (int)$_GET['aluno_id'] : null;
+        $passo = isset($_GET['passo']) ? (int)$_GET['passo'] : null;
         
-        $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll();
+        $dados = [
+            'erros' => $this->registroErro->getRelatorioCompleto($aluno_id, $passo),
+            'alunos' => $this->aluno->getAll(),
+            'filtro_aluno' => $aluno_id,
+            'filtro_passo' => $passo,
+            'estatisticas' => $this->registroErro->getEstatisticas($aluno_id, $passo)
+        ];
+        
+        include_once VIEWS_PATH . '/professor/relatorio.php';
     }
     
-    public function exportarCSV($dados) {
+    /**
+     * Exporta relatório em CSV
+     */
+    public function exportarCSV()
+    {
+        $aluno_id = isset($_GET['aluno_id']) ? (int)$_GET['aluno_id'] : null;
+        $passo = isset($_GET['passo']) ? (int)$_GET['passo'] : null;
+        
+        $dados = $this->registroErro->getRelatorioCompleto($aluno_id, $passo);
+        
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=relatorio_erros_' . date('Y-m-d') . '.csv');
         
         $output = fopen('php://output', 'w');
-        fputcsv($output, ['Aluno', 'Passo', 'Tipo de Erro', 'Quantidade', 'Data']);
+        fwrite($output, "\xEF\xBB\xBF"); // BOM para UTF-8
         
+        // Headers
+        fputcsv($output, ['Aluno', 'Equação', 'Passo', 'Tipo de Erro', 'Resposta Fornecida', 'Resposta Esperada', 'Data'], ';');
+        
+        // Dados
         foreach ($dados as $linha) {
-            fputcsv($output, $linha);
+            fputcsv($output, [
+                $linha['aluno'],
+                $linha['equacao'],
+                'Passo ' . $linha['passo'],
+                $this->formatarTipoErro($linha['tipo_erro']),
+                $linha['resposta_fornecida'] ?? '-',
+                $linha['resposta_esperada'] ?? '-',
+                date('d/m/Y H:i', strtotime($linha['data_erro']))
+            ], ';');
         }
         
         fclose($output);
         exit;
+    }
+    
+    /**
+     * Formata o tipo de erro
+     */
+    private function formatarTipoErro($tipo)
+    {
+        $labels = [
+            'operacao_inversa' => 'Operação Inversa',
+            'calculo_errado' => 'Cálculo Errado',
+            'sinal_trocado' => 'Sinal Trocado',
+            'divisao_incorreta' => 'Divisão Incorreta',
+            'identificacao_errada' => 'Identificação Errada',
+            'outro' => 'Outro'
+        ];
+        
+        return $labels[$tipo] ?? $tipo;
     }
 }

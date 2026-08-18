@@ -1,14 +1,32 @@
 <?php
-require_once MODELS_PATH . '/../config/database.php';
-
-class RegistroErro {
+/**
+ * RegistroErro.php
+ * Model para registro de erros cometidos pelos alunos.
+ */
+class RegistroErro
+{
     private $db;
     
-    public function __construct() {
+    // Tipos de erro possíveis
+    const TIPOS = [
+        'operacao_inversa',
+        'calculo_errado',
+        'sinal_trocado',
+        'divisao_incorreta',
+        'identificacao_errada',
+        'outro'
+    ];
+    
+    public function __construct()
+    {
         $this->db = Database::getInstance()->getConnection();
     }
     
-    public function registrar($aluno_id, $equacao_id, $passo, $tipo_erro, $resposta_fornecida = null, $resposta_esperada = null) {
+    /**
+     * Registra um erro
+     */
+    public function registrar($aluno_id, $equacao_id, $passo, $tipo_erro, $resposta_fornecida = null, $resposta_esperada = null)
+    {
         $sql = "INSERT INTO registro_erros 
                 (aluno_id, equacao_id, passo, tipo_erro, resposta_fornecida, resposta_esperada) 
                 VALUES (:aluno_id, :equacao_id, :passo, :tipo_erro, :resposta_fornecida, :resposta_esperada)";
@@ -23,16 +41,28 @@ class RegistroErro {
         ]);
     }
     
-    public function getByAluno($aluno_id) {
-        $sql = "SELECT * FROM registro_erros 
-                WHERE aluno_id = :aluno_id 
-                ORDER BY data_erro DESC";
+    /**
+     * Obtém erros por aluno
+     */
+    public function getByAluno($aluno_id)
+    {
+        $sql = "SELECT r.*, 
+                       CONCAT(e.a, 'x + ', e.b, ' = ', e.c) as equacao,
+                       e.dificuldade
+                FROM registro_erros r
+                JOIN equacoes e ON r.equacao_id = e.id
+                WHERE r.aluno_id = :aluno_id
+                ORDER BY r.data_erro DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':aluno_id' => $aluno_id]);
         return $stmt->fetchAll();
     }
     
-    public function getEstatisticas($aluno_id = null, $passo = null) {
+    /**
+     * Obtém estatísticas de erros
+     */
+    public function getEstatisticas($aluno_id = null, $passo = null)
+    {
         $sql = "SELECT 
                     tipo_erro,
                     COUNT(*) as quantidade,
@@ -62,19 +92,76 @@ class RegistroErro {
         return $stmt->fetchAll();
     }
     
-    public function getErrosPorAluno() {
+    /**
+     * Obtém relatório completo de erros (para professor)
+     */
+    public function getRelatorioCompleto($aluno_id = null, $passo = null)
+    {
         $sql = "SELECT 
                     u.nome as aluno,
-                    COUNT(re.id) as total_erros,
-                    re.passo,
-                    re.tipo_erro
-                FROM registro_erros re
-                JOIN alunos a ON re.aluno_id = a.id
+                    CONCAT(e.a, 'x + ', e.b, ' = ', e.c) as equacao,
+                    r.passo,
+                    r.tipo_erro,
+                    r.resposta_fornecida,
+                    r.resposta_esperada,
+                    r.data_erro,
+                    a.id as aluno_id
+                FROM registro_erros r
+                JOIN alunos a ON r.aluno_id = a.id
                 JOIN usuarios u ON a.usuario_id = u.id
-                GROUP BY u.nome, re.passo, re.tipo_erro
-                ORDER BY u.nome, total_erros DESC";
+                JOIN equacoes e ON r.equacao_id = e.id";
+        
+        $params = [];
+        $where = [];
+        
+        if ($aluno_id) {
+            $where[] = "a.id = :aluno_id";
+            $params[':aluno_id'] = $aluno_id;
+        }
+        
+        if ($passo) {
+            $where[] = "r.passo = :passo";
+            $params[':passo'] = $passo;
+        }
+        
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+        
+        $sql .= " ORDER BY r.data_erro DESC";
+        
         $stmt = $this->db->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
         return $stmt->fetchAll();
+    }
+    
+    /**
+     * Identifica o tipo de erro baseado na resposta
+     */
+    public function identificarTipoErro($equacao, $passo, $resposta)
+    {
+        $a = $equacao['a'];
+        $b = $equacao['b'];
+        $c = $equacao['c'];
+        $resposta = trim($resposta);
+        
+        switch ($passo) {
+            case 1:
+                return 'identificacao_errada';
+            case 2:
+                if (strpos($resposta, '+') !== false && $b > 0) {
+                    return 'sinal_trocado';
+                }
+                if (strpos($resposta, '-') !== false && $b < 0) {
+                    return 'sinal_trocado';
+                }
+                return 'operacao_inversa';
+            case 3:
+                return 'calculo_errado';
+            case 4:
+                return 'divisao_incorreta';
+            default:
+                return 'outro';
+        }
     }
 }

@@ -1,18 +1,21 @@
 <?php
-// Configuração e conexão com banco de dados
-
-require_once 'config.php';
-
-class Database {
+/**
+ * Database.php
+ * Classe de conexão com o banco de dados MySQL usando PDO.
+ * Padrão Singleton para garantir uma única instância.
+ */
+class Database
+{
     private static $instance = null;
     private $conn;
     
     private $host = 'localhost';
     private $dbname = 'equatea_db';
     private $username = 'root';
-    private $password = 'postdba';
+    private $password = '';
     
-    private function __construct() {
+    private function __construct()
+    {
         try {
             $this->conn = new PDO(
                 "mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4",
@@ -29,32 +32,38 @@ class Database {
         }
     }
     
-    public static function getInstance() {
+    public static function getInstance()
+    {
         if (self::$instance === null) {
             self::$instance = new self();
         }
         return self::$instance;
     }
     
-    public function getConnection() {
+    public function getConnection()
+    {
         return $this->conn;
     }
     
-    public function query($sql, $params = []) {
+    public function query($sql, $params = [])
+    {
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
         return $stmt;
     }
     
-    public function beginTransaction() {
+    public function beginTransaction()
+    {
         return $this->conn->beginTransaction();
     }
     
-    public function commit() {
+    public function commit()
+    {
         return $this->conn->commit();
     }
     
-    public function rollback() {
+    public function rollback()
+    {
         return $this->conn->rollback();
     }
 }
