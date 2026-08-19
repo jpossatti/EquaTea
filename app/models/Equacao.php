@@ -15,14 +15,21 @@ class Equacao
     /**
      * Obtém equação por ID
      */
-    public function getById($id)
-    {
-        $sql = "SELECT * FROM equacoes WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetch();
-    }
+ 
+public function buscarTodas() {
+    $db = Database::getInstance()->getConnection();
     
+    // O CASE atribui um peso numérico para cada nível de dificuldade
+    $sql = "SELECT * FROM equacoes 
+            ORDER BY CASE dificuldade 
+                WHEN 'Fácil' THEN 1 
+                WHEN 'Médio' THEN 2 
+                WHEN 'Difícil' THEN 3 
+                ELSE 4 END ASC, id DESC";
+                
+    $stmt = $db->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
     /**
      * Obtém todas as equações
      */
@@ -119,31 +126,34 @@ class Equacao
     /**
      * Atualiza uma equação
      */
-    public function atualizar($id, $a, $b, $c, $dificuldade)
-    {
-        if ((int)$a === 0) {
-            return false;
-        }
-
-        $solucao = ($c - $b) / $a;
-        
-        if (fmod($solucao, 1) != 0) {
-            return false;
-        }
-        
-        $sql = "UPDATE equacoes SET a = :a, b = :b, c = :c, solucao = :solucao, 
-                dificuldade = :dificuldade WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ':a'         => (int)$a,
-            ':b'         => (int)$b,
-            ':c'         => (int)$c,
-            ':solucao'   => (int)$solucao,
-            ':dificuldade' => $dificuldade,
-            ':id'        => (int)$id
-        ]);
-    }
+    public function atualizar($id, $a, $b, $c, $solucao, $dificuldade) {
+    $db = Database::getInstance()->getConnection();
     
+    // Certifique-se de que o campo 'dificuldade = :dificuldade' está presente no UPDATE
+    $sql = "UPDATE equacoes SET a = :a, b = :b, c = :c, solucao = :solucao, dificuldade = :dificuldade WHERE id = :id";
+    
+    $stmt = $db->prepare($sql);
+    return $stmt->execute([
+        'id' => $id,
+        'a' => $a,
+        'b' => $b,
+        'c' => $c,
+        'solucao' => $solucao,
+        'dificuldade' => $dificuldade
+    ]);
+}
+    public function deletar($id) {
+    $db = Database::getInstance()->getConnection();
+    $stmt = $db->prepare("DELETE FROM equacoes WHERE id = :id");
+    return $stmt->execute(['id' => $id]);
+}
+
+public function buscarPorId($id) {
+    $db = Database::getInstance()->getConnection();
+    $stmt = $db->prepare("SELECT * FROM equacoes WHERE id = :id");
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
     /**
      * Exclui uma equação (apenas se não utilizada)
      */

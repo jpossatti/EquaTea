@@ -125,41 +125,47 @@ $page_title = 'Gerenciar Equações - EquaTEA';
         <div class="card" style="background: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <h2 style="margin-top: 0; text-align: center; color: #2c3e50;">📋 Lista de Equações</h2>
 
-            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                <thead>
-                    <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: left;">
-                        <th style="padding: 10px;">ID</th>
-                        <th style="padding: 10px;">Equação</th>
-                        <th style="padding: 10px;">Solução (x)</th>
-                        <th style="padding: 10px;">Dificuldade</th>
-                        <th style="padding: 10px; text-align: center;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($dados_equacoes)): ?>
-                        <?php foreach ($dados_equacoes as $eq): ?>
-                            <tr style="border-bottom: 1px solid #dee2e6;">
-                                <td style="padding: 10px;"><?php echo htmlspecialchars($eq['id']); ?></td>
-                                <td style="padding: 10px;"><strong><?php echo htmlspecialchars("{$eq['a']}x " . ($eq['b'] >= 0 ? "+ {$eq['b']}" : "- " . abs($eq['b'])) . " = {$eq['c']}"); ?></strong></td>
-                                <td style="padding: 10px;"><span style="background-color: #d1e7dd; color: #0f5132; padding: 3px 8px; border-radius: 4px; font-weight: bold;">x = <?php echo htmlspecialchars(($eq['c'] - $eq['b']) / $eq['a']); ?></span></td>
-                                <td style="padding: 10px; text-transform: capitalize;"><?php echo htmlspecialchars($eq['dificuldade']); ?></td>
-                                <td style="padding: 10px; text-align: center;">
-                                    <form method="POST" action="index.php?action=excluir_equacao" style="display: inline-block;">
-                                        <input type="hidden" name="id" value="<?php echo $eq['id']; ?>">
-                                        <button type="submit" onclick="return confirm('Deseja realmente excluir esta equação?')" style="background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                            🗑 Excluir
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 15px; color: #6c757d;">Nenhuma equação cadastrada.</td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+            <table class="list-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Equação</th>
+            <th>Solução (x)</th>
+            <th>Dificuldade</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php if (!empty($equacoes)): ?>
+            <?php foreach ($equacoes as $eq): ?>
+                <tr>
+                    <td><?= $eq['id'] ?></td>
+                    <td><?= $eq['a'] ?>x + <?= $eq['b'] ?> = <?= $eq['c'] ?></td>
+                    <td><?= $eq['solucao'] ?></td>
+                    <td>
+                        <span class="badge <?= strtolower($eq['dificuldade'] ?? 'facil') ?>">
+                         <?= htmlspecialchars($eq['dificuldade'] ?? 'Fácil') ?>
+                        </span>
+                    </td>
+                   <!-- Dentro do seu loop foreach das equações -->
+<td>
+    <!-- Botão Editar -->
+    <a href="index.php?view=editar_equacao&id=<?= $eq['id'] ?>" class="btn-acao btn-editar" title="Editar">✏️</a>
+    
+    <!-- Botão Excluir -->
+    <a href="index.php?action=deletar_equacao&id=<?= $eq['id'] ?>" 
+       onclick="return confirm('Deseja realmente excluir esta equação?');" 
+       class="btn-acao btn-excluir" title="Excluir">🗑️</a>
+</td>
+                </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="5">Nenhuma equação cadastrada.</td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
         </div>
 
     </div>

@@ -43,7 +43,24 @@ if ($action === 'deletar_aluno') {
     $controller->deletarAluno();
     exit;
 }
-
+if ($action === 'cadastrar_equacao') {
+    require_once __DIR__ . '/app/controllers/ProfessorController.php';
+    $controller = new ProfessorController();
+    $controller->cadastrarEquacao();
+    exit;
+}
+if ($action === 'deletar_equacao') {
+    require_once __DIR__ . '/app/controllers/ProfessorController.php';
+    $controller = new ProfessorController();
+    $controller->deletarEquacao($_GET['id']);
+    exit;
+}
+if ($action === 'salvar_edicao_equacao') {
+    require_once __DIR__ . '/app/controllers/ProfessorController.php';
+    $controller = new ProfessorController();
+    $controller->atualizarEquacao();
+    exit;
+}
 // Restante do código de roteamento de views...
 // 2. ROTEAMENTO DE VIEWS
 $view = $_GET['view'] ?? $_POST['view'] ?? 'login';
@@ -73,12 +90,24 @@ switch ($view) {
         echo "</div></div></body></html>";
         break;
 
+    case 'editar_equacao':
+        require_once __DIR__ . '/app/controllers/ProfessorController.php';
+        $controller = new ProfessorController();
+        $controller->exibirFormularioEdicaoEquacao($_GET['id']);
+    break;
+
     case 'editar_aluno':
         require_once __DIR__ . '/app/controllers/ProfessorController.php';
         $controller = new ProfessorController();
         // Verifica se o ID foi passado antes de chamar o método
         $id = $_GET['id'] ?? null;
         $controller->exibirFormularioEdicao($id);
+        break;
+    
+    case 'gerenciar_equacoes':
+        require_once __DIR__ . '/app/controllers/ProfessorController.php';
+        $controller = new ProfessorController();
+        $controller->listarEquacoes(); // Criaremos este método abaixo
         break;
 
     case 'dashboard':

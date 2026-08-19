@@ -1,4 +1,3 @@
-$page_title = 'Editar Aluno - EquaTEA';
 <?php
 
 

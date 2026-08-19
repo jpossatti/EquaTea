@@ -144,7 +144,21 @@ public function exibirFormularioEdicao($id)
     // Carrega a view de edição (você precisará criar esse arquivo)
     require_once __DIR__ . '/../views/professor/editar_aluno.php';
 }
+public function deletarEquacao($id) {
+    require_once __DIR__ . '/../models/Equacao.php';
+    $model = new Equacao();
+    $model->deletar($id);
+    header('Location: index.php?view=gerenciar_equacoes');
+    exit;
+}
 
+public function exibirFormularioEdicaoEquacao($id) {
+    require_once __DIR__ . '/../models/Equacao.php';
+    $model = new Equacao();
+    $equacao = $model->buscarPorId($id);
+    // Carregue aqui a view 'editar_equacao.php' (você precisará criar este arquivo similar ao editar_aluno.php)
+    require_once __DIR__ . '/../views/professor/editar_equacao.php';
+}
     public function resetarSenha()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -220,27 +234,28 @@ public function exibirFormularioEdicao($id)
         exit;
     }
 
-    public function excluirEquacao()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?view=gerenciar_equacoes');
-            exit;
-        }
+public function atualizarEquacao() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id = $_POST['id'] ?? null;
+        $a = $_POST['coef_a'] ?? 0;
+        $b = $_POST['coef_b'] ?? 0;
+        $c = $_POST['coef_c'] ?? 0;
+        $dificuldade = $_POST['dificuldade'] ?? 'Fácil';
 
-        $id = (int)($_POST['id'] ?? 0);
+        if ($id && $a != 0) {
+            $solucao = ($c - $b) / $a;
 
-        if ($this->equacao && method_exists($this->equacao, 'excluir')) {
-            $resultado = $this->equacao->excluir($id);
-            if ($resultado) {
-                $_SESSION['admin_success'] = 'Equação excluída com sucesso!';
-            } else {
-                $_SESSION['admin_error'] = 'Esta equação já possui históricos associados e não pode ser removida.';
-            }
+            require_once __DIR__ . '/../models/Equacao.php';
+            $model = new Equacao();
+            
+            // Executa a atualização no banco de dados
+            $model->atualizar($id, $a, $b, $c, $solucao, $dificuldade);
         }
 
         header('Location: index.php?view=gerenciar_equacoes');
         exit;
     }
+}
     public function atualizar()
 {
     // Verifica se os dados vieram via POST
@@ -262,7 +277,14 @@ public function exibirFormularioEdicao($id)
         exit;
     }
 }
-
+public function listarEquacoes() {
+    require_once __DIR__ . '/../models/Equacao.php';
+    $equacaoModel = new Equacao();
+    $equacoes = $equacaoModel->buscarTodas(); // Certifique-se que este método exista no Model
+    
+    // Carrega a view passando a variável $equacoes
+    require_once __DIR__ . '/../views/professor/gerenciar_equacoes.php';
+}
 public function deletarAluno()
 {
     $id = $_GET['id'] ?? null;
