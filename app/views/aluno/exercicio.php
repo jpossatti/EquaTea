@@ -4,6 +4,10 @@
  * Interface do passo a passo para resolução de equações no EquaTEA.
  */
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // 1. Captura e validação dos parâmetros via URL
 $equacaoId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 1;
 $passo     = filter_input(INPUT_GET, 'passo', FILTER_VALIDATE_INT) ?: 1;
@@ -50,7 +54,7 @@ $sinalBInvertido = ($bInvertido >= 0) ? '+ ' . $bInvertido : '- ' . abs($bInvert
 $ladoDireitoResolvido = $c - $b;
 $solucaoFinal = ($a !== 0) ? ($ladoDireitoResolvido / $a) : 0;
 
-// 3. EVOLUÇÃO VISUAL DA EQUAÇÃO (Destaque do topo)
+// 3. EVOLUÇÃO VISUAL DA EQUAÇÃO
 switch ($passo) {
     case 1:
         $expressaoAtual = "{$termoA} {$sinalB} = {$c}";
@@ -115,7 +119,6 @@ switch ($passo) {
         $descricao     = "Divida o valor do lado direito pelo coeficiente de X.";
         $textoExemplo  = "Se a equação fosse <b>{$exemploTermoA} = {$exemploLadoDireito}</b>, a resposta seria <b>x = {$exemploSolucao}</b>";
         $placeholder   = "Ex: x = {$exemploSolucao}";
-        // No passo 4, o próximo destino é a TELA DE PARABÉNS
         $proximoAction = "index.php?view=parabens&id={$equacaoId}";
         $textoBotao    = "Concluir Exercício 🎉";
         break;
@@ -124,6 +127,17 @@ switch ($passo) {
         $proximoAction = "index.php?view=parabens&id={$equacaoId}";
         $textoBotao    = "Concluir Exercício 🎉";
         break;
+}
+
+// Processa submissão do formulário caso o controller central não tenha feito
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $proximoPasso = $passo + 1;
+    if ($proximoPasso > 4) {
+        header("Location: index.php?view=parabens&id={$equacaoId}");
+    } else {
+        header("Location: index.php?view=exercicio&id={$equacaoId}&passo={$proximoPasso}");
+    }
+    exit;
 }
 ?>
 
@@ -242,9 +256,7 @@ switch ($passo) {
             margin-right: 6px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         .form-group label {
             display: block;
@@ -266,9 +278,7 @@ switch ($passo) {
             transition: border-color 0.2s;
         }
 
-        .input-response:focus {
-            border-color: var(--primary-cyan);
-        }
+        .input-response:focus { border-color: var(--primary-cyan); }
 
         .btn-submit {
             width: 100%;
@@ -283,9 +293,7 @@ switch ($passo) {
             transition: background-color 0.2s;
         }
 
-        .btn-submit:hover {
-            background-color: #219150;
-        }
+        .btn-submit:hover { background-color: #219150; }
 
         .back-link {
             display: block;
@@ -296,39 +304,32 @@ switch ($passo) {
             font-size: 0.85rem;
         }
 
-        .back-link:hover {
-            text-decoration: underline;
-        }
+        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div class="exercise-card">
-        
-        <!-- Cabeçalho -->
         <div class="header-title">
             <h2>EquaTEA - Resolução Passos</h2>
             <span class="badge-id">Equação #<?php echo htmlspecialchars((string)$equacaoId); ?></span>
         </div>
 
-        <!-- Display da Equação Ativa -->
         <div class="equation-box">
             <small>EQUAÇÃO ATUAL (PASSO <?php echo (int)$passo; ?>):</small>
             <div class="expression"><?php echo htmlspecialchars($expressaoAtual); ?></div>
         </div>
 
-        <!-- Instrução do Passo -->
         <h3 class="step-title"><?php echo htmlspecialchars($tituloPasso); ?></h3>
         <p class="step-desc"><?php echo htmlspecialchars($descricao); ?></p>
 
-        <!-- Bloco do Exemplo Didático Neutro -->
         <div class="exemplo-box">
             <span class="exemplo-tag">Exemplo:</span>
             <span><?php echo $textoExemplo; ?></span>
         </div>
 
-        <!-- Formulário de Envio com Action Dinâmico -->
-        <form action="<?php echo htmlspecialchars($proximoAction); ?>" method="POST">
+        <!-- Formulário com Action mantendo o parâmetro da página -->
+        <form action="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>" method="POST">
             <div class="form-group">
                 <label for="resposta">Sua Resposta:</label>
                 <input type="text" 
@@ -347,7 +348,6 @@ switch ($passo) {
         </form>
 
         <a href="index.php?view=dashboard" class="back-link">⬅ Voltar ao Dashboard</a>
-
     </div>
 
 </body>

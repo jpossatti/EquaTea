@@ -1,90 +1,81 @@
 <?php
 /**
- * index.php
- * Roteador com tratamento das ações POST de formulários
+ * index.php - Roteador Central (Ambiente Dev - Sem Sessão)
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Captura a view atual via GET ou POST (Padrão: 'login')
+$view = $_GET['view'] ?? $_POST['view'] ?? 'login';
 
-// Configuração de conexões e Models
-if (file_exists(__DIR__ . '/app/config/Database.php')) {
-    require_once __DIR__ . '/app/config/Database.php';
-}
-
-$models = ['Aluno.php', 'Equacao.php', 'RegistroErro.php', 'Usuario.php'];
-foreach ($models as $modelFile) {
-    $path = __DIR__ . '/app/models/' . $modelFile;
-    if (file_exists($path)) {
-        require_once $path;
-    }
-}
-
-// Controllers
-if (file_exists(__DIR__ . '/app/controllers/AlunoController.php')) {
-    require_once __DIR__ . '/app/controllers/AlunoController.php';
-}
-if (file_exists(__DIR__ . '/app/controllers/ProfessorController.php')) {
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-}
-
-$action = $_GET['action'] ?? null;
-$view   = $_GET['view']   ?? 'login';
-
-// Processa Ações do Professor
-if (class_exists('ProfessorController')) {
-    $professorController = new ProfessorController();
-
-    switch ($action) {
-        case 'cadastrar_aluno':
-            $professorController->cadastrarAluno();
-            exit;
-        case 'resetar_senha':
-            $professorController->resetarSenha();
-            exit;
-        case 'cadastrar_equacao':
-            $professorController->cadastrarEquacao();
-            exit;
-        case 'excluir_equacao':
-            $professorController->excluirEquacao();
-            exit;
-    }
-}
-
-// Exibição de Views
+// Roteamento Direto por Parâmetro
 switch ($view) {
+
     case 'login':
-        require_once __DIR__ . '/app/views/auth/login.php';
+        // Tela de Seleção Inicial do Perfil (Sem Persistência de Sessão)
+        echo "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'><title>EquaTEA - Acesso Dev</title>";
+        echo "<style>
+            body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+            .container { text-align: center; background: white; padding: 50px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+            h2 { color: #2b3a4a; margin-bottom: 10px; }
+            p { color: #666; margin-bottom: 30px; }
+            .btn-group { display: flex; gap: 20px; justify-content: center; }
+            .btn { padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; color: white; transition: transform 0.2s; }
+            .btn:hover { transform: translateY(-3px); }
+            .btn-aluno { background: #3498db; }
+            .btn-prof { background: #2ecc71; }
+        </style></head><body>";
+        
+        echo "<div class='container'>";
+        echo "<h2>⚙️ EquaTEA - Modo Desenvolvimento</h2>";
+        echo "<p>Escolha a interface para prosseguir com a implementação:</p>";
+        echo "<div class='btn-group'>";
+        echo "<a href='index.php?view=dashboard' class='btn btn-aluno'>👨‍🎓 Acessar como Aluno</a>";
+        echo "<a href='index.php?view=dashboard_professor' class='btn btn-prof'>👨‍🏫 Acessar como Professor</a>";
+        echo "</div></div></body></html>";
         break;
 
-    case 'aluno':
     case 'dashboard':
-        if (class_exists('AlunoController')) {
-            (new AlunoController())->dashboard();
+        $caminhoView = __DIR__ . '/app/views/aluno/dashboard.php';
+        if (file_exists($caminhoView)) {
+            require_once $caminhoView;
+        } else {
+            echo "<h3>View 'app/views/aluno/dashboard.php' não encontrada.</h3>";
         }
         break;
 
-    case 'professor':
+    case 'exercicio':
+        $caminhoView = __DIR__ . '/app/views/aluno/exercicio.php';
+        if (file_exists($caminhoView)) {
+            require_once $caminhoView;
+        } else {
+            echo "<h3>View 'app/views/aluno/exercicio.php' não encontrada.</h3>";
+        }
+        break;
+
+    case 'parabens':
+        $caminhoView = __DIR__ . '/app/views/aluno/parabens.php';
+        if (file_exists($caminhoView)) {
+            require_once $caminhoView;
+        } else {
+            echo "<div style='text-align:center; padding:50px; font-family:sans-serif;'>";
+            echo "<h1>🎉 Exercício Concluído!</h1>";
+            echo "<p><a href='index.php?view=dashboard'>Voltar ao Dashboard</a></p>";
+            echo "</div>";
+        }
+        break;
+
     case 'dashboard_professor':
-        if (class_exists('ProfessorController')) {
-            (new ProfessorController())->dashboard();
-        }
-        break;
-
-    case 'gerenciar_alunos':
-        if (class_exists('ProfessorController')) {
-            (new ProfessorController())->gerenciarAlunos();
-        }
-        break;
-
-    case 'gerenciar_equacoes':
-        if (class_exists('ProfessorController')) {
-            (new ProfessorController())->gerenciarEquacoes();
+        $caminhoView = __DIR__ . '/app/views/professor/dashboard.php';
+        if (file_exists($caminhoView)) {
+            require_once $caminhoView;
+        } else {
+            echo "<div style='text-align:center; padding:50px; font-family:sans-serif;'>";
+            echo "<h2>👨‍🏫 Painel do Professor (Em Construção)</h2>";
+            echo "<p><a href='index.php?view=login'>Voltar ao Início</a></p>";
+            echo "</div>";
         }
         break;
 
     default:
-        header('Location: index.php?view=login');
+        header("Location: index.php?view=login");
         exit;
 }

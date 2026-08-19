@@ -1,0 +1,144 @@
+========================================================
+[2026-08-19 15:37:25] REQUISIÇÃO RECEBIDA
+URI: /index.php
+MÉTODO: GET
+VIEW SOLICITADA: NÃO DEFINIDO
+DADOS GET: []
+DADOS POST: []
+SESSÃO ALUNO: VAZIA/INEXISTENTE
+========================================================
+[2026-08-19 15:37:48] REQUISIÇÃO RECEBIDA
+URI: /index.php
+MÉTODO: GET
+VIEW SOLICITADA: NÃO DEFINIDO
+DADOS GET: []
+DADOS POST: []
+SESSÃO ALUNO: VAZIA/INEXISTENTE
+========================================================
+[2026-08-19 15:38:37] REQUISIÇÃO RECEBIDA
+URI: /index.php
+MÉTODO: GET
+GET: []
+POST: []
+SESSÃO: VAZIA
+========================================================
+[2026-08-19 15:38:40] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=login
+MÉTODO: POST
+GET: {"view":"login"}
+POST: {"email":"aluno@equatea.com"}
+SESSÃO: VAZIA
+--------------------------------------------------------
+[2026-08-19 15:38:40] REDIRECIONAMENTO DISPARADO!
+Destino: index.php?view=dashboard
+Motivo: Login realizado via POST.
+--------------------------------------------------------
+========================================================
+[2026-08-19 15:38:40] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=dashboard
+MÉTODO: GET
+GET: {"view":"dashboard"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:38:48] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=1
+MÉTODO: GET
+GET: {"view":"exercicio","id":"1","passo":"1"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:38:58] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=1
+MÉTODO: POST
+GET: {"view":"exercicio","id":"1","passo":"1"}
+POST: {"resposta":"1x"}
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:38:58] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=2
+MÉTODO: GET
+GET: {"view":"exercicio","id":"1","passo":"2"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:39:11] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=2
+MÉTODO: POST
+GET: {"view":"exercicio","id":"1","passo":"2"}
+POST: {"resposta":"1x = 7- 4"}
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:39:11] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=3
+MÉTODO: GET
+GET: {"view":"exercicio","id":"1","passo":"3"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:39:18] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=3
+MÉTODO: POST
+GET: {"view":"exercicio","id":"1","passo":"3"}
+POST: {"resposta":"1x = 4"}
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:39:18] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=4
+MÉTODO: GET
+GET: {"view":"exercicio","id":"1","passo":"4"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:39:22] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=exercicio&id=1&passo=4
+MÉTODO: POST
+GET: {"view":"exercicio","id":"1","passo":"4"}
+POST: {"resposta":"x = 4"}
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:39:23] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=parabens&id=1
+MÉTODO: GET
+GET: {"view":"parabens","id":"1"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:39:28] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=dashboard
+MÉTODO: GET
+GET: {"view":"dashboard"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+========================================================
+[2026-08-19 15:40:02] REQUISIÇÃO RECEBIDA
+URI: /index.php?view=login
+MÉTODO: GET
+GET: {"view":"login"}
+POST: []
+SESSÃO: {"id":1,"nome":"Possatti","email":"aluno@equatea.com"}
+[2026-08-19 15:42:33] URI: /index.php | GET: [] | POST: []
+[2026-08-19 15:42:35] URI: /index.php?view=login&role=aluno | GET: {"view":"login","role":"aluno"} | POST: []
+[2026-08-19 15:42:35] URI: /index.php?view=dashboard | GET: {"view":"dashboard"} | POST: []
+[2026-08-19 15:42:41] URI: /index.php?view=exercicio&id=3&passo=1 | GET: {"view":"exercicio","id":"3","passo":"1"} | POST: []
+[2026-08-19 15:42:49] URI: /index.php?view=exercicio&id=3&passo=1 | GET: {"view":"exercicio","id":"3","passo":"1"} | POST: {"resposta":"1x"}
+[2026-08-19 15:42:49] URI: /index.php?view=exercicio&id=3&passo=2 | GET: {"view":"exercicio","id":"3","passo":"2"} | POST: []
+[2026-08-19 15:43:00] URI: /index.php?view=exercicio&id=3&passo=2 | GET: {"view":"exercicio","id":"3","passo":"2"} | POST: {"resposta":"1x = 7- 3"}
+[2026-08-19 15:43:00] URI: /index.php?view=exercicio&id=3&passo=3 | GET: {"view":"exercicio","id":"3","passo":"3"} | POST: []
+[2026-08-19 15:43:07] URI: /index.php?view=exercicio&id=3&passo=3 | GET: {"view":"exercicio","id":"3","passo":"3"} | POST: {"resposta":"1x = 4"}
+[2026-08-19 15:43:07] URI: /index.php?view=exercicio&id=3&passo=4 | GET: {"view":"exercicio","id":"3","passo":"4"} | POST: []
+[2026-08-19 15:43:10] URI: /index.php?view=exercicio&id=3&passo=4 | GET: {"view":"exercicio","id":"3","passo":"4"} | POST: {"resposta":"x=4"}
+[2026-08-19 15:43:10] URI: /index.php?view=parabens&id=3 | GET: {"view":"parabens","id":"3"} | POST: []
+[2026-08-19 15:43:14] URI: /index.php?view=dashboard | GET: {"view":"dashboard"} | POST: []
+[2026-08-19 15:43:19] URI: /index.php?view=parabens | GET: {"view":"parabens"} | POST: []
+[2026-08-19 15:43:24] URI: /index.php?view=login | GET: {"view":"login"} | POST: []
+[2026-08-19 15:43:26] URI: /index.php?view=login&role=professor | GET: {"view":"login","role":"professor"} | POST: []
+[2026-08-19 15:43:26] URI: /index.php?view=dashboard_professor | GET: {"view":"dashboard_professor"} | POST: []
+[2026-08-19 15:43:37] URI: /index.php?view=professor | GET: {"view":"professor"} | POST: []
+[2026-08-19 15:43:37] URI: /index.php?view=login | GET: {"view":"login"} | POST: []
+[2026-08-19 15:43:39] URI: /index.php?view=login&role=professor | GET: {"view":"login","role":"professor"} | POST: []
+[2026-08-19 15:43:39] URI: /index.php?view=dashboard_professor | GET: {"view":"dashboard_professor"} | POST: []
+[2026-08-19 15:43:41] URI: /index.php?view=gerenciar_alunos | GET: {"view":"gerenciar_alunos"} | POST: []
+[2026-08-19 15:43:41] URI: /index.php?view=login | GET: {"view":"login"} | POST: []
+[2026-08-19 15:43:42] URI: /index.php?view=login&role=professor | GET: {"view":"login","role":"professor"} | POST: []
+[2026-08-19 15:43:42] URI: /index.php?view=dashboard_professor | GET: {"view":"dashboard_professor"} | POST: []

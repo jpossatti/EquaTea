@@ -1,11 +1,32 @@
 <?php
 /**
  * app/views/aluno/dashboard.php
- * Painel principal do aluno com suporte a coeficientes dinâmicos (a, b, c) do banco de dados.
+ * Painel do Aluno - Listagem dinâmica utilizando a classe Equacao (Model)
  */
 
-// Garantia de fallback contra erros de variáveis indefinidas
-$aluno = $aluno ?? [
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 1. CARREGAMENTO CORRETO DAS DEPENDÊNCIAS
+// Subindo de /app/views/aluno/ para /app/config/ e /app/models/
+require_once __DIR__ . '/../../config/Database.php';
+require_once __DIR__ . '/../../models/Equacao.php';
+
+// 2. BUSCA DAS EQUAÇÕES VIA MODEL
+try {
+    $equacaoModel = new Equacao();
+    $equacoesBD = $equacaoModel->getAll();
+    
+    if (!empty($equacoesBD)) {
+        $equacoes = $equacoesBD;
+    }
+} catch (Exception $e) {
+    $erroBanco = "Aviso: Não foi possível carregar as equações do banco. (" . $e->getMessage() . ")";
+}
+
+// Fallbacks de Sessão e Progresso para o ambiente de dev
+$aluno = $_SESSION['aluno'] ?? $aluno ?? [
     'nome'  => 'Aluno Teste',
     'email' => 'aluno@equatea.com'
 ];
@@ -16,7 +37,7 @@ $dados_progresso = $dados_progresso ?? [
     'nivel_atual'      => 'Nível 1 - Básico'
 ];
 
-// Array de equações seguro para fallback (utilizando os coeficientes reais)
+// Listagem de segurança estática caso o banco esteja limpo/vazio
 $equacoes = $equacoes ?? [
     ['id' => 1, 'a' => 1, 'b' => 3, 'c' => 7,  'dificuldade' => 'Fácil', 'status' => 'Pendente'],
     ['id' => 2, 'a' => 2, 'b' => -4, 'c' => 10, 'dificuldade' => 'Fácil', 'status' => 'Concluído'],
@@ -49,7 +70,6 @@ $equacoes = $equacoes ?? [
             color: var(--text-color);
         }
 
-        /* Cabeçalho superior */
         header {
             background-color: var(--primary-color);
             color: white;
@@ -68,7 +88,6 @@ $equacoes = $equacoes ?? [
             color: var(--accent-blue);
         }
 
-        /* Menu de Navegação */
         nav {
             background-color: #ffffff;
             border-bottom: 1px solid var(--border-color);
@@ -92,7 +111,6 @@ $equacoes = $equacoes ?? [
             color: var(--primary-color);
         }
 
-        /* Conteúdo Principal */
         .container {
             max-width: 950px;
             margin: 30px auto;
@@ -118,7 +136,6 @@ $equacoes = $equacoes ?? [
             opacity: 0.9;
         }
 
-        /* Cards de Estatísticas */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -137,17 +154,10 @@ $equacoes = $equacoes ?? [
             border-left: 5px solid var(--accent-blue);
         }
 
-        .stat-card.green {
-            border-left-color: var(--accent-green);
-        }
+        .stat-card.green { border-left-color: var(--accent-green); }
+        .stat-card.orange { border-left-color: #f39c12; }
 
-        .stat-card.orange {
-            border-left-color: #f39c12;
-        }
-
-        .stat-icon {
-            font-size: 2rem;
-        }
+        .stat-icon { font-size: 2rem; }
 
         .stat-info h4 {
             margin: 0;
@@ -162,7 +172,6 @@ $equacoes = $equacoes ?? [
             margin-top: 4px;
         }
 
-        /* Tabela de Equações */
         .card-table {
             background-color: var(--card-bg);
             border-radius: 8px;
@@ -194,7 +203,6 @@ $equacoes = $equacoes ?? [
             font-weight: 600;
         }
 
-        /* Badges de Status */
         .badge {
             padding: 4px 8px;
             border-radius: 4px;
@@ -202,17 +210,9 @@ $equacoes = $equacoes ?? [
             font-weight: 600;
         }
 
-        .badge-pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
+        .badge-pending { background-color: #fff3cd; color: #856404; }
+        .badge-success { background-color: #d4edda; color: #155724; }
 
-        .badge-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        /* Botão de Ação */
         .btn-action {
             display: inline-block;
             padding: 6px 14px;
@@ -225,8 +225,15 @@ $equacoes = $equacoes ?? [
             transition: background-color 0.2s;
         }
 
-        .btn-action:hover {
-            background-color: #2980b9;
+        .btn-action:hover { background-color: #2980b9; }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
@@ -235,7 +242,7 @@ $equacoes = $equacoes ?? [
     <header>
         <div class="logo">Equa<span>TEA</span> <small style="font-size:0.7rem; font-weight:normal; opacity:0.8;">Aprendendo equações</small></div>
         <div>
-            <span style="font-size:0.85rem; margin-right:10px;">🕹️ Modo Teste</span>
+            <span style="font-size:0.85rem; margin-right:10px;">🕹️ Modo Dev</span>
             <a href="index.php?view=login" style="color:white; text-decoration:none; background:#e74c3c; padding:4px 12px; border-radius:4px; font-size:0.85rem;">Sair</a>
         </div>
     </header>
@@ -248,14 +255,18 @@ $equacoes = $equacoes ?? [
     </nav>
 
     <div class="container">
-        
-        <!-- Cartão de Boas-Vindas -->
+
+        <?php if (isset($erroBanco)): ?>
+            <div class="alert-error">
+                ⚠️ <?php echo htmlspecialchars($erroBanco); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="welcome-card">
             <h2>Olá, <?php echo htmlspecialchars($aluno['nome']); ?>! 👋</h2>
             <p>Seja bem-vindo ao seu painel. Escolha uma atividade abaixo para começar a resolver as equações passo a passo.</p>
         </div>
 
-        <!-- Estatísticas do Aluno -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">🎯</div>
@@ -284,7 +295,6 @@ $equacoes = $equacoes ?? [
             </div>
         </div>
 
-        <!-- Tabela com Exercícios Disponíveis -->
         <div class="card-table">
             <h3>📘 Equações Disponíveis</h3>
 
@@ -302,8 +312,6 @@ $equacoes = $equacoes ?? [
                     <?php if (!empty($equacoes) && is_iterable($equacoes)): ?>
                         <?php foreach ($equacoes as $eq): ?>
                             <?php
-                                // Se o banco devolver o texto pronto na chave 'expressao', ele é mantido.
-                                // Caso contrário, ele é construído dinamicamente via coeficientes 'a', 'b' e 'c'.
                                 if (!empty($eq['expressao'])) {
                                     $textoEquacao = $eq['expressao'];
                                 } else {
@@ -342,7 +350,6 @@ $equacoes = $equacoes ?? [
                 </tbody>
             </table>
         </div>
-
     </div>
 
 </body>
