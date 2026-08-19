@@ -1,42 +1,69 @@
 <?php
 /**
  * relatorio.php
- * Relatório de erros - Versão de teste
- * 
- * Acesso: ?view=relatorio
+ * Relatório de erros - Versão com Debug
  */
 
 $page_title = 'Relatório de Erros - EquaTEA';
 
+$filtro_aluno = $_GET['aluno'] ?? '';
+$filtro_passo = $_GET['passo'] ?? '';
+
+$dados_alunos = $dados_alunos ?? [
+    ['aluno_id' => 1, 'nome' => 'Lucas Mendes'],
+    ['aluno_id' => 2, 'nome' => 'Ana Clara Silva']
+];
+
+$dados_relatorio = $dados_relatorio ?? [
+    ['aluno' => 'Lucas Mendes', 'equacao' => '1x + 3 = 7', 'passo' => 2, 'tipo_erro' => 'operacao_inversa', 'data_erro' => '2026-04-10 10:30:00'],
+    ['aluno' => 'Ana Clara Silva', 'equacao' => '2x - 4 = 10', 'passo' => 3, 'tipo_erro' => 'calculo_errado', 'data_erro' => '2026-04-11 14:15:00']
+];
+
 include_once __DIR__ . '/../partials/header.php';
 include_once __DIR__ . '/../partials/menu_professor.php';
 ?>
+
+<!-- PAINEL DE DEBUG DE FILTROS E RELATÓRIO DE ERROS -->
+<div style="background: #1e1e1e; color: #00ff66; padding: 15px; margin: 15px; border-radius: 8px; font-family: monospace; font-size: 13px;">
+    <strong style="color: #fff; border-bottom: 1px solid #444; display: block; padding-bottom: 5px; margin-bottom: 8px;">
+        🐛 [DEBUG] Filtros de Consulta do Relatório
+    </strong>
+    <ul>
+        <li><strong>Filtro Aluno Ativo:</strong> <?php echo $filtro_aluno ? "ID $filtro_aluno" : 'Nenhum (Todos)'; ?></li>
+        <li><strong>Filtro Passo Ativo:</strong> <?php echo $filtro_passo ? "Passo $filtro_passo" : 'Nenhum (Todos)'; ?></li>
+        <li><strong>Total de Ocorrências no Dataset:</strong> <?php echo count($dados_relatorio); ?></li>
+    </ul>
+</div>
+
 <main class="container relatorio-container">
     <h1>📈 Relatório de Erros</h1>
 
     <div class="filtros-section">
-        <form method="GET" action="#" class="filtros-form">
+        <form method="GET" action="" class="filtros-form">
+            <input type="hidden" name="view" value="relatorio">
             <div class="filtro-grupo">
                 <label for="aluno">Aluno:</label>
-                <select id="aluno">
+                <select id="aluno" name="aluno">
                     <option value="">Todos os alunos</option>
                     <?php foreach ($dados_alunos as $a): ?>
-                    <option value="<?php echo $a['aluno_id']; ?>"><?php echo htmlspecialchars($a['nome']); ?></option>
+                    <option value="<?php echo $a['aluno_id']; ?>" <?php echo $filtro_aluno == $a['aluno_id'] ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($a['nome']); ?>
+                    </option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div class="filtro-grupo">
                 <label for="passo">Passo:</label>
-                <select id="passo">
+                <select id="passo" name="passo">
                     <option value="">Todos os passos</option>
-                    <option value="1">Passo 1</option>
-                    <option value="2">Passo 2</option>
-                    <option value="3">Passo 3</option>
-                    <option value="4">Passo 4</option>
+                    <option value="1" <?php echo $filtro_passo == '1' ? 'selected' : ''; ?>>Passo 1</option>
+                    <option value="2" <?php echo $filtro_passo == '2' ? 'selected' : ''; ?>>Passo 2</option>
+                    <option value="3" <?php echo $filtro_passo == '3' ? 'selected' : ''; ?>>Passo 3</option>
+                    <option value="4" <?php echo $filtro_passo == '4' ? 'selected' : ''; ?>>Passo 4</option>
                 </select>
             </div>
             <button type="submit" class="btn-filtrar">🔍 Filtrar</button>
-            <button type="reset" class="btn-limpar">🔄 Limpar</button>
+            <a href="?view=relatorio" class="btn-limpar" style="text-decoration:none; display:inline-block; text-align:center;">🔄 Limpar</a>
         </form>
     </div>
 
@@ -101,6 +128,7 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         </div>
     </div>
 </main>
+
 <style>
     .relatorio-container { padding: 20px 0; }
     .filtros-section { background: #fff; padding: 20px 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
@@ -131,4 +159,5 @@ include_once __DIR__ . '/../partials/menu_professor.php';
     .grafico-item .barra { height: 100%; background: linear-gradient(90deg, #3498db, #2c3e50); border-radius: 4px; transition: width 1s ease; }
     .grafico-item .valor { min-width: 40px; font-weight: 600; color: #2c3e50; }
 </style>
+
 <?php include_once __DIR__ . '/../partials/footer.php'; ?>

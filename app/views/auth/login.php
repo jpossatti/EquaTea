@@ -1,19 +1,12 @@
 <?php
 /**
  * login.php
- * Página de login - Versão de teste (sem sessão)
- * 
- * Acesso: ?view=login
+ * Tela de login adaptada para seleção direta de acesso de teste (sem sessão)
  */
 
 $page_title = 'Login - EquaTEA';
 $error = null;
 $success = null;
-$csrf_token = 'teste_token_fixo';
-
-// Credenciais para teste
-$email_preenchido = 'carlos@escola.com';
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -39,26 +32,36 @@ $email_preenchido = 'carlos@escola.com';
             <div class="alert alert-error"><?php echo $error; ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="#">
+        <!-- Formulário redireciona para a view de acordo com o perfil selecionado -->
+        <form method="POST" action="index.php?view=login">
             <div class="form-group">
-                <label for="email">E-mail:</label>
-                <input type="email" id="email" name="email" value="<?php echo $email_preenchido; ?>" placeholder="Digite seu e-mail" required>
+                <label for="tipo_perfil"><strong>Selecionar Perfil de Acesso:</strong></label>
+                <select id="tipo_perfil" name="tipo_perfil" class="form-control" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; font-weight: bold;">
+                    <option value="aluno">👨‍🎓 Aluno (Dashboard do Aluno)</option>
+                    <option value="professor">👨‍🏫 Professor (Dashboard do Professor)</option>
+                </select>
             </div>
+
             <div class="form-group">
-                <label for="senha">Senha:</label>
-                <input type="password" id="senha" name="senha" value="professor123" placeholder="Digite sua senha" required>
+                <label for="email">E-mail (opcional no modo teste):</label>
+                <input type="email" id="email" name="email" value="usuario@escola.com" placeholder="Digite seu e-mail">
             </div>
-            <button type="submit" class="btn-login">🚀 Entrar no Sistema</button>
+            
+            <div class="form-group">
+                <label for="senha">Senha (opcional no modo teste):</label>
+                <input type="password" id="senha" name="senha" value="123456" placeholder="Digite sua senha">
+            </div>
+
+            <button type="submit" class="btn-login">🚀 Entrar no Dashboard</button>
         </form>
 
-        <div class="demo-badge">
-            💡 <strong>Teste:</strong> Use as credenciais acima ou acesse as views diretamente:
+        <div class="demo-badge" style="margin-top: 15px; text-align: center;">
+            💡 <strong>Acesso Rápido Sem Sessão:</strong>
         </div>
 
-        <div class="nav-links">
-            <a href="?view=aluno">👨‍🎓 Aluno</a>
-            <a href="?view=professor">👨‍🏫 Professor</a>
-            <a href="?view=login">🔐 Login</a>
+        <div class="nav-links" style="display: flex; justify-content: space-around; margin-top: 10px;">
+            <a href="index.php?view=aluno" class="btn-demo">👨‍🎓 Ir como Aluno</a>
+            <a href="index.php?view=professor" class="btn-demo">👨‍🏫 Ir como Professor</a>
         </div>
     </div>
 </body>

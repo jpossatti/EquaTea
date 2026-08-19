@@ -1,7 +1,7 @@
 <?php
 /**
  * app/views/aluno/dashboard.php
- * Painel principal do aluno com resumo de progresso e lista de atividades
+ * Painel principal do aluno com suporte a coeficientes dinâmicos (a, b, c) do banco de dados.
  */
 
 // Garantia de fallback contra erros de variáveis indefinidas
@@ -16,25 +16,11 @@ $dados_progresso = $dados_progresso ?? [
     'nivel_atual'      => 'Nível 1 - Básico'
 ];
 
+// Array de equações seguro para fallback (utilizando os coeficientes reais)
 $equacoes = $equacoes ?? [
-    [
-        'id'          => 1,
-        'expressao'   => '1x + 2 = 8',
-        'dificuldade' => 'Fácil',
-        'status'      => 'Pendente'
-    ],
-    [
-        'id'          => 2,
-        'expressao'   => '2x - 4 = 10',
-        'dificuldade' => 'Fácil',
-        'status'      => 'Concluído'
-    ],
-    [
-        'id'          => 3,
-        'expressao'   => '3x + 5 = 20',
-        'dificuldade' => 'Médio',
-        'status'      => 'Pendente'
-    ]
+    ['id' => 1, 'a' => 1, 'b' => 3, 'c' => 7,  'dificuldade' => 'Fácil', 'status' => 'Pendente'],
+    ['id' => 2, 'a' => 2, 'b' => -4, 'c' => 10, 'dificuldade' => 'Fácil', 'status' => 'Concluído'],
+    ['id' => 3, 'a' => 1, 'b' => 2, 'c' => 8,  'dificuldade' => 'Fácil', 'status' => 'Pendente']
 ];
 ?>
 
@@ -315,10 +301,25 @@ $equacoes = $equacoes ?? [
                 <tbody>
                     <?php if (!empty($equacoes) && is_iterable($equacoes)): ?>
                         <?php foreach ($equacoes as $eq): ?>
+                            <?php
+                                // Se o banco devolver o texto pronto na chave 'expressao', ele é mantido.
+                                // Caso contrário, ele é construído dinamicamente via coeficientes 'a', 'b' e 'c'.
+                                if (!empty($eq['expressao'])) {
+                                    $textoEquacao = $eq['expressao'];
+                                } else {
+                                    $a = (int)($eq['a'] ?? 1);
+                                    $b = (int)($eq['b'] ?? 0);
+                                    $c = (int)($eq['c'] ?? 0);
+
+                                    $termoA = ($a === 1) ? '1x' : (($a === -1) ? '-1x' : "{$a}x");
+                                    $sinalB = ($b >= 0) ? '+ ' . $b : '- ' . abs($b);
+                                    $textoEquacao = "{$termoA} {$sinalB} = {$c}";
+                                }
+                            ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($eq['id'] ?? 1); ?></td>
-                                <td><strong><?php echo htmlspecialchars($eq['expressao'] ?? '1x + 2 = 8'); ?></strong></td>
-                                <td><?php echo htmlspecialchars($eq['dificuldade'] ?? 'Fácil'); ?></td>
+                                <td><?php echo (int)($eq['id'] ?? 1); ?></td>
+                                <td><strong><?php echo htmlspecialchars($textoEquacao); ?></strong></td>
+                                <td style="text-transform: capitalize;"><?php echo htmlspecialchars($eq['dificuldade'] ?? 'Fácil'); ?></td>
                                 <td>
                                     <?php if (($eq['status'] ?? '') === 'Concluído'): ?>
                                         <span class="badge badge-success">Concluído</span>
@@ -327,7 +328,7 @@ $equacoes = $equacoes ?? [
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <a href="index.php?view=exercicio&id=<?php echo $eq['id'] ?? 1; ?>&passo=1" class="btn-action">
+                                    <a href="index.php?view=exercicio&id=<?php echo (int)($eq['id'] ?? 1); ?>&passo=1" class="btn-action">
                                         ▶️ Resolver
                                     </a>
                                 </td>

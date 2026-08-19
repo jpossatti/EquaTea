@@ -83,28 +83,37 @@ class Equacao
     }
     
     /**
-     * Cria uma nova equação
+     * Cria uma nova equação validando a solução inteira e tratando erros de banco
      */
     public function criar($a, $b, $c, $dificuldade = 'facil')
     {
-        $solucao = ($c - $b) / $a;
-        
-        // Verifica se a solução é inteira
-        if (fmod($solucao, 1) != 0) {
+        if ((int)$a === 0) {
             return false;
         }
-        
-        $sql = "INSERT INTO equacoes (a, b, c, solucao, dificuldade) 
-                VALUES (:a, :b, :c, :solucao, :dificuldade)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':a' => $a,
-            ':b' => $b,
-            ':c' => $c,
-            ':solucao' => (int)$solucao,
-            ':dificuldade' => $dificuldade
-        ]);
-        return $this->db->lastInsertId();
+
+        // Verifica se a solução x = (c - b) / a é um número inteiro
+        $x = ($c - $b) / $a;
+        if (!is_int($x) && floor($x) != $x) {
+            return false;
+        }
+
+        // Corrigido: inclusão da coluna solucao e uso de $this->db em vez de $this->pdo
+        $sql = "INSERT INTO equacoes (a, b, c, solucao, dificuldade, data_cadastro) 
+                VALUES (:a, :b, :c, :solucao, :dificuldade, NOW())";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':a'           => (int)$a,
+                ':b'           => (int)$b,
+                ':c'           => (int)$c,
+                ':solucao'     => (int)$x,
+                ':dificuldade' => $dificuldade
+            ]);
+        } catch (PDOException $e) {
+            error_log("Erro ao inserir equação: " . $e->getMessage());
+            return false;
+        }
     }
     
     /**
@@ -112,6 +121,10 @@ class Equacao
      */
     public function atualizar($id, $a, $b, $c, $dificuldade)
     {
+        if ((int)$a === 0) {
+            return false;
+        }
+
         $solucao = ($c - $b) / $a;
         
         if (fmod($solucao, 1) != 0) {
@@ -122,12 +135,12 @@ class Equacao
                 dificuldade = :dificuldade WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
-            ':a' => $a,
-            ':b' => $b,
-            ':c' => $c,
-            ':solucao' => (int)$solucao,
+            ':a'         => (int)$a,
+            ':b'         => (int)$b,
+            ':c'         => (int)$c,
+            ':solucao'   => (int)$solucao,
             ':dificuldade' => $dificuldade,
-            ':id' => $id
+            ':id'        => (int)$id
         ]);
     }
     
@@ -142,7 +155,7 @@ class Equacao
         $stmt->execute([':id' => $id]);
         $result = $stmt->fetch();
         
-        if ($result['total'] > 0) {
+        if ($result && $result['total'] > 0) {
             return false;
         }
         
@@ -151,45 +164,48 @@ class Equacao
         return $stmt->execute([':id' => $id]);
     }
     
-   
-public function validarResposta($equacao_id, $passo, $resposta)
-{
-    $equacao = $this->getById($equacao_id);
-    if (!$equacao) return false;
+    /**
+     * Valida a resposta digitada pelo aluno
+     */
+    public function validarResposta($equacao_id, $passo, $resposta)
+    {
+        $equacao = $this->getById($equacao_id);
+        if (!$equacao) return false;
 
-    // Sanitização idêntica à do Controller
-    $resp = strtolower($resposta);
-    $resp = preg_replace('/[\s\x{200B}-\x{200D}\x{FEFF}]/u', '', $resp);
-    $resp = str_replace(['–', '—', '−'], '-', $resp);
+        // Sanitização
+        $resp = strtolower($resposta);
+        $resp = preg_replace('/[\s\x{200B}-\x{200D}\x{FEFF}]/u', '', $resp);
+        $resp = str_replace(['–', '—', '−'], '-', $resp);
 
-    $a = (int)$equacao['a'];
-    $b = (int)$equacao['b'];
-    $c = (int)$equacao['c'];
+        $a = (int)$equacao['a'];
+        $b = (int)$equacao['b'];
+        $c = (int)$equacao['c'];
 
-    $termoX = ($a === 1) ? '(1?x)' : (($a === -1) ? '(-1?x)' : "({$a}x)");
+        $termoX = ($a === 1) ? '(1?x)' : (($a === -1) ? '(-1?x)' : "({$a}x)");
 
-    switch ($passo) {
-        case 1:
-            return preg_match('/^' . $termoX . '$/i', $resp) === 1;
+        switch ($passo) {
+            case 1:
+                return preg_match('/^' . $termoX . '$/i', $resp) === 1;
 
-        case 2:
-            $bAbs = abs($b);
-            $opOposta = ($b >= 0) ? '-' : '\+';
-            return preg_match('/^(' . $termoX . '=)?' . $c . $opOposta . $bAbs . '$/i', $resp) === 1;
+            case 2:
+                $bAbs = abs($b);
+                $opOposta = ($b >= 0) ? '-' : '\+';
+                return preg_match('/^(' . $termoX . '=)?' . $c . $opOposta . $bAbs . '$/i', $resp) === 1;
 
-        case 3:
-            $resultado = $c - $b;
-            return preg_match('/^(' . $termoX . '=)?' . $resultado . '$/i', $resp) === 1;
+            case 3:
+                $resultado = $c - $b;
+                return preg_match('/^(' . $termoX . '=)?' . $resultado . '$/i', $resp) === 1;
 
-        case 4:
-            if ($a === 0) return false;
-            $valorX = ($c - $b) / $a;
-            return preg_match('/^(x=)?' . $valorX . '$/i', $resp) === 1;
+            case 4:
+                if ($a === 0) return false;
+                $valorX = ($c - $b) / $a;
+                return preg_match('/^(x=)?' . $valorX . '$/i', $resp) === 1;
 
-        default:
-            return false;
-    }
-} 
+            default:
+                return false;
+        }
+    } 
+
     /**
      * Obtém a resposta esperada para um passo
      */
@@ -198,9 +214,9 @@ public function validarResposta($equacao_id, $passo, $resposta)
         $equacao = $this->getById($equacao_id);
         if (!$equacao) return null;
         
-        $a = $equacao['a'];
-        $b = $equacao['b'];
-        $c = $equacao['c'];
+        $a = (int)$equacao['a'];
+        $b = (int)$equacao['b'];
+        $c = (int)$equacao['c'];
         
         switch ($passo) {
             case 1:

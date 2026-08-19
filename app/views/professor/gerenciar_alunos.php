@@ -1,56 +1,196 @@
 <?php
 /**
  * gerenciar_alunos.php
- * Gerenciamento de alunos - Versão de teste
- * 
- * Acesso: ?view=gerenciar_alunos
+ * View para listagem e cadastro de alunos com barra de navegação do professor
  */
-
 $page_title = 'Gerenciar Alunos - EquaTEA';
-
-include_once __DIR__ . '/../partials/header.php';
-include_once __DIR__ . '/../partials/menu_professor.php';
 ?>
-<main class="container gerenciar-container">
-    <h1>👨‍🎓 Gerenciar Alunos</h1>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $page_title; ?></title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/professor.css">
+    <style>
+        /* Estilização do Menu de Navegação Superior */
+        .navbar-professor {
+            background-color: #2c3e50;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .navbar-brand .tea { color: #3498db; }
+        .nav-menu {
+            display: flex;
+            gap: 15px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-link {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #34495e;
+            color: #fff;
+        }
+        .nav-link.btn-sair {
+            background-color: #e74c3c;
+        }
+        .nav-link.btn-sair:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body style="margin: 0; background-color: #f4f6f9; font-family: Arial, sans-serif;">
 
-    <div class="form-section">
-        <h2>➕ Cadastrar Novo Aluno</h2>
-        <form method="POST" action="#">
-            <div class="form-grid">
-                <div><label>Nome:</label><input type="text" placeholder="Nome completo"></div>
-                <div><label>E-mail:</label><input type="email" placeholder="aluno@escola.com"></div>
-                <div><label>Senha:</label><input type="text" placeholder="Mínimo 4 caracteres"></div>
-                <div><label>Idade:</label><input type="number" placeholder="14-21"></div>
-                <div><label>Nível TEA:</label>
-                    <select><option value="suporte1">Suporte 1</option><option value="suporte2">Suporte 2</option></select>
-                </div>
-                <div><label>Escola:</label><input type="text" placeholder="Escola Modelo"></div>
-                <div><label>Turma:</label><input type="text" placeholder="1º EM A"></div>
+    <!-- Barra de Navegação do Professor -->
+    <nav class="navbar-professor">
+        <a href="index.php?view=professor" class="navbar-brand">
+            <span>Equa</span><span class="tea">TEA</span> | Painel do Professor
+        </a>
+        <ul class="nav-menu">
+            <li><a href="index.php?view=professor" class="nav-link">📊 Dashboard</a></li>
+            <li><a href="index.php?view=gerenciar_alunos" class="nav-link active">🎓 Gerenciar Alunos</a></li>
+            <li><a href="index.php?view=gerenciar_equacoes" class="nav-link">📐 Gerenciar Equações</a></li>
+            <li><a href="index.php?view=relatorio" class="nav-link">📈 Relatórios</a></li>
+            <li><a href="index.php?view=login" class="nav-link btn-sair">🚪 Sair</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" style="max-width: 950px; margin: 30px auto; padding: 0 15px;">
+        
+        <h1 style="text-align: center; color: #2c3e50;">🎓 Gerenciar Alunos</h1>
+
+        <!-- Mensagens de Alerta -->
+        <?php if (!empty($_SESSION['admin_success'])): ?>
+            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+                <?php 
+                    echo $_SESSION['admin_success']; 
+                    unset($_SESSION['admin_success']);
+                ?>
             </div>
-            <button type="submit" class="btn-primary">✅ Cadastrar Aluno</button>
-        </form>
-    </div>
+        <?php endif; ?>
 
-    <div class="list-section">
-        <h2>📋 Lista de Alunos</h2>
-        <table class="list-table">
-            <thead><tr><th>Nome</th><th>Email</th><th>Idade</th><th>Nível</th><th>Ações</th></tr></thead>
-            <tbody>
-                <?php foreach ($dados_alunos as $a): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($a['nome']); ?></td>
-                    <td><?php echo htmlspecialchars($a['email']); ?></td>
-                    <td><?php echo $a['idade']; ?></td>
-                    <td><?php echo $a['nivel_tea'] == 'suporte1' ? 'Suporte 1' : 'Suporte 2'; ?></td>
-                    <td>
-                        <button class="btn-acao btn-editar">✏️</button>
-                        <button class="btn-acao btn-senha">🔑</button>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <?php if (!empty($_SESSION['admin_error'])): ?>
+            <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+                <?php 
+                    echo $_SESSION['admin_error']; 
+                    unset($_SESSION['admin_error']);
+                ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Form de Cadastro -->
+        <div class="card" style="background: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px;">
+            <h2 style="margin-top: 0; text-align: center; color: #2c3e50;">➕ Cadastrar Novo Aluno</h2>
+            
+            <form method="POST" action="index.php?action=cadastrar_aluno">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label for="nome"><strong>Nome:</strong></label>
+                        <input type="text" id="nome" name="nome" placeholder="Nome completo" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="email"><strong>E-mail:</strong></label>
+                        <input type="email" id="email" name="email" placeholder="email@escola.com" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="senha"><strong>Senha (min. 4 caracteres):</strong></label>
+                        <input type="password" id="senha" name="senha" minlength="4" placeholder="••••••••" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <label for="idade"><strong>Idade (14-21):</strong></label>
+                        <input type="number" id="idade" name="idade" min="14" max="21" value="15" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="nivel_tea"><strong>Nível TEA:</strong></label>
+                        <select id="nivel_tea" name="nivel_tea" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value="suporte1">Suporte 1</option>
+                            <option value="suporte2">Suporte 2</option>
+                            <option value="suporte3">Suporte 3</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="escola"><strong>Escola:</strong></label>
+                        <input type="text" id="escola" name="escola" placeholder="Nome da Escola" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="turma"><strong>Turma:</strong></label>
+                        <input type="text" id="turma" name="turma" placeholder="Ex: 1º EM A" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem;">
+                        ✔ Cadastrar Aluno
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabela de Alunos -->
+        <div class="card" style="background: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h2 style="margin-top: 0; text-align: center; color: #2c3e50;">📋 Lista de Alunos</h2>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: left;">
+                        <th style="padding: 10px;">ID</th>
+                        <th style="padding: 10px;">Nome</th>
+                        <th style="padding: 10px;">E-mail</th>
+                        <th style="padding: 10px;">Nível TEA</th>
+                        <th style="padding: 10px;">Turma</th>
+                        <th style="padding: 10px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($dados_alunos)): ?>
+                        <?php foreach ($dados_alunos as $aluno_item): ?>
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['id'] ?? $aluno_item['aluno_id'] ?? '-'); ?></td>
+                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['nome'] ?? 'Sem Nome'); ?></td>
+                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['email'] ?? '-'); ?></td>
+                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['nivel_tea'] ?? '-'); ?></td>
+                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['turma'] ?? '-'); ?></td>
+                                <td style="padding: 10px; text-align: center;">
+                                    <form method="POST" action="index.php?action=resetar_senha" style="display: inline-block;">
+                                        <input type="hidden" name="aluno_id" value="<?php echo $aluno_item['id'] ?? $aluno_item['aluno_id']; ?>">
+                                        <input type="hidden" name="nova_senha" value="123456">
+                                        <button type="submit" onclick="return confirm('Resetar senha para 123456?')" style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                            🔑 Resetar Senha
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 15px; color: #6c757d;">Nenhum aluno cadastrado.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
     </div>
-</main>
-<?php include_once __DIR__ . '/../partials/footer.php'; ?>
+</body>
+</html>

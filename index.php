@@ -1,69 +1,90 @@
 <?php
 /**
  * index.php
- * Roteador principal com gerenciamento de sessão e rotas
+ * Roteador com tratamento das ações POST de formulários
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Importa a conexão de Banco de Dados se existir
+// Configuração de conexões e Models
 if (file_exists(__DIR__ . '/app/config/Database.php')) {
     require_once __DIR__ . '/app/config/Database.php';
 }
 
-// Caminho do controller
-$controllerPath = __DIR__ . '/app/controllers/AlunoController.php';
-
-if (file_exists($controllerPath)) {
-    require_once $controllerPath;
+$models = ['Aluno.php', 'Equacao.php', 'RegistroErro.php', 'Usuario.php'];
+foreach ($models as $modelFile) {
+    $path = __DIR__ . '/app/models/' . $modelFile;
+    if (file_exists($path)) {
+        require_once $path;
+    }
 }
 
-// Captura parâmetros de ação e navegação
+// Controllers
+if (file_exists(__DIR__ . '/app/controllers/AlunoController.php')) {
+    require_once __DIR__ . '/app/controllers/AlunoController.php';
+}
+if (file_exists(__DIR__ . '/app/controllers/ProfessorController.php')) {
+    require_once __DIR__ . '/app/controllers/ProfessorController.php';
+}
+
 $action = $_GET['action'] ?? null;
-$view   = $_GET['view']   ?? 'dashboard';
+$view   = $_GET['view']   ?? 'login';
 
-if (class_exists('AlunoController')) {
-    $alunoController = new AlunoController();
+// Processa Ações do Professor
+if (class_exists('ProfessorController')) {
+    $professorController = new ProfessorController();
 
-    // Processa o envio do formulário de verificação
-    if ($action === 'verificar_resposta') {
-        $alunoController->verificarResposta();
+    switch ($action) {
+        case 'cadastrar_aluno':
+            $professorController->cadastrarAluno();
+            exit;
+        case 'resetar_senha':
+            $professorController->resetarSenha();
+            exit;
+        case 'cadastrar_equacao':
+            $professorController->cadastrarEquacao();
+            exit;
+        case 'excluir_equacao':
+            $professorController->excluirEquacao();
+            exit;
+    }
+}
+
+// Exibição de Views
+switch ($view) {
+    case 'login':
+        require_once __DIR__ . '/app/views/auth/login.php';
+        break;
+
+    case 'aluno':
+    case 'dashboard':
+        if (class_exists('AlunoController')) {
+            (new AlunoController())->dashboard();
+        }
+        break;
+
+    case 'professor':
+    case 'dashboard_professor':
+        if (class_exists('ProfessorController')) {
+            (new ProfessorController())->dashboard();
+        }
+        break;
+
+    case 'gerenciar_alunos':
+        if (class_exists('ProfessorController')) {
+            (new ProfessorController())->gerenciarAlunos();
+        }
+        break;
+
+    case 'gerenciar_equacoes':
+        if (class_exists('ProfessorController')) {
+            (new ProfessorController())->gerenciarEquacoes();
+        }
+        break;
+
+    default:
+        header('Location: index.php?view=login');
         exit;
-    }
-
-    // Direciona a exibição das views
-    switch ($view) {
-        case 'dashboard':
-        case 'aluno':
-            $alunoController->dashboard();
-            break;
-
-        case 'exercicio':
-            $alunoController->exercicio();
-            break;
-
-        case 'parabens':
-            if (file_exists(__DIR__ . '/app/views/aluno/parabens.php')) {
-                require_once __DIR__ . '/app/views/aluno/parabens.php';
-            } else {
-                echo "<h1>🎉 Parabéns! Você concluiu a equação!</h1><p><a href='index.php?view=exercicio'>Voltar ao exercício</a></p>";
-            }
-            break;
-
-        case 'login':
-            if (file_exists(__DIR__ . '/app/views/auth/login.php')) {
-                require_once __DIR__ . '/app/views/auth/login.php';
-            } else {
-                echo "<h1>Página de Login</h1>";
-            }
-            break;
-
-        default:
-            $alunoController->dashboard();
-            break;
-    }
-} else {
-    echo "<h2>Erro: O arquivo AlunoController.php não foi localizado em /app/controllers/.</h2>";
 }
