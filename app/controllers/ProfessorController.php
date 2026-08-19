@@ -78,59 +78,38 @@ public function gerenciarAlunos()
 }
 public function cadastrarAluno()
 {
-    echo "<div style='background: #111; color: #00ff66; padding: 20px; font-family: monospace; line-height: 1.5; z-index: 99999; position: relative;'>";
-    echo "<h2>🐛 [DEBUG CONTROLLER] Cadastrar Aluno</h2>";
-
-    // 1. Inspecionar o que veio do formulário
-    echo "<strong>1. Conteúdo de \$_POST:</strong><br>";
-    echo "<pre style='color:#ffcc00;'>" . print_r($_POST, true) . "</pre>";
-
-    try {
-        // 2. Verificar dados tratados
-        $nome      = $_POST['nome'] ?? '';
-        $email     = $_POST['email'] ?? '';
-        $senha     = $_POST['senha'] ?? '';
-        $idade     = $_POST['idade'] ?? 0;
-        $nivel_tea = $_POST['nivel_tea'] ?? '';
-        $escola    = $_POST['escola'] ?? '';
-        $turma     = $_POST['turma'] ?? '';
-
-        echo "<strong>2. Variáveis capturadas:</strong> Nome: $nome | E-mail: $email | Idade: $idade<br>";
-
-        // 3. Testar Model Usuario
-        echo "<strong>3. Tentando carregar/instanciar Usuario...</strong><br>";
-        require_once __DIR__ . '/../models/Usuario.php';
-        $usuarioModel = new Usuario();
-        echo "<span style='color:lime;'>✔ Model Usuario instanciado.</span><br>";
-
-        // 4. Testar Model Aluno
-        echo "<strong>4. Tentando carregar/instanciar Aluno...</strong><br>";
-        require_once __DIR__ . '/../models/Aluno.php';
-        $alunoModel = new Aluno();
-        echo "<span style='color:lime;'>✔ Model Aluno instanciado.</span><br>";
-
-        // 5. Execução passo a passo simulada com captura de exceção detalhada
-        echo "<strong>5. Executando inserção...</strong><br>";
-        
-        // Crie o usuário primeiro (ajuste o método conforme seu model Usuario)
-        $usuario_id = $usuarioModel->criar($nome, $email, $senha, 'aluno');
-        echo "• ID do Usuário criado: " . var_export($usuario_id, true) . "<br>";
-
-        if ($usuario_id) {
-            $resultadoAluno = $alunoModel->criar($usuario_id, $idade, $nivel_tea, $escola, $turma);
-            echo "• Resultado da inserção do Aluno: " . var_export($resultadoAluno, true) . "<br>";
-        } else {
-            echo "<span style='color:red;'>❌ O método de criação de usuário retornou falso/vazio.</span><br>";
-        }
-
-    } catch (Exception $e) {
-        echo "<br><span style='color:red; font-size:1.2rem;'>❌ EXCEÇÃO CAPTURADA: " . htmlspecialchars($e->getMessage()) . "</span><br>";
-        echo "<pre style='color:#ff8888;'>" . $e->getTraceAsString() . "</pre>";
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: index.php?view=gerenciar_alunos');
+        exit;
     }
 
-    echo "<br><a href='index.php?view=gerenciar_alunos' style='color:#fff; background:#27ae60; padding:10px 15px; text-decoration:none; display:inline-block; margin-top:15px; border-radius:4px;'>🔙 Voltar</a>";
-    echo "</div>";
-    exit; // Interrompe para visualizarmos os dados antes de redirecionar
+    $nome      = $_POST['nome'] ?? '';
+    $email     = $_POST['email'] ?? '';
+    $senha     = $_POST['senha'] ?? '';
+    $idade     = $_POST['idade'] ?? 0;
+    $nivel_tea = $_POST['nivel_tea'] ?? '';
+    $escola    = $_POST['escola'] ?? '';
+    $turma     = $_POST['turma'] ?? '';
+
+    if (!empty($nome) && !empty($email) && !empty($senha)) {
+        require_once __DIR__ . '/../models/Usuario.php';
+        require_once __DIR__ . '/../models/Aluno.php';
+        
+        $usuarioModel = new Usuario();
+        $alunoModel = new Aluno();
+
+        $usuario_id = $usuarioModel->criar($nome, $email, $senha, 'aluno');
+
+        if ($usuario_id) {
+            $alunoModel->criar($usuario_id, $idade, $nivel_tea, $escola, $turma);
+            $_SESSION['admin_success'] = 'Aluno cadastrado com sucesso!';
+        } else {
+            $_SESSION['admin_error'] = 'Erro ao criar usuário para o aluno.';
+        }
+    }
+
+    header('Location: index.php?view=gerenciar_alunos');
+    exit;
 }
 
 public function exibirFormularioEdicao($id)
