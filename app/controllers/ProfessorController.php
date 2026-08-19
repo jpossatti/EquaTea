@@ -60,59 +60,90 @@ class ProfessorController
             echo "<h2>Erro: View do Dashboard Professor não encontrada em: {$view_path}</h2>";
         }
     }
+    
+public function gerenciarAlunos()
+{
+    require_once __DIR__ . '/../models/Aluno.php';
+    $alunoModel = new Aluno();
 
-    public function gerenciarAlunos()
-    {
-        $dados_alunos = ($this->aluno && method_exists($this->aluno, 'getAll')) ? $this->aluno->getAll(false) : [];
+    // Chama o método listarTodos que criamos acima
+    $alunos = $alunoModel->listarTodos();
 
-        $view_path = VIEWS_PATH . '/professor/gerenciar_alunos.php';
-        if (file_exists($view_path)) {
-            include_once $view_path;
+    $caminhoView = __DIR__ . '/../views/professor/gerenciar_alunos.php';
+    if (file_exists($caminhoView)) {
+        require_once $caminhoView;
+    } else {
+        echo "View gerenciar_alunos.php não encontrada.";
+    }
+}
+public function cadastrarAluno()
+{
+    echo "<div style='background: #111; color: #00ff66; padding: 20px; font-family: monospace; line-height: 1.5; z-index: 99999; position: relative;'>";
+    echo "<h2>🐛 [DEBUG CONTROLLER] Cadastrar Aluno</h2>";
+
+    // 1. Inspecionar o que veio do formulário
+    echo "<strong>1. Conteúdo de \$_POST:</strong><br>";
+    echo "<pre style='color:#ffcc00;'>" . print_r($_POST, true) . "</pre>";
+
+    try {
+        // 2. Verificar dados tratados
+        $nome      = $_POST['nome'] ?? '';
+        $email     = $_POST['email'] ?? '';
+        $senha     = $_POST['senha'] ?? '';
+        $idade     = $_POST['idade'] ?? 0;
+        $nivel_tea = $_POST['nivel_tea'] ?? '';
+        $escola    = $_POST['escola'] ?? '';
+        $turma     = $_POST['turma'] ?? '';
+
+        echo "<strong>2. Variáveis capturadas:</strong> Nome: $nome | E-mail: $email | Idade: $idade<br>";
+
+        // 3. Testar Model Usuario
+        echo "<strong>3. Tentando carregar/instanciar Usuario...</strong><br>";
+        require_once __DIR__ . '/../models/Usuario.php';
+        $usuarioModel = new Usuario();
+        echo "<span style='color:lime;'>✔ Model Usuario instanciado.</span><br>";
+
+        // 4. Testar Model Aluno
+        echo "<strong>4. Tentando carregar/instanciar Aluno...</strong><br>";
+        require_once __DIR__ . '/../models/Aluno.php';
+        $alunoModel = new Aluno();
+        echo "<span style='color:lime;'>✔ Model Aluno instanciado.</span><br>";
+
+        // 5. Execução passo a passo simulada com captura de exceção detalhada
+        echo "<strong>5. Executando inserção...</strong><br>";
+        
+        // Crie o usuário primeiro (ajuste o método conforme seu model Usuario)
+        $usuario_id = $usuarioModel->criar($nome, $email, $senha, 'aluno');
+        echo "• ID do Usuário criado: " . var_export($usuario_id, true) . "<br>";
+
+        if ($usuario_id) {
+            $resultadoAluno = $alunoModel->criar($usuario_id, $idade, $nivel_tea, $escola, $turma);
+            echo "• Resultado da inserção do Aluno: " . var_export($resultadoAluno, true) . "<br>";
         } else {
-            echo "<h2>Erro: View 'gerenciar_alunos.php' não encontrada.</h2>";
+            echo "<span style='color:red;'>❌ O método de criação de usuário retornou falso/vazio.</span><br>";
         }
+
+    } catch (Exception $e) {
+        echo "<br><span style='color:red; font-size:1.2rem;'>❌ EXCEÇÃO CAPTURADA: " . htmlspecialchars($e->getMessage()) . "</span><br>";
+        echo "<pre style='color:#ff8888;'>" . $e->getTraceAsString() . "</pre>";
     }
 
-    public function cadastrarAluno()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?view=gerenciar_alunos');
-            exit;
-        }
+    echo "<br><a href='index.php?view=gerenciar_alunos' style='color:#fff; background:#27ae60; padding:10px 15px; text-decoration:none; display:inline-block; margin-top:15px; border-radius:4px;'>🔙 Voltar</a>";
+    echo "</div>";
+    exit; // Interrompe para visualizarmos os dados antes de redirecionar
+}
 
-        $nome      = trim($_POST['nome'] ?? '');
-        $email     = trim($_POST['email'] ?? '');
-        $senha     = trim($_POST['senha'] ?? '');
-        $idade     = (int)($_POST['idade'] ?? 0);
-        $nivel_tea = $_POST['nivel_tea'] ?? 'suporte1';
-        $escola    = trim($_POST['escola'] ?? '');
-        $turma     = trim($_POST['turma'] ?? '');
+public function exibirFormularioEdicao($id)
+{
+    require_once __DIR__ . '/../models/Aluno.php';
+    $alunoModel = new Aluno();
+    
+    // Busca os dados do aluno específico pelo ID
+    $aluno = $alunoModel->buscarPorId($id);
 
-        if (empty($nome) || empty($email) || strlen($senha) < 4 || $idade < 14 || $idade > 21) {
-            $_SESSION['admin_error'] = 'Preencha todos os campos corretamente (A senha precisa ter no mínimo 4 caracteres).';
-            header('Location: index.php?view=gerenciar_alunos');
-            exit;
-        }
-
-        if ($this->usuario && method_exists($this->usuario, 'getByEmail') && $this->usuario->getByEmail($email)) {
-            $_SESSION['admin_error'] = 'Este e-mail já está cadastrado.';
-            header('Location: index.php?view=gerenciar_alunos');
-            exit;
-        }
-
-        if ($this->usuario && $this->aluno) {
-            $usuario_id = $this->usuario->criar($nome, $email, $senha, 'aluno');
-            if ($usuario_id) {
-                $this->aluno->criar($usuario_id, $idade, $nivel_tea, $escola, $turma);
-                $_SESSION['admin_success'] = 'Aluno cadastrado com sucesso!';
-            } else {
-                $_SESSION['admin_error'] = 'Erro ao cadastrar aluno no banco de dados.';
-            }
-        }
-
-        header('Location: index.php?view=gerenciar_alunos');
-        exit;
-    }
+    // Carrega a view de edição (você precisará criar esse arquivo)
+    require_once __DIR__ . '/../views/professor/editar_aluno.php';
+}
 
     public function resetarSenha()
     {
@@ -210,4 +241,39 @@ class ProfessorController
         header('Location: index.php?view=gerenciar_equacoes');
         exit;
     }
+    public function atualizar()
+{
+    // Verifica se os dados vieram via POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id = $_POST['id'] ?? null;
+        $nome = $_POST['nome'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $nivelTea = $_POST['nivel_tea'] ?? '';
+        $turma = $_POST['turma'] ?? '';
+
+        require_once __DIR__ . '/../models/Aluno.php';
+        $alunoModel = new Aluno();
+        
+        // Executa a atualização no banco
+        $alunoModel->atualizar($id, $nome, $email, $nivelTea, $turma);
+
+        // Redireciona de volta para a tela de gerenciar alunos (em ambiente de teste)
+        header('Location: index.php?view=gerenciar_alunos');
+        exit;
+    }
+}
+
+public function deletarAluno()
+{
+    $id = $_GET['id'] ?? null;
+    if ($id) {
+        require_once __DIR__ . '/../models/Aluno.php';
+        $alunoModel = new Aluno();
+        $alunoModel->deletar($id);
+    }
+    
+    // Redireciona de volta para a lista de alunos
+    header('Location: index.php?view=gerenciar_alunos');
+    exit;
+}
 }

@@ -163,26 +163,33 @@ $page_title = 'Gerenciar Alunos - EquaTEA';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!empty($dados_alunos)): ?>
-                        <?php foreach ($dados_alunos as $aluno_item): ?>
-                            <tr style="border-bottom: 1px solid #dee2e6;">
-                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['id'] ?? $aluno_item['aluno_id'] ?? '-'); ?></td>
-                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['nome'] ?? 'Sem Nome'); ?></td>
-                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['email'] ?? '-'); ?></td>
-                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['nivel_tea'] ?? '-'); ?></td>
-                                <td style="padding: 10px;"><?php echo htmlspecialchars($aluno_item['turma'] ?? '-'); ?></td>
-                                <td style="padding: 10px; text-align: center;">
-                                    <form method="POST" action="index.php?action=resetar_senha" style="display: inline-block;">
-                                        <input type="hidden" name="aluno_id" value="<?php echo $aluno_item['id'] ?? $aluno_item['aluno_id']; ?>">
-                                        <input type="hidden" name="nova_senha" value="123456">
-                                        <button type="submit" onclick="return confirm('Resetar senha para 123456?')" style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                            🔑 Resetar Senha
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
+                  <?php if (!empty($alunos)): ?>
+   <?php if (!empty($alunos)): ?>
+    <?php foreach ($alunos as $aluno): ?>
+        <tr>
+            <td><?= htmlspecialchars($aluno['id'] ?? $aluno['aluno_id']) ?></td>
+            <td><?= htmlspecialchars($aluno['nome']) ?></td>
+            <td><?= htmlspecialchars($aluno['email']) ?></td>
+            <td><span class="badge"><?= htmlspecialchars($aluno['nivel_tea']) ?></span></td>
+            <td><?= htmlspecialchars($aluno['turma']) ?></td>
+            <td class="acoes-col" style="display: flex; gap: 8px;">
+                <!-- Botão Editar -->
+                <a href="index.php?view=editar_aluno&id=<?= $aluno['id'] ?? $aluno['aluno_id'] ?>" class="btn-acao btn-editar" style="background: #3498db; color: #fff; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-size: 0.85rem;">
+                    ✏️ Editar
+                </a>
+                
+                <!-- Botão Excluir -->
+                <a href="index.php?action=deletar_aluno&id=<?= $aluno['id'] ?? $aluno['aluno_id'] ?>" onclick="return confirm('Deseja realmente excluir este aluno?');" class="btn-acao btn-excluir" style="background: #e74c3c; color: #fff; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-size: 0.85rem;">Excluir</a>
+                    
+                </a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+<?php else: ?>
+    <tr>
+        <td colspan="6" style="text-align: center;">Nenhum aluno cadastrado.</td>
+    </tr>
+<?php endif; ?>
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 15px; color: #6c757d;">Nenhum aluno cadastrado.</td>
                         </tr>

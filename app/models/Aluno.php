@@ -32,6 +32,32 @@ class Aluno
 /**
  * Obtém todos os alunos
  */
+
+/**
+ * Retorna todos os alunos cadastrados com dados do usuário associado
+ */
+/**
+ * Retorna todos os alunos cadastrados
+ */
+public function listarTodos()
+{
+    try {
+        // Obtém a instância do Database e então a conexão PDO
+        $db = Database::getInstance()->getConnection();
+        
+        // Query com JOIN para trazer os dados do usuário junto com os do aluno
+        $sql = "SELECT a.*, u.nome, u.email 
+                FROM alunos a 
+                JOIN usuarios u ON a.usuario_id = u.id";
+        
+        $stmt = $db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        // Em caso de erro, retorna um array vazio para não quebrar a tela
+        return [];
+    }
+}
 public function getAll($apenas_ativos = true)
 {
     $sql = "SELECT 
@@ -96,23 +122,38 @@ public function getAll($apenas_ativos = true)
         ]);
         return $this->db->lastInsertId();
     }
-    
+    public function buscarPorId($id)
+{
+    $db = Database::getInstance()->getConnection();
+    $sql = "SELECT a.*, u.nome, u.email FROM alunos a 
+            JOIN usuarios u ON a.usuario_id = u.id 
+            WHERE a.id = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
     /**
      * Atualiza dados do aluno
      */
-    public function atualizar($aluno_id, $idade, $nivel_tea, $escola = null, $turma = null)
-    {
-        $sql = "UPDATE alunos SET idade = :idade, nivel_tea = :nivel_tea, 
-                escola = :escola, turma = :turma WHERE id = :aluno_id";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ':aluno_id' => $aluno_id,
-            ':idade' => $idade,
-            ':nivel_tea' => $nivel_tea,
-            ':escola' => $escola,
-            ':turma' => $turma
-        ]);
-    }
+public function atualizar($id, $nome, $email, $nivelTea, $turma)
+{
+    $db = Database::getInstance()->getConnection();
+    
+    // Atualiza na tabela de alunos / usuários dependendo da sua estrutura
+    $sql = "UPDATE alunos a 
+            JOIN usuarios u ON a.usuario_id = u.id 
+            SET u.nome = :nome, u.email = :email, a.nivel_tea = :nivel_tea, a.turma = :turma 
+            WHERE a.id = :id";
+            
+    $stmt = $db->prepare($sql);
+    return $stmt->execute([
+        'id' => $id,
+        'nome' => $nome,
+        'email' => $email,
+        'nivel_tea' => $nivelTea,
+        'turma' => $turma
+    ]);
+}
     
     /**
      * Obtém estatísticas do aluno
@@ -147,4 +188,12 @@ public function getAll($apenas_ativos = true)
         $stmt->execute([':aluno_id' => $aluno_id]);
         return $stmt->fetchAll();
     }
+
+    public function deletar($id)
+{
+    $db = Database::getInstance()->getConnection();
+    $sql = "DELETE FROM alunos WHERE id = :id";
+    $stmt = $db->prepare($sql);
+    return $stmt->execute(['id' => $id]);
+}
 }
