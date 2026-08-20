@@ -61,21 +61,16 @@ class ProfessorController
         }
     }
     
-public function gerenciarAlunos()
-{
-    require_once __DIR__ . '/../models/Aluno.php';
-    $alunoModel = new Aluno();
-
-    // Chama o método listarTodos que criamos acima
-    $alunos = $alunoModel->listarTodos();
-
-    $caminhoView = __DIR__ . '/../views/professor/gerenciar_alunos.php';
-    if (file_exists($caminhoView)) {
-        require_once $caminhoView;
-    } else {
-        echo "View gerenciar_alunos.php não encontrada.";
-    }
+public function gerenciarAlunos() {
+    // 1. Verificação de sessão (Opcional se já feita no index)
+    
+    // 2. Busca os alunos do banco de dados
+    $alunos = $this->aluno->getAll(); 
+    
+    // 3. Inclui a view passando a variável $alunos
+    require_once VIEWS_PATH . '/professor/gerenciar_alunos.php';
 }
+
 public function cadastrarAluno()
 {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

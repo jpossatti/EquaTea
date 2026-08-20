@@ -71,10 +71,8 @@ case 'login':
         require_once __DIR__ . '/app/controllers/AuthController.php'; // <-- Adicione aqui
         $auth = new AuthController();
         $auth->showLogin();
-        break;
-
-        case 'dashboard_professor':
-    case 'gerenciar_alunos':
+        break;       
+  
 
     case 'gerenciar_equacoes':
 
@@ -95,6 +93,7 @@ case 'login':
         $auth = new AuthController();
         $auth->logout();
         break;
+
     case 'dashboard':
         verificarAutenticacao(); // Bloqueia qualquer um não logado
         // ... carregar view de aluno
@@ -135,17 +134,13 @@ case 'login':
         file_exists($caminhoView) ? require_once $caminhoView : print("View não encontrada.");
         break;
 
-    case 'dashboard_professor':
-    case 'professor':
-        $caminhoView = __DIR__ . '/app/views/professor/dashboard.php';
-        file_exists($caminhoView) ? require_once $caminhoView : print("View não encontrada.");
-        break;
+  
 
     case 'gerenciar_alunos':
-        require_once __DIR__ . '/app/controllers/ProfessorController.php';
-        $controller = new ProfessorController();
-        $controller->gerenciarAlunos();
-        break;
+    require_once __DIR__ . '/app/controllers/ProfessorController.php';
+    $controller = new ProfessorController();
+    $controller->gerenciarAlunos(); // Este método deve buscar os alunos e dar include na view
+    break;
 
     case 'gerenciar_equacoes':
         $caminhoView = __DIR__ . '/app/views/professor/gerenciar_equacoes.php';
@@ -162,7 +157,10 @@ case 'login':
         $controller = new ProfessorController();
         $controller->exibirFormularioEdicao($_GET['id']);
         break;
-case 'professor/dashboard':
+
+    case 'professor/dashboard':
+    case 'dashboard_professor':
+    case 'professor':
         // Certifique-se de incluir o Model Professor e o Controller correspondente
         require_once __DIR__ . '/app/models/Professor.php';
         require_once __DIR__ . '/app/controllers/ProfessorController.php'; // ou o nome do seu controller
