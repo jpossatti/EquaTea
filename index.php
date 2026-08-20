@@ -2,7 +2,7 @@
 /**
  * index.php - Roteador Central
  */
-
+require_once __DIR__ . '/app/config/auth.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -67,27 +67,37 @@ $view = $_GET['view'] ?? $_POST['view'] ?? 'login';
 
 switch ($view) {
 
-    case 'login':
-        echo "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'><title>EquaTEA - Acesso Dev</title>";
-        echo "<style>
-            body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-            .container { text-align: center; background: white; padding: 50px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-            h2 { color: #2b3a4a; margin-bottom: 10px; }
-            p { color: #666; margin-bottom: 30px; }
-            .btn-group { display: flex; gap: 20px; justify-content: center; }
-            .btn { padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; color: white; transition: transform 0.2s; }
-            .btn:hover { transform: translateY(-3px); }
-            .btn-aluno { background: #3498db; }
-            .btn-prof { background: #2ecc71; }
-        </style></head><body>";
-        
-        echo "<div class='container'>";
-        echo "<h2>⚙️ EquaTEA - Modo Desenvolvimento</h2>";
-        echo "<p>Escolha a interface para prosseguir com a implementação:</p>";
-        echo "<div class='btn-group'>";
-        echo "<a href='index.php?view=dashboard' class='btn btn-aluno'>👨‍🎓 Acessar como Aluno</a>";
-        echo "<a href='index.php?view=dashboard_professor' class='btn btn-prof'>👨‍🏫 Acessar como Professor</a>";
-        echo "</div></div></body></html>";
+case 'login':
+        require_once __DIR__ . '/app/controllers/AuthController.php'; // <-- Adicione aqui
+        $auth = new AuthController();
+        $auth->showLogin();
+        break;
+
+        case 'dashboard_professor':
+    case 'gerenciar_alunos':
+
+    case 'gerenciar_equacoes':
+
+        verificarAutenticacao('professor'); // Bloqueia quem não é professor
+        require_once __DIR__ . '/app/controllers/ProfessorController.php';
+        break;
+
+
+ case 'fazer_login':
+        require_once __DIR__ . '/app/models/Usuario.php';   // <-- Inclua o Model primeiro
+        require_once __DIR__ . '/app/controllers/AuthController.php';
+        $auth = new AuthController();
+        $auth->login();
+        break;
+
+    case 'logout':
+        require_once __DIR__ . '/app/controllers/AuthController.php';
+        $auth = new AuthController();
+        $auth->logout();
+        break;
+    case 'dashboard':
+        verificarAutenticacao(); // Bloqueia qualquer um não logado
+        // ... carregar view de aluno
         break;
 
     case 'editar_equacao':
@@ -152,7 +162,13 @@ switch ($view) {
         $controller = new ProfessorController();
         $controller->exibirFormularioEdicao($_GET['id']);
         break;
-
+case 'professor/dashboard':
+        // Certifique-se de incluir o Model Professor e o Controller correspondente
+        require_once __DIR__ . '/app/models/Professor.php';
+        require_once __DIR__ . '/app/controllers/ProfessorController.php'; // ou o nome do seu controller
+        $controller = new ProfessorController();
+        $controller->dashboard();
+        break;
     default:
         header("Location: index.php?view=login");
         exit;

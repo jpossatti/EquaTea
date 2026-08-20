@@ -21,12 +21,17 @@ class Usuario
      */
     public function login($email, $senha)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE email = :email AND ativo = 1";
+        // Verifica se a coluna 'ativo' existe ou busca direto pelo email
+        $sql = "SELECT * FROM {$this->table} WHERE email = :email";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':email' => $email]);
         $usuario = $stmt->fetch();
         
+        // Valida se o usuário existe, a senha confere e se está ativo (caso a coluna exista)
         if ($usuario && password_verify($senha, $usuario['senha_hash'])) {
+            if (isset($usuario['ativo']) && $usuario['ativo'] == 0) {
+                return false; // Usuário desativado
+            }
             return $usuario;
         }
         return false;
@@ -54,37 +59,42 @@ class Usuario
         return $stmt->fetch();
     }
     
-   /**
- * Cria um novo usuário (com verificação de duplicidade)
- */
-public function criar($nome, $email, $senha, $tipo_perfil = 'aluno')
-{
-    // Verifica se o email já existe
-    $existe = $this->getByEmail($email);
-    if ($existe) {
-        throw new Exception("Email '{$email}' já está cadastrado.");
+    /**
+     * Cria um novo usuário (com verificação de duplicidade)
+     */
+    public function criar($nome, $email, $senha, $tipo_perfil = 'aluno')
+    {
+        $existe = $this->getByEmail($email);
+        if ($existe) {
+            throw new Exception("Email '{$email}' já está cadastrado.");
+        }
+        
+        $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+        $sql = "INSERT INTO {$this->table} (nome, email, senha_hash, tipo_perfil) 
+                VALUES (:nome, :email, :senha_hash, :tipo_perfil)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':nome' => $nome,
+            ':email' => $email,
+            ':senha_hash' => $senha_hash,
+            ':tipo_perfil' => $tipo_perfil
+        ]);
+        return $this->db->lastInsertId();
     }
     
-    $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
-    $sql = "INSERT INTO {$this->table} (nome, email, senha_hash, tipo_perfil) 
-            VALUES (:nome, :email, :senha_hash, :tipo_perfil)";
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute([
-        ':nome' => $nome,
-        ':email' => $email,
-        ':senha_hash' => $senha_hash,
-        ':tipo_perfil' => $tipo_perfil
-    ]);
-    return $this->db->lastInsertId();
-}
     /**
      * Atualiza o último acesso do usuário
      */
     public function atualizarUltimoAcesso($id)
     {
-        $sql = "UPDATE {$this->table} SET ultimo_acesso = NOW() WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([':id' => $id]);
+        // Tratativa caso a coluna ultimo_acesso ainda não exista no banco
+        try {
+            $sql = "UPDATE {$this->table} SET ultimo_acesso = NOW() WHERE id = :id";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([':id' => $id]);
+        } catch (Throwable $e) {
+            return false;
+        }
     }
     
     /**

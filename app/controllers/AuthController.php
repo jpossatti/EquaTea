@@ -3,6 +3,15 @@
  * AuthController.php
  * Controlador de autenticação do sistema.
  */
+
+if (!defined('BASE_URL')) {
+    define('BASE_URL', 'index.php?view=');
+}
+
+if (!defined('VIEWS_PATH')) {
+    define('VIEWS_PATH', __DIR__ . '/../views');
+}
+
 class AuthController
 {
     private $usuario;
@@ -11,9 +20,9 @@ class AuthController
     
     public function __construct()
     {
-        $this->usuario = new Usuario();
-        $this->aluno = new Aluno();
-        $this->professor = new Professor();
+        $this->usuario   = class_exists('Usuario') ? new Usuario() : null;
+        $this->aluno     = class_exists('Aluno') ? new Aluno() : null;
+        $this->professor = class_exists('Professor') ? new Professor() : null;
     }
     
     /**
@@ -21,15 +30,23 @@ class AuthController
      */
     public function showLogin()
     {
-        // Se já está logado, redireciona
         if (isset($_SESSION['usuario_id'])) {
             $this->redirectToDashboard();
+            return;
         }
         
-        include_once VIEWS_PATH . '/auth/login.php';
+        $view_path = VIEWS_PATH . '/auth/login.php';
+        if (file_exists($view_path)) {
+            include_once $view_path;
+        } else {
+            include_once __DIR__ . '/../views/auth/login.php';
+        }
     }
     
     /**
+     * Processa o login (Com Debug)
+     */
+   /**
      * Processa o login
      */
     public function login()
@@ -42,39 +59,47 @@ class AuthController
         $email = $_POST['email'] ?? '';
         $senha = $_POST['senha'] ?? '';
         
-        // Validação CSRF
+        // Validação CSRF (Opcional caso a função helper exista)
         $csrf_token = $_POST['csrf_token'] ?? '';
-        if (!validarTokenCSRF($csrf_token)) {
-            $_SESSION['login_error'] = 'Erro de segurança. Tente novamente.';
-            header('Location: ' . BASE_URL . 'login');
-            exit;
+        if (function_exists('validarTokenCSRF') && !empty($csrf_token)) {
+            if (!validarTokenCSRF($csrf_token)) {
+                $_SESSION['login_error'] = 'Erro de segurança. Tente novamente.';
+                header('Location: ' . BASE_URL . 'login');
+                exit;
+            }
         }
         
-        $dados = $this->usuario->login($email, $senha);
+        $dados = $this->usuario ? $this->usuario->login($email, $senha) : false;
         
         if ($dados) {
-            // Inicia sessão
-            $_SESSION['usuario_id'] = $dados['id'];
-            $_SESSION['usuario_nome'] = $dados['nome'];
-            $_SESSION['email'] = $dados['email'];
-            $_SESSION['tipo_perfil'] = $dados['tipo_perfil'];
-            $_SESSION['login_time'] = time();
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
             
-            // Busca dados específicos
-            if ($dados['tipo_perfil'] === 'aluno') {
-                $dados_aluno = $this->aluno->getDadosCompletos($dados['id']);
+            $_SESSION['usuario_id']   = $dados['id'];
+            $_SESSION['usuario_nome'] = $dados['nome'];
+            $_SESSION['email']        = $dados['email'];
+            $_SESSION['tipo_perfil']  = $dados['tipo_perfil'] ?? 'aluno';
+            $_SESSION['login_time']   = time();
+            
+            // Busca dados específicos de acordo com o perfil
+            if ($_SESSION['tipo_perfil'] === 'aluno' && $this->aluno) {
+                $dados_aluno = method_exists($this->aluno, 'getDadosCompletos') ? $this->aluno->getDadosCompletos($dados['id']) : null;
                 if ($dados_aluno) {
-                    $_SESSION['aluno_id'] = $dados_aluno['aluno_id'];
-                    $_SESSION['nivel_tea'] = $dados_aluno['nivel_tea'];
+                    $_SESSION['aluno_id']  = $dados_aluno['aluno_id'] ?? null;
+                    $_SESSION['nivel_tea'] = $dados_aluno['nivel_tea'] ?? null;
                 }
-            } else {
+            } else if ($this->professor && method_exists($this->professor, 'getByUsuarioId')) {
                 $dados_professor = $this->professor->getByUsuarioId($dados['id']);
                 if ($dados_professor) {
-                    $_SESSION['professor_id'] = $dados_professor['id'];
+                    $_SESSION['professor_id'] = $dados_professor['id'] ?? null;
                 }
             }
             
-            $this->usuario->atualizarUltimoAcesso($dados['id']);
+            if ($this->usuario && method_exists($this->usuario, 'atualizarUltimoAcesso')) {
+                $this->usuario->atualizarUltimoAcesso($dados['id']);
+            }
+            
             $this->redirectToDashboard();
         }
         
@@ -88,9 +113,12 @@ class AuthController
      */
     public function logout()
     {
-        session_destroy();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $_SESSION = array();
-        header('Location: ' . BASE_URL . 'login?msg=logout');
+        session_destroy();
+        header('Location: ' . BASE_URL . 'login&msg=logout');
         exit;
     }
     
@@ -99,7 +127,9 @@ class AuthController
      */
     private function redirectToDashboard()
     {
-        if ($_SESSION['tipo_perfil'] === 'aluno') {
+        $perfil = $_SESSION['tipo_perfil'] ?? 'aluno';
+        
+        if ($perfil === 'aluno') {
             header('Location: ' . BASE_URL . 'aluno/dashboard');
         } else {
             header('Location: ' . BASE_URL . 'professor/dashboard');

@@ -3,7 +3,16 @@
  * dashboard.php
  * Dashboard do professor - Versão com Debug
  */
+$page_title = 'Dashboard Professor - EquaTEA';
+$nome_professor = $_SESSION['usuario_nome'] ?? 'Professor';
 
+// Estatísticas baseadas nos dados vindos do Controller
+$total_alunos = count($dados_alunos ?? []);
+$total_equacoes = count($dados_equacoes ?? []);
+$total_erros = count($erros_comuns ?? []);
+
+include_once __DIR__ . '/../partials/header.php';
+include_once __DIR__ . '/../partials/menu_professor.php';
 $page_title = 'Dashboard Professor - EquaTEA';
 $nome_professor = 'Professor Carlos Silva';
 
@@ -63,14 +72,20 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         <table class="alunos-table">
             <thead><tr><th>Nome</th><th>Idade</th><th>Nível TEA</th><th>Equações</th></tr></thead>
             <tbody>
-                <?php foreach (array_slice($dados_alunos, 0, 5) as $a): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($a['nome']); ?></td>
-                    <td><?php echo $a['idade']; ?></td>
-                    <td><?php echo $a['nivel_tea'] == 'suporte1' ? 'Suporte 1' : 'Suporte 2'; ?></td>
-                    <td><?php echo $a['total_equacoes'] ?? 0; ?></td>
-                </tr>
-                <?php endforeach; ?>
+              <?php if (!empty($dados_alunos) && is_array($dados_alunos)): ?>
+    <?php foreach ($dados_alunos as $aluno): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($aluno['nome'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($aluno['idade'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($aluno['nivel_tea'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($aluno['total_equacoes'] ?? 0); ?></td>
+        </tr>
+    <?php endforeach; ?>
+<?php else: ?>
+    <tr>
+        <td colspan="4">Nenhum aluno encontrado.</td>
+    </tr>
+<?php endif; ?>
             </tbody>
         </table>
     <?php endif; ?>

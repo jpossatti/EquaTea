@@ -154,6 +154,12 @@ public function atualizar($id, $nome, $email, $nivelTea, $turma)
         'turma' => $turma
     ]);
 }
+public function listarTodosAlunos() {
+    $sql = "SELECT * FROM alunos ORDER BY nome ASC"; // ou a junção com a tabela de usuários
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
     
     /**
      * Obtém estatísticas do aluno

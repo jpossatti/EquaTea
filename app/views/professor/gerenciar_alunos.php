@@ -1,8 +1,17 @@
 <?php
-/**
- * gerenciar_alunos.php
- * View para listagem e cadastro de alunos com barra de navegação do professor
- */
+// --- CONTROLE DE SESSÃO ---
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verifica se o usuário está logado e se o perfil é estritamente de professor
+if (!isset($_SESSION['usuario_id']) || ($_SESSION['tipo_perfil'] ?? '') !== 'professor') {
+    $_SESSION['admin_error'] = 'Acesso negado. Faça login como professor.';
+    header('Location: index.php?view=login');
+    exit;
+}
+// ---------------------------
+
 $page_title = 'Gerenciar Alunos - EquaTEA';
 ?>
 <!DOCTYPE html>
