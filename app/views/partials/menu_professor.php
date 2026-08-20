@@ -3,11 +3,13 @@
  * menu_professor.php
  * Menu de navegação do professor
  */
+// Usa a variável global
+$view = $GLOBALS['current_view'] ?? $_GET['view'] ?? '';
 ?>
 <nav class="menu-professor">
     <div class="container menu-professor-content">
         <ul class="menu-professor-links">
-            <li class="menu-professor-item <?php echo ($view == 'professor') ? 'active' : ''; ?>">
+            <li class="menu-professor-item <?php echo ($view == 'professor' || $view == 'professor/dashboard') ? 'active' : ''; ?>">
                 <a href="?view=professor">📊 Dashboard</a>
             </li>
             <li class="menu-professor-item <?php echo ($view == 'gerenciar_alunos') ? 'active' : ''; ?>">

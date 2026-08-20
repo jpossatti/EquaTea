@@ -1,7 +1,7 @@
 <?php
 /**
  * ProfessorController.php
- * Controlador atualizado sem a restrição para o coeficiente C[cite: 10]
+ * Controlador atualizado sem a restrição para o coeficiente C
  */
 
 if (!defined('BASE_URL')) {
@@ -61,78 +61,78 @@ class ProfessorController
         }
     }
     
-public function gerenciarAlunos() {
-    // 1. Verificação de sessão (Opcional se já feita no index)
-    
-    // 2. Busca os alunos do banco de dados
-    $alunos = $this->aluno->getAll(); 
-    
-    // 3. Inclui a view passando a variável $alunos
-    require_once VIEWS_PATH . '/professor/gerenciar_alunos.php';
-}
+    public function gerenciarAlunos() {
+        // Busca os alunos do banco de dados
+        $alunos = $this->aluno->getAll(); 
+        
+        // Inclui a view passando a variável $alunos
+        require_once VIEWS_PATH . '/professor/gerenciar_alunos.php';
+    }
 
-public function cadastrarAluno()
-{
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    public function cadastrarAluno()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?view=gerenciar_alunos');
+            exit;
+        }
+
+        $nome      = $_POST['nome'] ?? '';
+        $email     = $_POST['email'] ?? '';
+        $senha     = $_POST['senha'] ?? '';
+        $idade     = $_POST['idade'] ?? 0;
+        $nivel_tea = $_POST['nivel_tea'] ?? '';
+        $escola    = $_POST['escola'] ?? '';
+        $turma     = $_POST['turma'] ?? '';
+
+        if (!empty($nome) && !empty($email) && !empty($senha)) {
+            require_once __DIR__ . '/../models/Usuario.php';
+            require_once __DIR__ . '/../models/Aluno.php';
+            
+            $usuarioModel = new Usuario();
+            $alunoModel = new Aluno();
+
+            $usuario_id = $usuarioModel->criar($nome, $email, $senha, 'aluno');
+
+            if ($usuario_id) {
+                $alunoModel->criar($usuario_id, $idade, $nivel_tea, $escola, $turma);
+                $_SESSION['admin_success'] = 'Aluno cadastrado com sucesso!';
+            } else {
+                $_SESSION['admin_error'] = 'Erro ao criar usuário para o aluno.';
+            }
+        }
+
         header('Location: index.php?view=gerenciar_alunos');
         exit;
     }
 
-    $nome      = $_POST['nome'] ?? '';
-    $email     = $_POST['email'] ?? '';
-    $senha     = $_POST['senha'] ?? '';
-    $idade     = $_POST['idade'] ?? 0;
-    $nivel_tea = $_POST['nivel_tea'] ?? '';
-    $escola    = $_POST['escola'] ?? '';
-    $turma     = $_POST['turma'] ?? '';
-
-    if (!empty($nome) && !empty($email) && !empty($senha)) {
-        require_once __DIR__ . '/../models/Usuario.php';
+    public function exibirFormularioEdicao($id)
+    {
         require_once __DIR__ . '/../models/Aluno.php';
-        
-        $usuarioModel = new Usuario();
         $alunoModel = new Aluno();
+        
+        // Busca os dados do aluno específico pelo ID
+        $aluno = $alunoModel->buscarPorId($id);
 
-        $usuario_id = $usuarioModel->criar($nome, $email, $senha, 'aluno');
-
-        if ($usuario_id) {
-            $alunoModel->criar($usuario_id, $idade, $nivel_tea, $escola, $turma);
-            $_SESSION['admin_success'] = 'Aluno cadastrado com sucesso!';
-        } else {
-            $_SESSION['admin_error'] = 'Erro ao criar usuário para o aluno.';
-        }
+        // Carrega a view de edição
+        require_once __DIR__ . '/../views/professor/editar_aluno.php';
     }
 
-    header('Location: index.php?view=gerenciar_alunos');
-    exit;
-}
+    public function deletarEquacao($id) {
+        require_once __DIR__ . '/../models/Equacao.php';
+        $model = new Equacao();
+        $model->deletar($id);
+        header('Location: index.php?view=gerenciar_equacoes');
+        exit;
+    }
 
-public function exibirFormularioEdicao($id)
-{
-    require_once __DIR__ . '/../models/Aluno.php';
-    $alunoModel = new Aluno();
-    
-    // Busca os dados do aluno específico pelo ID
-    $aluno = $alunoModel->buscarPorId($id);
+    public function exibirFormularioEdicaoEquacao($id) {
+        require_once __DIR__ . '/../models/Equacao.php';
+        $model = new Equacao();
+        $equacao = $model->buscarPorId($id);
+        // Carrega a view 'editar_equacao.php'
+        require_once __DIR__ . '/../views/professor/editar_equacao.php';
+    }
 
-    // Carrega a view de edição (você precisará criar esse arquivo)
-    require_once __DIR__ . '/../views/professor/editar_aluno.php';
-}
-public function deletarEquacao($id) {
-    require_once __DIR__ . '/../models/Equacao.php';
-    $model = new Equacao();
-    $model->deletar($id);
-    header('Location: index.php?view=gerenciar_equacoes');
-    exit;
-}
-
-public function exibirFormularioEdicaoEquacao($id) {
-    require_once __DIR__ . '/../models/Equacao.php';
-    $model = new Equacao();
-    $equacao = $model->buscarPorId($id);
-    // Carregue aqui a view 'editar_equacao.php' (você precisará criar este arquivo similar ao editar_aluno.php)
-    require_once __DIR__ . '/../views/professor/editar_equacao.php';
-}
     public function resetarSenha()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -188,7 +188,7 @@ public function exibirFormularioEdicaoEquacao($id) {
         $c           = (int)($_POST['c'] ?? 0);
         $dificuldade = $_POST['dificuldade'] ?? 'facil';
 
-        // Validação sem restrição no coeficiente C[cite: 10]
+        // Validação sem restrição no coeficiente C
         if ($a == 0 || $a < -20 || $a > 20 || $b < -20 || $b > 20) {
             $_SESSION['admin_error'] = 'Coeficientes "a" e "b" inválidos. "a" não pode ser zero e ambos devem estar entre -20 e 20.';
             header('Location: index.php?view=gerenciar_equacoes');
@@ -208,68 +208,96 @@ public function exibirFormularioEdicaoEquacao($id) {
         exit;
     }
 
-public function atualizarEquacao() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $id = $_POST['id'] ?? null;
-        $a = $_POST['coef_a'] ?? 0;
-        $b = $_POST['coef_b'] ?? 0;
-        $c = $_POST['coef_c'] ?? 0;
-        $dificuldade = $_POST['dificuldade'] ?? 'Fácil';
+    public function atualizarEquacao() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
+            $a = $_POST['coef_a'] ?? 0;
+            $b = $_POST['coef_b'] ?? 0;
+            $c = $_POST['coef_c'] ?? 0;
+            $dificuldade = $_POST['dificuldade'] ?? 'Fácil';
 
-        if ($id && $a != 0) {
-            $solucao = ($c - $b) / $a;
+            if ($id && $a != 0) {
+                $solucao = ($c - $b) / $a;
 
-            require_once __DIR__ . '/../models/Equacao.php';
-            $model = new Equacao();
-            
-            // Executa a atualização no banco de dados
-            $model->atualizar($id, $a, $b, $c, $solucao, $dificuldade);
+                require_once __DIR__ . '/../models/Equacao.php';
+                $model = new Equacao();
+                
+                // Executa a atualização no banco de dados
+                $model->atualizar($id, $a, $b, $c, $solucao, $dificuldade);
+            }
+
+            header('Location: index.php?view=gerenciar_equacoes');
+            exit;
         }
-
-        header('Location: index.php?view=gerenciar_equacoes');
-        exit;
     }
-}
+
     public function atualizar()
-{
-    // Verifica se os dados vieram via POST
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $id = $_POST['id'] ?? null;
-        $nome = $_POST['nome'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $nivelTea = $_POST['nivel_tea'] ?? '';
-        $turma = $_POST['turma'] ?? '';
+    {
+        // Verifica se os dados vieram via POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
+            $nome = $_POST['nome'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $nivelTea = $_POST['nivel_tea'] ?? '';
+            $turma = $_POST['turma'] ?? '';
 
-        require_once __DIR__ . '/../models/Aluno.php';
-        $alunoModel = new Aluno();
+            require_once __DIR__ . '/../models/Aluno.php';
+            $alunoModel = new Aluno();
+            
+            // Executa a atualização no banco
+            $alunoModel->atualizar($id, $nome, $email, $nivelTea, $turma);
+
+            // Redireciona de volta para a tela de gerenciar alunos
+            header('Location: index.php?view=gerenciar_alunos');
+            exit;
+        }
+    }
+
+    public function listarEquacoes() {
+        // Define as constantes se não estiverem definidas
+        if (!defined('VIEWS_PATH')) {
+            define('VIEWS_PATH', dirname(__DIR__) . '/views');
+        }
         
-        // Executa a atualização no banco
-        $alunoModel->atualizar($id, $nome, $email, $nivelTea, $turma);
+        // Carrega o modelo
+        require_once __DIR__ . '/../models/Equacao.php';
+        $equacaoModel = new Equacao();
+        $equacoes = $equacaoModel->buscarTodas();
+        
+        // Garante que a variável existe
+        $dados_equacoes = $equacoes ?: [];
+        
+        // Define a view atual para o menu
+        $view = 'gerenciar_equacoes';
+        $GLOBALS['current_view'] = 'gerenciar_equacoes';
+        
+        // Caminho da view
+        $view_path = VIEWS_PATH . '/professor/gerenciar_equacoes.php';
+        
+        if (file_exists($view_path)) {
+            include_once $view_path;
+        } else {
+            // Tenta carregar com caminho alternativo
+            $alt_path = __DIR__ . '/../views/professor/gerenciar_equacoes.php';
+            if (file_exists($alt_path)) {
+                include_once $alt_path;
+            } else {
+                echo "<h2>Erro: View não encontrada.</h2>";
+            }
+        }
+    }
 
-        // Redireciona de volta para a tela de gerenciar alunos (em ambiente de teste)
+    public function deletarAluno()
+    {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            require_once __DIR__ . '/../models/Aluno.php';
+            $alunoModel = new Aluno();
+            $alunoModel->deletar($id);
+        }
+        
+        // Redireciona de volta para a lista de alunos
         header('Location: index.php?view=gerenciar_alunos');
         exit;
     }
-}
-public function listarEquacoes() {
-    require_once __DIR__ . '/../models/Equacao.php';
-    $equacaoModel = new Equacao();
-    $equacoes = $equacaoModel->buscarTodas(); // Certifique-se que este método exista no Model
-    
-    // Carrega a view passando a variável $equacoes
-    require_once __DIR__ . '/../views/professor/gerenciar_equacoes.php';
-}
-public function deletarAluno()
-{
-    $id = $_GET['id'] ?? null;
-    if ($id) {
-        require_once __DIR__ . '/../models/Aluno.php';
-        $alunoModel = new Aluno();
-        $alunoModel->deletar($id);
-    }
-    
-    // Redireciona de volta para a lista de alunos
-    header('Location: index.php?view=gerenciar_alunos');
-    exit;
-}
 }

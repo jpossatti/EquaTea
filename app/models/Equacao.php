@@ -15,23 +15,42 @@ class Equacao
     /**
      * Obtém equação por ID
      */
- 
-public function buscarTodas() {
-    $db = Database::getInstance()->getConnection();
+    public function getById($id)
+    {
+        $sql = "SELECT * FROM equacoes WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
     
-    // O CASE atribui um peso numérico para cada nível de dificuldade
-    $sql = "SELECT * FROM equacoes 
-            ORDER BY CASE dificuldade 
-                WHEN 'Fácil' THEN 1 
-                WHEN 'Médio' THEN 2 
-                WHEN 'Difícil' THEN 3 
-                ELSE 4 END ASC, id DESC";
-                
-    $stmt = $db->query($sql);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
     /**
-     * Obtém todas as equações
+     * Busca todas as equações ordenadas por dificuldade
+     */
+    public function buscarTodas()
+    {
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            $sql = "SELECT * FROM equacoes 
+                    ORDER BY CASE dificuldade 
+                        WHEN 'Fácil' THEN 1 
+                        WHEN 'Médio' THEN 2 
+                        WHEN 'Difícil' THEN 3 
+                        ELSE 4 END ASC, id DESC";
+            
+            $stmt = $db->query($sql);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return $result ?: [];
+            
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar todas as equações: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Obtém todas as equações com filtro de dificuldade
      */
     public function getAll($dificuldade = null)
     {
@@ -47,7 +66,7 @@ public function buscarTodas() {
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     /**
@@ -62,7 +81,7 @@ public function buscarTodas() {
                     ORDER BY RAND() LIMIT 1";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':aluno_id' => $aluno_id]);
-            $result = $stmt->fetch();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($result) {
                 return $result;
@@ -73,7 +92,7 @@ public function buscarTodas() {
         $sql = "SELECT * FROM equacoes ORDER BY RAND() LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
-        return $stmt->fetch();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
     /**
@@ -90,7 +109,7 @@ public function buscarTodas() {
     }
     
     /**
-     * Cria uma nova equação validando a solução inteira e tratando erros de banco
+     * Cria uma nova equação validando a solução inteira
      */
     public function criar($a, $b, $c, $dificuldade = 'facil')
     {
@@ -104,7 +123,6 @@ public function buscarTodas() {
             return false;
         }
 
-        // Corrigido: inclusão da coluna solucao e uso de $this->db em vez de $this->pdo
         $sql = "INSERT INTO equacoes (a, b, c, solucao, dificuldade, data_cadastro) 
                 VALUES (:a, :b, :c, :solucao, :dificuldade, NOW())";
 
@@ -126,34 +144,41 @@ public function buscarTodas() {
     /**
      * Atualiza uma equação
      */
-    public function atualizar($id, $a, $b, $c, $solucao, $dificuldade) {
-    $db = Database::getInstance()->getConnection();
+    public function atualizar($id, $a, $b, $c, $solucao, $dificuldade)
+    {
+        $db = Database::getInstance()->getConnection();
+        
+        $sql = "UPDATE equacoes SET a = :a, b = :b, c = :c, solucao = :solucao, dificuldade = :dificuldade WHERE id = :id";
+        
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'a' => $a,
+            'b' => $b,
+            'c' => $c,
+            'solucao' => $solucao,
+            'dificuldade' => $dificuldade
+        ]);
+    }
     
-    // Certifique-se de que o campo 'dificuldade = :dificuldade' está presente no UPDATE
-    $sql = "UPDATE equacoes SET a = :a, b = :b, c = :c, solucao = :solucao, dificuldade = :dificuldade WHERE id = :id";
+    /**
+     * Deleta uma equação
+     */
+    public function deletar($id)
+    {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("DELETE FROM equacoes WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
+    }
     
-    $stmt = $db->prepare($sql);
-    return $stmt->execute([
-        'id' => $id,
-        'a' => $a,
-        'b' => $b,
-        'c' => $c,
-        'solucao' => $solucao,
-        'dificuldade' => $dificuldade
-    ]);
-}
-    public function deletar($id) {
-    $db = Database::getInstance()->getConnection();
-    $stmt = $db->prepare("DELETE FROM equacoes WHERE id = :id");
-    return $stmt->execute(['id' => $id]);
-}
-
-public function buscarPorId($id) {
-    $db = Database::getInstance()->getConnection();
-    $stmt = $db->prepare("SELECT * FROM equacoes WHERE id = :id");
-    $stmt->execute(['id' => $id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+    /**
+     * Busca equação por ID (alias para getById)
+     */
+    public function buscarPorId($id)
+    {
+        return $this->getById($id);
+    }
+    
     /**
      * Exclui uma equação (apenas se não utilizada)
      */
@@ -163,7 +188,7 @@ public function buscarPorId($id) {
         $sql = "SELECT COUNT(*) as total FROM progresso_aluno WHERE equacao_id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $id]);
-        $result = $stmt->fetch();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($result && $result['total'] > 0) {
             return false;
@@ -214,7 +239,7 @@ public function buscarPorId($id) {
             default:
                 return false;
         }
-    } 
+    }
 
     /**
      * Obtém a resposta esperada para um passo
