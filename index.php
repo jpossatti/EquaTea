@@ -1,4 +1,4 @@
-<?php
+<<?php
 /**
  * index.php - Roteador Central
  */
@@ -17,7 +17,9 @@ if (file_exists($caminhoDb)) {
 // 1. PROCESSAMENTO DAS AÇÕES (POST/GET)
 $action = $_GET['action'] ?? $_POST['action'] ?? null;
 
+// Ações do Professor
 if ($action === 'salvar_edicao') {
+    verificarAutenticacao('professor');
     require_once __DIR__ . '/app/controllers/ProfessorController.php';
     $controller = new ProfessorController();
     $controller->atualizar();
@@ -25,6 +27,7 @@ if ($action === 'salvar_edicao') {
 }
 
 if ($action === 'cadastrar_aluno') {
+    verificarAutenticacao('professor');
     require_once __DIR__ . '/app/controllers/ProfessorController.php';
     $controller = new ProfessorController();
     $controller->cadastrarAluno();
@@ -32,6 +35,7 @@ if ($action === 'cadastrar_aluno') {
 }
 
 if ($action === 'resetar_senha') {
+    verificarAutenticacao('professor');
     require_once __DIR__ . '/app/controllers/ProfessorController.php';
     $controller = new ProfessorController();
     $controller->resetarSenha();
@@ -39,6 +43,7 @@ if ($action === 'resetar_senha') {
 }
 
 if ($action === 'deletar_aluno') {
+    verificarAutenticacao('professor');
     require_once __DIR__ . '/app/controllers/ProfessorController.php';
     $controller = new ProfessorController();
     $controller->deletarAluno();
@@ -46,6 +51,7 @@ if ($action === 'deletar_aluno') {
 }
 
 if ($action === 'cadastrar_equacao') {
+    verificarAutenticacao('professor');
     require_once __DIR__ . '/app/controllers/ProfessorController.php';
     $controller = new ProfessorController();
     $controller->cadastrarEquacao();
@@ -53,6 +59,7 @@ if ($action === 'cadastrar_equacao') {
 }
 
 if ($action === 'deletar_equacao') {
+    verificarAutenticacao('professor');
     require_once __DIR__ . '/app/controllers/ProfessorController.php';
     $controller = new ProfessorController();
     $controller->deletarEquacao($_GET['id']);
@@ -60,9 +67,19 @@ if ($action === 'deletar_equacao') {
 }
 
 if ($action === 'salvar_edicao_equacao') {
+    verificarAutenticacao('professor');
     require_once __DIR__ . '/app/controllers/ProfessorController.php';
     $controller = new ProfessorController();
     $controller->atualizarEquacao();
+    exit;
+}
+
+// Ações do Aluno
+if ($action === 'verificar_resposta') {
+    verificarAutenticacao('aluno');
+    require_once __DIR__ . '/app/controllers/AlunoController.php';
+    $controller = new AlunoController();
+    $controller->verificarResposta();
     exit;
 }
 
@@ -73,6 +90,7 @@ $view = $_GET['view'] ?? $_POST['view'] ?? 'login';
 $GLOBALS['current_view'] = $view;
 
 switch ($view) {
+    // ===== LOGIN / AUTENTICAÇÃO =====
     case 'login':
         require_once __DIR__ . '/app/controllers/AuthController.php';
         $auth = new AuthController();
@@ -92,54 +110,69 @@ switch ($view) {
         $auth->logout();
         break;
 
+    // ===== ROTAS DO ALUNO =====
+    case 'aluno/dashboard':
     case 'dashboard':
-        verificarAutenticacao();
-        $caminhoView = __DIR__ . '/app/views/aluno/dashboard.php';
-        file_exists($caminhoView) ? require_once $caminhoView : print("View não encontrada.");
+        verificarAutenticacao('aluno');
+        require_once __DIR__ . '/app/controllers/AlunoController.php';
+        $controller = new AlunoController();
+        $controller->dashboard();
         break;
 
+    case 'exercicio':
+        verificarAutenticacao('aluno');
+        require_once __DIR__ . '/app/controllers/AlunoController.php';
+        $controller = new AlunoController();
+        $controller->exercicio();
+        break;
+
+    case 'parabens':
+        verificarAutenticacao('aluno');
+        require_once __DIR__ . '/app/controllers/AlunoController.php';
+        $controller = new AlunoController();
+        $controller->parabens();
+        break;
+
+    // ===== ROTAS DO PROFESSOR =====
     case 'editar_equacao':
+        verificarAutenticacao('professor');
         require_once __DIR__ . '/app/controllers/ProfessorController.php';
         $controller = new ProfessorController();
         $controller->exibirFormularioEdicaoEquacao($_GET['id'] ?? null);
         break;
 
     case 'editar_aluno':
+        verificarAutenticacao('professor');
         require_once __DIR__ . '/app/controllers/ProfessorController.php';
         $controller = new ProfessorController();
         $controller->exibirFormularioEdicao($_GET['id'] ?? null);
         break;
 
-    case 'exercicio':
-        $caminhoView = __DIR__ . '/app/views/aluno/exercicio.php';
-        file_exists($caminhoView) ? require_once $caminhoView : print("View não encontrada.");
-        break;
-
-    case 'parabens':
-        $caminhoView = __DIR__ . '/app/views/aluno/parabens.php';
-        file_exists($caminhoView) ? require_once $caminhoView : print("View não encontrada.");
-        break;
-
     case 'gerenciar_alunos':
+        verificarAutenticacao('professor');
         require_once __DIR__ . '/app/controllers/ProfessorController.php';
         $controller = new ProfessorController();
         $controller->gerenciarAlunos();
         break;
 
     case 'gerenciar_equacoes':
+        verificarAutenticacao('professor');
         require_once __DIR__ . '/app/controllers/ProfessorController.php';
         $controller = new ProfessorController();
         $controller->listarEquacoes();
         break;
 
     case 'relatorio':
-        $caminhoView = __DIR__ . '/app/views/professor/relatorio.php';
-        file_exists($caminhoView) ? require_once $caminhoView : print("View não encontrada.");
+        verificarAutenticacao('professor');
+        require_once __DIR__ . '/app/controllers/ProfessorController.php';
+        $controller = new ProfessorController();
+        $controller->relatorio();
         break;
 
     case 'professor/dashboard':
     case 'dashboard_professor':
     case 'professor':
+        verificarAutenticacao('professor');
         require_once __DIR__ . '/app/models/Professor.php';
         require_once __DIR__ . '/app/controllers/ProfessorController.php';
         $controller = new ProfessorController();

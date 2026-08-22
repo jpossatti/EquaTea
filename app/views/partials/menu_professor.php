@@ -22,8 +22,8 @@ $view = $GLOBALS['current_view'] ?? $_GET['view'] ?? '';
                 <a href="?view=relatorio">📈 Relatórios</a>
             </li>
             <li class="menu-professor-item">
-                <a href="?view=login">🚪 Sair</a>
-            </li>
+    <a href="index.php?view=logout" onclick="return confirm('Deseja realmente sair?');">🚪 Sair</a>
+</li>
         </ul>
     </div>
 </nav>

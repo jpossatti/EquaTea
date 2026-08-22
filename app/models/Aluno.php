@@ -13,6 +13,44 @@ class Aluno
     }
     
     /**
+     * Busca aluno por ID do aluno
+     */
+    public function getById($id)
+    {
+        try {
+            $sql = "SELECT a.*, u.nome, u.email 
+                    FROM alunos a 
+                    JOIN usuarios u ON a.usuario_id = u.id 
+                    WHERE a.id = :id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar aluno por ID: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Busca aluno por ID do usuário
+     */
+    public function getByUsuarioId($usuario_id)
+    {
+        try {
+            $sql = "SELECT a.*, u.nome, u.email 
+                    FROM alunos a 
+                    JOIN usuarios u ON a.usuario_id = u.id 
+                    WHERE a.usuario_id = :usuario_id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':usuario_id' => $usuario_id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar aluno por usuário ID: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * Obtém dados completos do aluno (incluindo usuário)
      */
     public function getDadosCompletos($usuario_id)
@@ -29,79 +67,32 @@ class Aluno
     /**
      * Obtém todos os alunos
      */
-/**
- * Obtém todos os alunos
- */
-
-/**
- * Retorna todos os alunos cadastrados com dados do usuário associado
- */
-/**
- * Retorna todos os alunos cadastrados
- */
-public function listarTodos()
-{
-    try {
-        // Obtém a instância do Database e então a conexão PDO
-        $db = Database::getInstance()->getConnection();
-        
-        // Query com JOIN para trazer os dados do usuário junto com os do aluno
-        $sql = "SELECT a.*, u.nome, u.email 
-                FROM alunos a 
-                JOIN usuarios u ON a.usuario_id = u.id";
-        
-        $stmt = $db->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    } catch (PDOException $e) {
-        // Em caso de erro, retorna um array vazio para não quebrar a tela
-        return [];
-    }
-}
-public function getAll($apenas_ativos = true)
-{
-    $sql = "SELECT 
-                u.id as usuario_id,
-                u.nome,
-                u.email,
-                u.tipo_perfil,
-                u.ativo,
-                a.id as aluno_id,
-                a.idade,
-                a.nivel_tea,
-                a.escola,
-                a.turma,
-                a.data_cadastro,
-                (SELECT COUNT(*) FROM progresso_aluno WHERE aluno_id = a.id) as total_equacoes,
-                (SELECT SUM(concluida) FROM progresso_aluno WHERE aluno_id = a.id) as equacoes_concluidas,
-                (SELECT COUNT(*) FROM registro_erros WHERE aluno_id = a.id) as total_erros
-            FROM usuarios u 
-            JOIN alunos a ON u.id = a.usuario_id 
-            WHERE u.tipo_perfil = 'aluno'";
-    
-    if ($apenas_ativos) {
-        $sql .= " AND u.ativo = 1";
-    }
-    
-    $sql .= " ORDER BY u.nome ASC";
-    
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
-    
-    /**
-     * Obtém alunos por escola
-     */
-    public function getByEscola($escola)
+    public function getAll($apenas_ativos = true)
     {
-        $sql = "SELECT u.*, a.id as aluno_id, a.idade, a.nivel_tea, a.escola, a.turma
+        $sql = "SELECT 
+                    u.id as usuario_id,
+                    u.nome,
+                    u.email,
+                    u.tipo_perfil,
+                    u.ativo,
+                    a.id as aluno_id,
+                    a.idade,
+                    a.nivel_tea,
+                    a.escola,
+                    a.turma,
+                    a.data_cadastro
                 FROM usuarios u 
                 JOIN alunos a ON u.id = a.usuario_id 
-                WHERE u.tipo_perfil = 'aluno' AND a.escola = :escola AND u.ativo = 1
-                ORDER BY u.nome ASC";
+                WHERE u.tipo_perfil = 'aluno'";
+        
+        if ($apenas_ativos) {
+            $sql .= " AND u.ativo = 1";
+        }
+        
+        $sql .= " ORDER BY u.nome ASC";
+        
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([':escola' => $escola]);
+        $stmt->execute();
         return $stmt->fetchAll();
     }
     
@@ -122,84 +113,62 @@ public function getAll($apenas_ativos = true)
         ]);
         return $this->db->lastInsertId();
     }
+    
+    /**
+     * Busca aluno por ID (alias)
+     */
     public function buscarPorId($id)
-{
-    $db = Database::getInstance()->getConnection();
-    $sql = "SELECT a.*, u.nome, u.email FROM alunos a 
-            JOIN usuarios u ON a.usuario_id = u.id 
-            WHERE a.id = :id";
-    $stmt = $db->prepare($sql);
-    $stmt->execute(['id' => $id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+    {
+        return $this->getById($id);
+    }
+    
     /**
      * Atualiza dados do aluno
      */
-public function atualizar($id, $nome, $email, $nivelTea, $turma)
-{
-    $db = Database::getInstance()->getConnection();
-    
-    // Atualiza na tabela de alunos / usuários dependendo da sua estrutura
-    $sql = "UPDATE alunos a 
-            JOIN usuarios u ON a.usuario_id = u.id 
-            SET u.nome = :nome, u.email = :email, a.nivel_tea = :nivel_tea, a.turma = :turma 
-            WHERE a.id = :id";
-            
-    $stmt = $db->prepare($sql);
-    return $stmt->execute([
-        'id' => $id,
-        'nome' => $nome,
-        'email' => $email,
-        'nivel_tea' => $nivelTea,
-        'turma' => $turma
-    ]);
-}
-public function listarTodosAlunos() {
-    $sql = "SELECT * FROM alunos ORDER BY nome ASC"; // ou a junção com a tabela de usuários
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-    
-    /**
-     * Obtém estatísticas do aluno
-     */
-    public function getEstatisticas($aluno_id)
+    public function atualizar($id, $nome, $email, $nivelTea, $turma)
     {
-        $sql = "SELECT 
-                    COUNT(DISTINCT equacao_id) as equacoes_tentadas,
-                    SUM(concluida) as equacoes_concluidas,
-                    SUM(tentativas) as total_tentativas,
-                    AVG(tentativas) as media_tentativas
-                FROM progresso_aluno 
-                WHERE aluno_id = :aluno_id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':aluno_id' => $aluno_id]);
-        return $stmt->fetch();
+        $db = Database::getInstance()->getConnection();
+        
+        $sql = "UPDATE alunos a 
+                JOIN usuarios u ON a.usuario_id = u.id 
+                SET u.nome = :nome, u.email = :email, a.nivel_tea = :nivel_tea, a.turma = :turma 
+                WHERE a.id = :id";
+                
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'nome' => $nome,
+            'email' => $email,
+            'nivel_tea' => $nivelTea,
+            'turma' => $turma
+        ]);
     }
     
     /**
-     * Obtém progresso detalhado do aluno
+     * Deleta um aluno
      */
-    public function getProgressoDetalhado($aluno_id)
-    {
-        $sql = "SELECT p.*, 
-                       CONCAT(e.a, 'x + ', e.b, ' = ', e.c) as equacao,
-                       e.dificuldade
-                FROM progresso_aluno p
-                JOIN equacoes e ON p.equacao_id = e.id
-                WHERE p.aluno_id = :aluno_id
-                ORDER BY p.data_inicio DESC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':aluno_id' => $aluno_id]);
-        return $stmt->fetchAll();
-    }
-
     public function deletar($id)
-{
-    $db = Database::getInstance()->getConnection();
-    $sql = "DELETE FROM alunos WHERE id = :id";
-    $stmt = $db->prepare($sql);
-    return $stmt->execute(['id' => $id]);
-}
+    {
+        $db = Database::getInstance()->getConnection();
+        $sql = "DELETE FROM alunos WHERE id = :id";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute(['id' => $id]);
+    }
+    
+    /**
+     * Lista todos os alunos
+     */
+    public function listarTodos()
+    {
+        try {
+            $db = Database::getInstance()->getConnection();
+            $sql = "SELECT a.*, u.nome, u.email 
+                    FROM alunos a 
+                    JOIN usuarios u ON a.usuario_id = u.id";
+            $stmt = $db->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }

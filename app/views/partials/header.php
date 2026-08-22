@@ -3,6 +3,14 @@
  * header.php
  * Cabeçalho padrão do sistema
  */
+
+// Verifica se o usuário está logado para mostrar informações corretas
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$usuario_nome = $_SESSION['usuario_nome'] ?? 'Visitante';
+$tipo_perfil = $_SESSION['tipo_perfil'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -18,7 +26,7 @@
     <header class="main-header">
         <div class="container header-content">
             <div class="logo-container">
-                <a href="/?view=login" class="logo-link">
+                <a href="index.php?view=login" class="logo-link">
                     <span class="logo-text">
                         <span class="logo-equa">Equa</span><span class="logo-tea">TEA</span>
                     </span>
@@ -26,8 +34,14 @@
                 <span class="logo-subtitle">Aprendendo equações</span>
             </div>
             <div class="user-info">
-                <span class="user-name">🔬 Modo Teste</span>
-                <a href="/?view=login" class="btn-logout-header">Sair</a>
+                <?php if (isset($_SESSION['usuario_id'])): ?>
+                    <span class="user-name">👤 <?php echo htmlspecialchars($usuario_nome); ?></span>
+                    <span class="user-type">(<?php echo ucfirst($tipo_perfil); ?>)</span>
+                    <a href="index.php?view=logout" class="btn-logout-header" onclick="return confirm('Deseja realmente sair?');">🚪 Sair</a>
+                <?php else: ?>
+                    <span class="user-name">🔬 Modo Teste</span>
+                    <a href="index.php?view=login" class="btn-logout-header">Entrar</a>
+                <?php endif; ?>
             </div>
         </div>
     </header>

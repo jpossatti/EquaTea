@@ -1,7 +1,7 @@
 <?php
 /**
  * login.php
- * Tela de login adaptada para produção (autenticação real via AuthController)
+ * Tela de login
  */
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -10,7 +10,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $page_title = 'Login - EquaTEA';
 $error = $_SESSION['login_error'] ?? null;
-unset($_SESSION['login_error']); // Limpa o erro após exibir
+unset($_SESSION['login_error']);
+
+// Verifica se veio do logout
+$msg_logout = $_GET['msg'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -32,23 +35,33 @@ unset($_SESSION['login_error']); // Limpa o erro após exibir
             <p class="login-subtitle">Aprendendo equações de 1º grau</p>
         </div>
 
-        <?php if ($error): ?>
-            <div class="alert alert-error" style="background: #ff5555; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-weight: bold;"><?php echo htmlspecialchars($error); ?></div>
+        <?php if ($msg_logout === 'logout'): ?>
+            <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-weight: bold;">
+                ✅ Você saiu do sistema com sucesso!
+            </div>
         <?php endif; ?>
 
-        <!-- Formulário apontando para a ação de login do AuthController -->
+        <?php if ($error): ?>
+            <div class="alert alert-error" style="background: #ff5555; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-weight: bold;">
+                <?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- CORRIGIDO: Usar caminho absoluto a partir da raiz -->
         <form method="POST" action="/index.php?view=fazer_login">
             <div class="form-group">
                 <label for="email"><strong>E-mail de Acesso:</strong></label>
-                <input type="email" id="email" name="email" required placeholder="Digite seu e-mail cadastrado" class="form-control" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px;">
+                <input type="email" id="email" name="email" required placeholder="Digite seu e-mail cadastrado" class="form-control" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ddd;">
             </div>
             
             <div class="form-group">
                 <label for="senha"><strong>Senha:</strong></label>
-                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha" class="form-control" style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 6px;">
+                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha" class="form-control" style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ddd;">
             </div>
 
-            <button type="submit" class="btn-login" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">🚀 Entrar no Sistema</button>
+            <button type="submit" class="btn-login" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                🚀 Entrar no Sistema
+            </button>
         </form>
     </div>
 </body>

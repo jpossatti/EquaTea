@@ -300,4 +300,49 @@ class ProfessorController
         header('Location: index.php?view=gerenciar_alunos');
         exit;
     }
+
+    /**
+     * Relatório de erros do professor
+     */
+    public function relatorio()
+    {
+        // Verifica se o professor está logado
+        if (!isset($_SESSION['usuario_id']) || $_SESSION['tipo_perfil'] !== 'professor') {
+            header('Location: index.php?view=login');
+            exit;
+        }
+
+        // Filtros
+        $filtro_aluno = $_GET['aluno'] ?? '';
+        $filtro_passo = $_GET['passo'] ?? '';
+
+        // Busca alunos para o filtro
+        $dados_alunos = ($this->aluno && method_exists($this->aluno, 'getAll')) ? $this->aluno->getAll() : [];
+
+        // Busca os erros do banco
+        if ($this->registroErro && method_exists($this->registroErro, 'getAll')) {
+            $dados_relatorio = $this->registroErro->getAll($filtro_aluno, $filtro_passo);
+        } else {
+            $dados_relatorio = [];
+        }
+
+        // Define a view atual para o menu
+        $view = 'relatorio';
+        $GLOBALS['current_view'] = 'relatorio';
+
+        // Caminho da view
+        $view_path = VIEWS_PATH . '/professor/relatorio.php';
+        
+        if (file_exists($view_path)) {
+            include_once $view_path;
+        } else {
+            // Tenta carregar com caminho alternativo
+            $alt_path = __DIR__ . '/../views/professor/relatorio.php';
+            if (file_exists($alt_path)) {
+                include_once $alt_path;
+            } else {
+                echo "<h2>Erro: View do Relatório não encontrada.</h2>";
+            }
+        }
+    }
 }
