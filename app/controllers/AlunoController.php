@@ -38,161 +38,161 @@ class AlunoController
         $this->usuario  = class_exists('Usuario') ? new Usuario() : null;
     }
 
-   /**
- * Dashboard do aluno com controle de sessão
- */
-public function dashboard()
-{
-    // ===== CONTROLE DE SESSÃO =====
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+    /**
+     * Dashboard do aluno com controle de sessão
+     */
+    public function dashboard()
+    {
+        // ===== CONTROLE DE SESSÃO =====
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-    // Verifica se o usuário está logado
-    if (!isset($_SESSION['usuario_id'])) {
-        $_SESSION['login_error'] = 'Você precisa estar logado para acessar o dashboard.';
-        header('Location: index.php?view=login');
-        exit;
-    }
+        // Verifica se o usuário está logado
+        if (!isset($_SESSION['usuario_id'])) {
+            $_SESSION['login_error'] = 'Você precisa estar logado para acessar o dashboard.';
+            header('Location: index.php?view=login');
+            exit;
+        }
 
-    // Verifica se o usuário é aluno
-    if (($_SESSION['tipo_perfil'] ?? '') !== 'aluno') {
-        $_SESSION['login_error'] = 'Acesso restrito a alunos.';
-        header('Location: index.php?view=login');
-        exit;
-    }
+        // Verifica se o usuário é aluno
+        if (($_SESSION['tipo_perfil'] ?? '') !== 'aluno') {
+            $_SESSION['login_error'] = 'Acesso restrito a alunos.';
+            header('Location: index.php?view=login');
+            exit;
+        }
 
-    // Verifica se a sessão expirou (30 minutos)
-    if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 1800)) {
-        session_destroy();
-        $_SESSION['login_error'] = 'Sua sessão expirou. Faça login novamente.';
-        header('Location: index.php?view=login');
-        exit;
-    }
+        // Verifica se a sessão expirou (30 minutos)
+        if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 1800)) {
+            session_destroy();
+            $_SESSION['login_error'] = 'Sua sessão expirou. Faça login novamente.';
+            header('Location: index.php?view=login');
+            exit;
+        }
 
-    // Atualiza o tempo da sessão
-    $_SESSION['login_time'] = time();
-    // ===== FIM CONTROLE DE SESSÃO =====
+        // Atualiza o tempo da sessão
+        $_SESSION['login_time'] = time();
+        // ===== FIM CONTROLE DE SESSÃO =====
 
-    // Busca dados do aluno
-    $aluno_id = $_SESSION['aluno_id'] ?? null;
-    $usuario_id = $_SESSION['usuario_id'] ?? null;
-    $usuario_nome = $_SESSION['usuario_nome'] ?? 'Aluno';
-    $usuario_email = $_SESSION['email'] ?? 'aluno@equatea.com';
+        // Busca dados do aluno
+        $aluno_id = $_SESSION['aluno_id'] ?? null;
+        $usuario_id = $_SESSION['usuario_id'] ?? null;
+        $usuario_nome = $_SESSION['usuario_nome'] ?? 'Aluno';
+        $usuario_email = $_SESSION['email'] ?? 'aluno@equatea.com';
 
-    // ===== BUSCA CORRIGIDA DO ALUNO =====
-    $dados_aluno = null;
+        // ===== BUSCA CORRIGIDA DO ALUNO =====
+        $dados_aluno = null;
 
-    if ($this->aluno) {
-        try {
-            // 1. Tenta buscar pelo ID do aluno (se existir)
-            if ($aluno_id) {
-                $dados_aluno = $this->aluno->getById($aluno_id);
-            }
+        if ($this->aluno) {
+            try {
+                // 1. Tenta buscar pelo ID do aluno (se existir)
+                if ($aluno_id) {
+                    $dados_aluno = $this->aluno->getById($aluno_id);
+                }
 
-            // 2. Se não encontrou, tenta buscar pelo ID do usuário
-            if (!$dados_aluno || !is_array($dados_aluno)) {
-                if ($usuario_id) {
-                    $dados_aluno = $this->aluno->getByUsuarioId($usuario_id);
-                    if ($dados_aluno && is_array($dados_aluno)) {
-                        // Atualiza o aluno_id na sessão se encontrou
-                        $_SESSION['aluno_id'] = $dados_aluno['id'] ?? null;
+                // 2. Se não encontrou, tenta buscar pelo ID do usuário
+                if (!$dados_aluno || !is_array($dados_aluno)) {
+                    if ($usuario_id) {
+                        $dados_aluno = $this->aluno->getByUsuarioId($usuario_id);
+                        if ($dados_aluno && is_array($dados_aluno)) {
+                            // Atualiza o aluno_id na sessão se encontrou
+                            $_SESSION['aluno_id'] = $dados_aluno['id'] ?? null;
+                        }
                     }
                 }
+            } catch (Exception $e) {
+                error_log("Erro ao buscar aluno: " . $e->getMessage());
+                $dados_aluno = null;
             }
-        } catch (Exception $e) {
-            error_log("Erro ao buscar aluno: " . $e->getMessage());
-            $dados_aluno = null;
         }
-    }
 
-    // 3. Se não encontrou ou deu erro, cria array com dados da sessão
-    if (!$dados_aluno || !is_array($dados_aluno)) {
-        $dados_aluno = [
-            'id' => $aluno_id,
-            'aluno_id' => $aluno_id,
-            'nome' => $usuario_nome,
-            'email' => $usuario_email,
-            'idade' => null,
-            'nivel_tea' => null,
-            'escola' => null,
-            'turma' => null
+        // 3. Se não encontrou ou deu erro, cria array com dados da sessão
+        if (!$dados_aluno || !is_array($dados_aluno)) {
+            $dados_aluno = [
+                'id' => $aluno_id,
+                'aluno_id' => $aluno_id,
+                'nome' => $usuario_nome,
+                'email' => $usuario_email,
+                'idade' => null,
+                'nivel_tea' => null,
+                'escola' => null,
+                'turma' => null
+            ];
+        }
+
+        // 4. Garante que o nome está presente
+        if (!isset($dados_aluno['nome']) || empty($dados_aluno['nome'])) {
+            $dados_aluno['nome'] = $usuario_nome;
+        }
+
+        // 5. Garante que o email está presente
+        if (!isset($dados_aluno['email']) || empty($dados_aluno['email'])) {
+            $dados_aluno['email'] = $usuario_email;
+        }
+        // ===== FIM DA BUSCA CORRIGIDA =====
+
+        // Busca progresso do aluno
+        $dados_progresso = [
+            'total_resolvidas' => 0,
+            'taxa_acerto' => '0%',
+            'nivel_atual' => 'Nível 1 - Básico'
         ];
-    }
 
-    // 4. Garante que o nome está presente
-    if (!isset($dados_aluno['nome']) || empty($dados_aluno['nome'])) {
-        $dados_aluno['nome'] = $usuario_nome;
-    }
-
-    // 5. Garante que o email está presente
-    if (!isset($dados_aluno['email']) || empty($dados_aluno['email'])) {
-        $dados_aluno['email'] = $usuario_email;
-    }
-    // ===== FIM DA BUSCA CORRIGIDA =====
-
-    // Busca progresso do aluno
-    $dados_progresso = [
-        'total_resolvidas' => 0,
-        'taxa_acerto' => '0%',
-        'nivel_atual' => 'Nível 1 - Básico'
-    ];
-
-    if ($this->progresso && $aluno_id) {
-        try {
-            $progresso = $this->progresso->getEstatisticas($aluno_id);
-            if ($progresso && is_array($progresso)) {
-                $dados_progresso = array_merge($dados_progresso, $progresso);
+        if ($this->progresso && $aluno_id) {
+            try {
+                $progresso = $this->progresso->getEstatisticas($aluno_id);
+                if ($progresso && is_array($progresso)) {
+                    $dados_progresso = array_merge($dados_progresso, $progresso);
+                }
+            } catch (Exception $e) {
+                // Mantém os dados padrão
+                error_log("Erro ao buscar progresso: " . $e->getMessage());
             }
-        } catch (Exception $e) {
-            // Mantém os dados padrão
-            error_log("Erro ao buscar progresso: " . $e->getMessage());
         }
-    }
 
-    // Busca equações disponíveis
-    $equacoes = [];
-    if ($this->equacao) {
-        try {
-            $equacoes = $this->equacao->buscarTodas();
-            if (!is_array($equacoes)) {
+        // Busca equações disponíveis
+        $equacoes = [];
+        if ($this->equacao) {
+            try {
+                $equacoes = $this->equacao->buscarTodas();
+                if (!is_array($equacoes)) {
+                    $equacoes = [];
+                }
+            } catch (Exception $e) {
                 $equacoes = [];
+                error_log("Erro ao buscar equações: " . $e->getMessage());
             }
-        } catch (Exception $e) {
-            $equacoes = [];
-            error_log("Erro ao buscar equações: " . $e->getMessage());
         }
-    }
 
-    // Dados para a view
-    $aluno = $dados_aluno;
-    $dados_progresso = $dados_progresso;
+        // Dados para a view
+        $aluno = $dados_aluno;
+        $dados_progresso = $dados_progresso;
 
-    // Define a view atual para o menu
-    $view = 'aluno/dashboard';
-    $GLOBALS['current_view'] = 'aluno/dashboard';
+        // Define a view atual para o menu
+        $view = 'aluno/dashboard';
+        $GLOBALS['current_view'] = 'aluno/dashboard';
 
-    // Carrega a view
-    $view_path = VIEWS_PATH . '/aluno/dashboard.php';
-    if (file_exists($view_path)) {
-        include_once $view_path;
-    } else {
-        $alt_path = __DIR__ . '/../views/aluno/dashboard.php';
-        if (file_exists($alt_path)) {
-            include_once $alt_path;
+        // Carrega a view
+        $view_path = VIEWS_PATH . '/aluno/dashboard.php';
+        if (file_exists($view_path)) {
+            include_once $view_path;
         } else {
-            echo "<h2>Erro: View do Dashboard Aluno não encontrada.</h2>";
-            echo "<p>Caminhos procurados:</p>";
-            echo "<ul>";
-            echo "<li>{$view_path}</li>";
-            echo "<li>{$alt_path}</li>";
-            echo "</ul>";
+            $alt_path = __DIR__ . '/../views/aluno/dashboard.php';
+            if (file_exists($alt_path)) {
+                include_once $alt_path;
+            } else {
+                echo "<h2>Erro: View do Dashboard Aluno não encontrada.</h2>";
+                echo "<p>Caminhos procurados:</p>";
+                echo "<ul>";
+                echo "<li>{$view_path}</li>";
+                echo "<li>{$alt_path}</li>";
+                echo "</ul>";
+            }
         }
     }
-}
 
     /**
-     * Página de exercício com controle de sessão
+     * Página de exercício com controle de sessão e progresso
      */
     public function exercicio()
     {
@@ -219,12 +219,13 @@ public function dashboard()
         $equacao_id = $_GET['id'] ?? null;
         $passo = $_GET['passo'] ?? 1;
         $erro = $_GET['erro'] ?? 0;
+        $aluno_id = $_SESSION['aluno_id'] ?? null;
 
         if (!$equacao_id) {
             // Busca uma equação aleatória
             if ($this->equacao) {
                 try {
-                    $equacao = $this->equacao->getRandom($_SESSION['aluno_id'] ?? null);
+                    $equacao = $this->equacao->getRandom($aluno_id);
                     if ($equacao) {
                         $equacao_id = $equacao['id'];
                     }
@@ -252,15 +253,25 @@ public function dashboard()
         }
 
         // Verifica se o aluno já concluiu esta equação
-        if ($this->progresso && isset($_SESSION['aluno_id'])) {
+        if ($this->progresso && $aluno_id) {
             try {
-                $concluida = $this->progresso->isConcluida($_SESSION['aluno_id'], $equacao_id);
+                $concluida = $this->progresso->isConcluida($aluno_id, $equacao_id);
                 if ($concluida) {
                     header('Location: index.php?view=parabens&id=' . $equacao_id);
                     exit;
                 }
+                
+                // Busca o progresso atual
+                $progresso_atual = $this->progresso->getByAlunoEquacao($aluno_id, $equacao_id);
+                if ($progresso_atual && isset($progresso_atual['passo_atual'])) {
+                    // Se o passo atual do progresso for maior que o passo da URL, usa o do progresso
+                    if ((int)$progresso_atual['passo_atual'] > (int)$passo) {
+                        $passo = $progresso_atual['passo_atual'];
+                    }
+                }
             } catch (Exception $e) {
                 // Continua se não conseguir verificar
+                error_log("Erro ao verificar progresso: " . $e->getMessage());
             }
         }
 
@@ -287,7 +298,7 @@ public function dashboard()
     }
 
     /**
-     * Verifica a resposta do aluno
+     * Verifica a resposta do aluno e registra o progresso
      */
     public function verificarResposta()
     {
@@ -311,9 +322,20 @@ public function dashboard()
         $equacao_id = $_POST['equacao_id'] ?? null;
         $passo_atual = $_POST['passo_atual'] ?? 1;
         $resposta = $_POST['resposta'] ?? '';
+        $aluno_id = $_SESSION['aluno_id'] ?? null;
 
-        if (!$equacao_id) {
-            $_SESSION['erro_resposta'] = 'ID da equação não fornecido.';
+        // ===== LOGS DE DEBUG =====
+        error_log("=== VERIFICAR RESPOSTA ===");
+        error_log("Equação ID: " . $equacao_id);
+        error_log("Passo atual: " . $passo_atual);
+        error_log("Resposta: " . $resposta);
+        error_log("Aluno ID: " . $aluno_id);
+        error_log("Sessão: " . print_r($_SESSION, true));
+        // ===== FIM LOGS =====
+
+        if (!$equacao_id || !$aluno_id) {
+            $_SESSION['erro_resposta'] = 'Dados inválidos. Tente novamente.';
+            error_log("ERRO: Dados inválidos - equacao_id: $equacao_id, aluno_id: $aluno_id");
             header('Location: index.php?view=aluno/dashboard');
             exit;
         }
@@ -322,46 +344,115 @@ public function dashboard()
         if ($this->equacao) {
             try {
                 $equacao = $this->equacao->getById($equacao_id);
+                error_log("Equação encontrada: " . print_r($equacao, true));
             } catch (Exception $e) {
                 $equacao = null;
+                error_log("ERRO ao buscar equação: " . $e->getMessage());
             }
         } else {
             $equacao = null;
+            error_log("ERRO: Model Equacao não disponível");
         }
 
         if (!$equacao) {
             $_SESSION['erro_resposta'] = 'Equação não encontrada.';
+            error_log("ERRO: Equação não encontrada para ID: " . $equacao_id);
             header('Location: index.php?view=aluno/dashboard');
             exit;
         }
 
         // Valida a resposta
         $correto = $this->validarPasso($equacao, (int)$passo_atual, $resposta);
+        error_log("Resultado da validação: " . ($correto ? 'CORRETO' : 'INCORRETO'));
 
-        // Registra o progresso
-        if ($this->progresso && isset($_SESSION['aluno_id'])) {
+        // ===== REGISTRO DO PROGRESSO =====
+        if ($this->progresso) {
             try {
+                error_log("Registrando tentativa...");
+                
+                // 1. Registra a tentativa
                 $this->progresso->registrarTentativa(
-                    $_SESSION['aluno_id'],
+                    $aluno_id,
                     $equacao_id,
                     (int)$passo_atual,
                     $resposta,
                     $correto
                 );
+                error_log("Tentativa registrada com sucesso");
 
-                if ($correto && (int)$passo_atual == 4) {
-                    // Último passo correto - marca como concluída
-                    $this->progresso->marcarConcluida($_SESSION['aluno_id'], $equacao_id);
+                // 2. Se o passo estiver correto, avança o passo atual
+                if ($correto) {
+                    error_log("Resposta correta! Avançando passo...");
+                    
+                    // Verifica se já existe progresso para esta equação
+                    $progresso_atual = $this->progresso->getByAlunoEquacao($aluno_id, $equacao_id);
+                    error_log("Progresso atual: " . print_r($progresso_atual, true));
+                    
+                    if ($progresso_atual) {
+                        // Atualiza o passo atual
+                        $novo_passo = (int)$passo_atual + 1;
+                        $this->progresso->atualizarPasso($aluno_id, $equacao_id, $novo_passo);
+                        error_log("Passo atualizado para: " . $novo_passo);
+                    } else {
+                        // Cria novo progresso
+                        $this->progresso->iniciar($aluno_id, $equacao_id);
+                        error_log("Novo progresso iniciado");
+                        // Avança para o próximo passo (já que acertou o primeiro)
+                        if ((int)$passo_atual < 4) {
+                            $novo_passo = (int)$passo_atual + 1;
+                            $this->progresso->atualizarPasso($aluno_id, $equacao_id, $novo_passo);
+                            error_log("Passo inicial atualizado para: " . $novo_passo);
+                        }
+                    }
+
+                    // 3. Se for o último passo (4), marca como concluída
+                    if ((int)$passo_atual == 4) {
+                        $this->progresso->marcarConcluida($aluno_id, $equacao_id);
+                        error_log("Equação marcada como concluída!");
+                        
+                        // Registra a conclusão no sistema de logs
+                        if ($this->usuario && method_exists($this->usuario, 'registrarLog')) {
+                            $this->usuario->registrarLog(
+                                $aluno_id,
+                                'EXERCICIO_CONCLUIDO',
+                                "Aluno concluiu equação ID {$equacao_id}"
+                            );
+                            error_log("Log de conclusão registrado");
+                        }
+                    }
+                } else {
+                    // Resposta incorreta - registra o erro
+                    error_log("Resposta incorreta. Registrando erro...");
+                    
+                    if (class_exists('RegistroErro')) {
+                        $registroErro = new RegistroErro();
+                        $tipo_erro = $registroErro->identificarTipoErro($equacao, (int)$passo_atual, $resposta);
+                        
+                        $resposta_esperada = $this->getRespostaEsperada($equacao, (int)$passo_atual);
+                        $registroErro->registrar(
+                            $aluno_id,
+                            $equacao_id,
+                            (int)$passo_atual,
+                            $tipo_erro,
+                            $resposta,
+                            $resposta_esperada
+                        );
+                        error_log("Erro registrado: " . $tipo_erro);
+                    }
                 }
             } catch (Exception $e) {
-                // Registra erro mas continua
-                error_log("Erro ao registrar progresso: " . $e->getMessage());
+                error_log("ERRO ao registrar progresso: " . $e->getMessage());
+                error_log("Trace: " . $e->getTraceAsString());
             }
+        } else {
+            error_log("ERRO: Model ProgressoAluno não disponível");
         }
+        // ===== FIM REGISTRO DO PROGRESSO =====
 
         // Redireciona baseado no resultado
         if ($correto) {
             $proximoPasso = (int)$passo_atual + 1;
+            error_log("Redirecionando para o próximo passo: " . $proximoPasso);
             if ($proximoPasso <= 4) {
                 header('Location: index.php?view=exercicio&id=' . $equacao_id . '&passo=' . $proximoPasso);
             } else {
@@ -369,6 +460,7 @@ public function dashboard()
             }
         } else {
             $_SESSION['erro_resposta'] = 'Resposta incorreta. Tente novamente!';
+            error_log("Redirecionando para tentar novamente o passo " . $passo_atual);
             header('Location: index.php?view=exercicio&id=' . $equacao_id . '&passo=' . $passo_atual . '&erro=1');
         }
         exit;
@@ -518,70 +610,123 @@ public function dashboard()
         }
     }
 
-    /**
-     * Valida a resposta do aluno para um passo específico
-     */
-    private function validarPasso($equacao, $passo, $resposta)
-    {
-        if ($resposta === '') {
-            return false;
-        }
+/**
+ * Valida a resposta do aluno para um passo específico
+ */
+private function validarPasso($equacao, $passo, $resposta)
+{
+    if ($resposta === '') {
+        return false;
+    }
 
-        $resp = strtolower(trim($resposta));
-        $resp = preg_replace('/[\s\x{200B}-\x{200D}\x{FEFF}]/u', '', $resp);
-        $resp = str_replace(['–', '—', '−'], '-', $resp);
+    // Limpa a resposta
+    $resp = trim($resposta);
+    $resp = preg_replace('/\s+/', ' ', $resp);
+    $resp = str_replace(['–', '—', '−'], '-', $resp);
+    $respClean = preg_replace('/\s+/', '', $resp);
 
-        $a = (int)($equacao['a'] ?? 1);
-        $b = (int)($equacao['b'] ?? 0);
-        $c = (int)($equacao['c'] ?? 0);
+    $a = (int)($equacao['a'] ?? 1);
+    $b = (int)($equacao['b'] ?? 0);
+    $c = (int)($equacao['c'] ?? 0);
 
-        $termoX = ($a === 1) ? '(1?x)' : (($a === -1) ? '(-1?x)' : "({$a}x)");
+    // Gera o termo X esperado
+    $termoX = ($a === 1) ? 'x' : (($a === -1) ? '-x' : "{$a}x");
 
-        switch ((int)$passo) {
-            case 1:
-                // Passo 1: Identificar o termo com x
-                // Ex: "3x" ou "x" ou "-x"
-                return preg_match('/^' . $termoX . '$/i', $resp) === 1;
+    switch ((int)$passo) {
+        case 1:
+            // Passo 1: EXATAMENTE o termo com o coeficiente correto
+            return ($respClean === $termoX);
 
-            case 2:
-                // Passo 2: Isolar o termo com x
-                // Ex: "3x = 7" ou "x = 7"
-                $bAbs = abs($b);
-                $opOposta = ($b >= 0) ? '-' : '\+';
-                return preg_match('/^(' . $termoX . '=)?' . $c . $opOposta . $bAbs . '$/i', $resp) === 1;
-
-            case 3:
-                // Passo 3: Calcular o resultado do lado direito
-                // Ex: "7" ou "x = 7" ou "3x = 7"
-                $resultado = $c - $b;
-                return preg_match('/^(' . $termoX . '=)?' . $resultado . '$/i', $resp) === 1;
-
-            case 4:
-                // Passo 4: Encontrar o valor de x
-                // Ex: "3" ou "x = 3"
-                if ($a === 0) return false;
-                $valorX = ($c - $b) / $a;
-                // Verifica se é inteiro para comparação exata
-                if (is_int($valorX) || floor($valorX) == $valorX) {
-                    return preg_match('/^(x=)?' . $valorX . '$/i', $resp) === 1;
-                } else {
-                    // Para números decimais, permite aproximação
-                    $valorXStr = number_format($valorX, 2);
-                    return preg_match('/^(x=)?' . $valorXStr . '$/i', $resp) === 1 || 
-                           preg_match('/^(x=)?' . number_format($valorX, 1) . '$/i', $resp) === 1;
+        case 2:
+            // Passo 2: Isolar o termo com X
+            // Aceita: "2x = 11 - 5" ou "2x = 6"
+            $resultadoEsperado = $c - $b;
+            
+            // Verifica se começa com o termo X e tem "="
+            if (strpos($respClean, $termoX) === 0 && strpos($respClean, '=') !== false) {
+                $partes = explode('=', $respClean);
+                $ladoDireito = $partes[1] ?? '';
+                
+                // Tenta calcular o lado direito se for uma expressão
+                if (preg_match('/^(\d+)([-+])(\d+)$/', $ladoDireito, $matches)) {
+                    $num1 = (int)$matches[1];
+                    $operador = $matches[2];
+                    $num2 = (int)$matches[3];
+                    $resultadoCalculado = ($operador === '-') ? ($num1 - $num2) : ($num1 + $num2);
+                    if ($resultadoCalculado === $resultadoEsperado) {
+                        return true;
+                    }
                 }
+                
+                // Verifica se o lado direito é o número esperado
+                if (is_numeric($ladoDireito) && (int)$ladoDireito === $resultadoEsperado) {
+                    return true;
+                }
+            }
+            
+            return false;
 
-            default:
-                return false;
-        }
-    }
+        case 3:
+            // Passo 3: Resolver a operação do lado direito
+            // DEVE mostrar a equação com o termo X: "2x = 6"
+            // NÃO pode ser apenas "6"
+            $resultadoEsperado = $c - $b;
+            
+            // Verifica se a resposta contém "=" e o termo X
+            if (strpos($respClean, '=') !== false && strpos($respClean, $termoX) !== false) {
+                $partes = explode('=', $respClean);
+                $ladoEsquerdo = $partes[0] ?? '';
+                $ladoDireito = $partes[1] ?? '';
+                
+                // Verifica se o lado esquerdo é EXATAMENTE o termo X
+                if ($ladoEsquerdo === $termoX) {
+                    // Verifica se o lado direito é o resultado esperado
+                    if (is_numeric($ladoDireito) && (int)$ladoDireito === $resultadoEsperado) {
+                        return true;
+                    }
+                }
+            }
+            
+            // Verifica se é exatamente "2x = 6" (com espaços)
+            if (preg_match('/^' . preg_quote($termoX, '/') . '\s*=\s*' . $resultadoEsperado . '$/i', $resp)) {
+                return true;
+            }
+            
+            return false;
 
-    /**
-     * Redireciona para o dashboard se não estiver autenticado
-     */
-    private function redirectToLogin()
-    {
-        header('Location: index.php?view=login');
-        exit;
+        case 4:
+            // Passo 4: Encontrar o valor de X
+            if ($a === 0) return false;
+            
+            $valorX = ($c - $b) / $a;
+            
+            // CASO 1: Apenas o número
+            if (is_numeric($respClean) && (float)$respClean == $valorX) {
+                return true;
+            }
+            
+            // CASO 2: Formato "x=3" ou "x = 3"
+            if (strpos($respClean, '=') !== false) {
+                $partes = explode('=', $respClean);
+                $ladoEsquerdo = $partes[0] ?? '';
+                $ladoDireito = $partes[1] ?? '';
+                
+                if (preg_match('/^x$/i', $ladoEsquerdo) && is_numeric($ladoDireito) && (float)$ladoDireito == $valorX) {
+                    return true;
+                }
+            }
+            
+            // CASO 3: "x = 3" com espaços
+            if (preg_match('/^x\s*=\s*' . $valorX . '$/i', $resp)) {
+                return true;
+            }
+            
+            return false;
+
+        default:
+            return false;
     }
+}
+
+   
 }

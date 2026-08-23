@@ -117,4 +117,24 @@ class Usuario
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([':id' => $id]);
     }
+    /**
+ * Registra um log de atividade do usuário
+ */
+public function registrarLog($usuario_id, $acao, $descricao = null)
+{
+    try {
+        $sql = "INSERT INTO logs_sistema (usuario_id, acao, descricao, ip_address) 
+                VALUES (:usuario_id, :acao, :descricao, :ip_address)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            ':usuario_id' => $usuario_id,
+            ':acao' => $acao,
+            ':descricao' => $descricao,
+            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null
+        ]);
+    } catch (PDOException $e) {
+        error_log("Erro ao registrar log: " . $e->getMessage());
+        return false;
+    }
+}
 }

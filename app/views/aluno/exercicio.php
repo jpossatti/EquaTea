@@ -2,6 +2,7 @@
 /**
  * app/views/aluno/exercicio.php
  * Interface do passo a passo para resolução de equações no EquaTEA.
+ * Com integração ao sistema de progresso do aluno.
  */
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -11,6 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // 1. Captura e validação dos parâmetros via URL
 $equacaoId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 1;
 $passo     = filter_input(INPUT_GET, 'passo', FILTER_VALIDATE_INT) ?: 1;
+$erro      = filter_input(INPUT_GET, 'erro', FILTER_VALIDATE_INT) ?: 0;
 
 // SE O PASSO FOR MAIOR QUE 4, REDIRECIONA DIRETO PARA A TELA DE PARABÉNS
 if ($passo > 4) {
@@ -20,8 +22,8 @@ if ($passo > 4) {
 
 // 2. Tenta carregar a equação ativa do Model se fornecida pelo Controller
 $equacaoDados = null;
-if (isset($equacao) && is_object($equacao) && method_exists($equacao, 'getById')) {
-    $equacaoDados = $equacao->getById($equacaoId);
+if (isset($equacao) && is_array($equacao) && !empty($equacao)) {
+    $equacaoDados = $equacao;
 } elseif (class_exists('Equacao')) {
     try {
         $model = new Equacao();
@@ -32,7 +34,7 @@ if (isset($equacao) && is_object($equacao) && method_exists($equacao, 'getById')
 }
 
 // Fallback de segurança para testes
-if (!$equacaoDados) {
+if (!$equacaoDados || !is_array($equacaoDados)) {
     $equacaoDados = [
         'id'          => $equacaoId,
         'a'           => 1,
@@ -47,7 +49,8 @@ $a = (int)($equacaoDados['a'] ?? 1);
 $b = (int)($equacaoDados['b'] ?? 0);
 $c = (int)($equacaoDados['c'] ?? 0);
 
-$termoA = ($a === 1) ? '1x' : (($a === -1) ? '-1x' : "{$a}x");
+// Formatação da equação
+$termoA = ($a === 1) ? 'x' : (($a === -1) ? '-x' : "{$a}x");
 $sinalB = ($b >= 0) ? '+ ' . $b : '- ' . abs($b);
 $bInvertido = -$b;
 $sinalBInvertido = ($bInvertido >= 0) ? '+ ' . $bInvertido : '- ' . abs($bInvertido);
@@ -78,7 +81,7 @@ $exemploA = ($a === 3) ? 2 : 3;
 $exemploB = ($b === 5) ? 4 : 5;
 $exemploC = ($c === 20) ? 14 : 20;
 
-$exemploTermoA = ($exemploA === 1) ? '1x' : "{$exemploA}x";
+$exemploTermoA = ($exemploA === 1) ? 'x' : "{$exemploA}x";
 $exemploSinalB = ($exemploB >= 0) ? '+ ' . $exemploB : '- ' . abs($exemploB);
 $exemploBInvertido = -$exemploB;
 $exemploSinalInvertido = ($exemploBInvertido >= 0) ? '+ ' . $exemploBInvertido : '- ' . abs($exemploBInvertido);
@@ -92,7 +95,6 @@ switch ($passo) {
         $descricao     = "Escreva qual é o termo que contém a variável X.";
         $textoExemplo  = "Se a equação fosse <b>{$exemploTermoA} {$exemploSinalB} = {$exemploC}</b>, a resposta seria <b>{$exemploTermoA}</b>";
         $placeholder   = "Ex: {$exemploTermoA}";
-        $proximoAction = "index.php?view=exercicio&id={$equacaoId}&passo=2";
         $textoBotao    = "Validar Passo 1 ➔";
         break;
 
@@ -101,7 +103,6 @@ switch ($passo) {
         $descricao     = "Passe o termo independente para o outro lado mudando o sinal.";
         $textoExemplo  = "Se a equação fosse <b>{$exemploTermoA} {$exemploSinalB} = {$exemploC}</b>, a resposta seria <b>{$exemploTermoA} = {$exemploC} {$exemploSinalInvertido}</b>";
         $placeholder   = "Ex: {$exemploTermoA} = {$exemploC} " . ($exemploBInvertido >= 0 ? "+ {$exemploBInvertido}" : "- " . abs($exemploBInvertido));
-        $proximoAction = "index.php?view=exercicio&id={$equacaoId}&passo=3";
         $textoBotao    = "Validar Passo 2 ➔";
         break;
 
@@ -110,7 +111,6 @@ switch ($passo) {
         $descricao     = "Calcule o resultado numérico do lado direito do sinal de igual.";
         $textoExemplo  = "Se a equação fosse <b>{$exemploTermoA} = {$exemploC} {$exemploSinalInvertido}</b>, a resposta seria <b>{$exemploTermoA} = {$exemploLadoDireito}</b>";
         $placeholder   = "Ex: {$exemploTermoA} = {$exemploLadoDireito}";
-        $proximoAction = "index.php?view=exercicio&id={$equacaoId}&passo=4";
         $textoBotao    = "Validar Passo 3 ➔";
         break;
 
@@ -119,25 +119,60 @@ switch ($passo) {
         $descricao     = "Divida o valor do lado direito pelo coeficiente de X.";
         $textoExemplo  = "Se a equação fosse <b>{$exemploTermoA} = {$exemploLadoDireito}</b>, a resposta seria <b>x = {$exemploSolucao}</b>";
         $placeholder   = "Ex: x = {$exemploSolucao}";
-        $proximoAction = "index.php?view=parabens&id={$equacaoId}";
         $textoBotao    = "Concluir Exercício 🎉";
         break;
 
     default:
-        $proximoAction = "index.php?view=parabens&id={$equacaoId}";
         $textoBotao    = "Concluir Exercício 🎉";
         break;
 }
 
-// Processa submissão do formulário caso o controller central não tenha feito
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $proximoPasso = $passo + 1;
-    if ($proximoPasso > 4) {
-        header("Location: index.php?view=parabens&id={$equacaoId}");
-    } else {
-        header("Location: index.php?view=exercicio&id={$equacaoId}&passo={$proximoPasso}");
+// 5. Busca o progresso atual do aluno para esta equação
+$progresso_atual = null;
+$tentativas_realizadas = 0;
+$aluno_id = $_SESSION['aluno_id'] ?? null;
+
+if ($aluno_id && class_exists('ProgressoAluno')) {
+    try {
+        $progressoModel = new ProgressoAluno();
+        $progresso_atual = $progressoModel->getByAlunoEquacao($aluno_id, $equacaoId);
+        if ($progresso_atual && is_array($progresso_atual)) {
+            $tentativas_realizadas = $progresso_atual['tentativas'] ?? 0;
+        }
+    } catch (Exception $e) {
+        // Mantém valores padrão
     }
-    exit;
+}
+
+// 6. Mensagem de erro ou sucesso
+$mensagem_erro = $_SESSION['erro_resposta'] ?? null;
+unset($_SESSION['erro_resposta']);
+
+$mensagem_sucesso = $_SESSION['sucesso_resposta'] ?? null;
+unset($_SESSION['sucesso_resposta']);
+
+// 7. Verifica se há tentativas registradas para este passo
+$tentativas_passo = 0;
+if ($aluno_id && class_exists('ProgressoAluno')) {
+    try {
+        $progressoModel = new ProgressoAluno();
+       // 7. Verifica se há tentativas registradas para este passo
+$tentativas_passo = 0;
+if ($aluno_id && class_exists('ProgressoAluno')) {
+    try {
+        $progressoModel = new ProgressoAluno();
+        // Verifica se o método existe antes de chamar
+        if (method_exists($progressoModel, 'getTentativasPasso')) {
+            $tentativas_passo = $progressoModel->getTentativasPasso($aluno_id, $equacaoId, $passo);
+        }
+    } catch (Exception $e) {
+        // Mantém valor padrão
+        error_log("Erro ao buscar tentativas do passo: " . $e->getMessage());
+    }
+}
+    } catch (Exception $e) {
+        // Mantém valor padrão
+    }
 }
 ?>
 
@@ -157,6 +192,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --text-light: #ffffff;
             --text-muted: #aaaaaa;
             --border-color: #333333;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -164,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: var(--text-light);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -186,6 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .header-title h2 {
@@ -200,6 +245,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 0.8rem;
+        }
+
+        .badge-progresso {
+            background-color: var(--card-inner);
+            color: var(--primary-cyan);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: 1px solid var(--primary-cyan);
         }
 
         .equation-box {
@@ -223,6 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 2.2rem;
             font-weight: bold;
             letter-spacing: 1px;
+            color: var(--text-light);
         }
 
         .step-title {
@@ -256,7 +311,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-right: 6px;
         }
 
-        .form-group { margin-bottom: 20px; }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
         .form-group label {
             display: block;
@@ -268,17 +325,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .input-response {
             width: 100%;
             background-color: var(--card-inner);
-            border: 1px solid var(--primary-green);
+            border: 2px solid var(--primary-green);
             border-radius: 6px;
             padding: 12px 15px;
             color: var(--text-light);
             font-size: 1rem;
             box-sizing: border-box;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .input-response:focus { border-color: var(--primary-cyan); }
+        .input-response:focus {
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 210, 211, 0.2);
+        }
+
+        .input-response.error {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+        }
+
+        .input-response.success {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+        }
 
         .btn-submit {
             width: 100%;
@@ -290,10 +360,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
         }
 
-        .btn-submit:hover { background-color: #219150; }
+        .btn-submit:hover {
+            background-color: #219150;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .mensagem-erro {
+            background-color: rgba(231, 76, 60, 0.15);
+            border: 1px solid var(--error-color);
+            color: #ff6b6b;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .mensagem-sucesso {
+            background-color: rgba(46, 204, 113, 0.15);
+            border: 1px solid var(--success-color);
+            color: #55efc4;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .info-tentativas {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-align: right;
+            margin-top: 5px;
+        }
 
         .back-link {
             display: block;
@@ -302,17 +410,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #3498db;
             text-decoration: none;
             font-size: 0.85rem;
+            transition: color 0.2s;
         }
 
-        .back-link:hover { text-decoration: underline; }
+        .back-link:hover {
+            color: #5dade2;
+            text-decoration: underline;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        .nav-links a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .exercise-card {
+                padding: 20px;
+            }
+
+            .equation-box .expression {
+                font-size: 1.6rem;
+            }
+
+            .header-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="exercise-card">
         <div class="header-title">
-            <h2>EquaTEA - Resolução Passos</h2>
-            <span class="badge-id">Equação #<?php echo htmlspecialchars((string)$equacaoId); ?></span>
+            <h2>📐 EquaTEA - Resolução</h2>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <span class="badge-id">Equação #<?php echo htmlspecialchars((string)$equacaoId); ?></span>
+                <span class="badge-progresso">Passo <?php echo (int)$passo; ?>/4</span>
+                <?php if ($tentativas_realizadas > 0): ?>
+                    <span class="badge-progresso" style="border-color: #f39c12; color: #f39c12;">
+                        🔄 <?php echo $tentativas_realizadas; ?> tentativa(s)
+                    </span>
+                <?php endif; ?>
+            </div>
         </div>
 
         <div class="equation-box">
@@ -324,30 +485,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="step-desc"><?php echo htmlspecialchars($descricao); ?></p>
 
         <div class="exemplo-box">
-            <span class="exemplo-tag">Exemplo:</span>
+            <span class="exemplo-tag">💡 Exemplo:</span>
             <span><?php echo $textoExemplo; ?></span>
         </div>
 
-        <!-- Formulário com Action mantendo o parâmetro da página -->
-        <form action="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>" method="POST">
-            <div class="form-group">
-                <label for="resposta">Sua Resposta:</label>
-                <input type="text" 
-                       id="resposta" 
-                       name="resposta" 
-                       class="input-response" 
-                       placeholder="<?php echo htmlspecialchars($placeholder); ?>" 
-                       required 
-                       autocomplete="off"
-                       autofocus>
+        <?php if ($mensagem_erro): ?>
+            <div class="mensagem-erro">
+                ❌ <?php echo htmlspecialchars($mensagem_erro); ?>
+                <?php if ($tentativas_passo > 1): ?>
+                    <br><small>Você já tentou <?php echo $tentativas_passo; ?> vez(es) este passo. Continue tentando!</small>
+                <?php endif; ?>
             </div>
+        <?php endif; ?>
 
-            <button type="submit" class="btn-submit">
-                <?php echo htmlspecialchars($textoBotao); ?>
-            </button>
-        </form>
+        <?php if ($mensagem_sucesso): ?>
+            <div class="mensagem-sucesso">
+                ✅ <?php echo htmlspecialchars($mensagem_sucesso); ?>
+            </div>
+        <?php endif; ?>
 
-        <a href="index.php?view=dashboard" class="back-link">⬅ Voltar ao Dashboard</a>
+        <?php if ($tentativas_passo > 3): ?>
+            <div style="background-color: rgba(241, 196, 15, 0.1); border: 1px solid #f1c40f; color: #f1c40f; padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 0.85rem;">
+                💡 Dica: Reveja o exemplo acima e tente novamente. Preste atenção nos sinais e operações!
+            </div>
+        <?php endif; ?>
+
+       <!-- Formulário com Action apontando para o método verificarResposta -->
+<form action="index.php?action=verificar_resposta" method="POST">
+    <!-- Campos hidden para enviar o ID da equação e o passo atual -->
+    <input type="hidden" name="equacao_id" value="<?php echo (int)$equacaoId; ?>">
+    <input type="hidden" name="passo_atual" value="<?php echo (int)$passo; ?>">
+    
+    <div class="form-group">
+        <label for="resposta">Sua Resposta:</label>
+        <input type="text" 
+               id="resposta" 
+               name="resposta" 
+               class="input-response <?php echo $mensagem_erro ? 'error' : ''; ?>" 
+               placeholder="<?php echo htmlspecialchars($placeholder); ?>" 
+               required 
+               autocomplete="off"
+               autofocus>
+    </div>
+
+    <button type="submit" class="btn-submit">
+        <?php echo htmlspecialchars($textoBotao); ?>
+    </button>
+</form>
+
+        <div class="nav-links">
+            <a href="index.php?view=aluno/dashboard">⬅ Voltar ao Dashboard</a>
+            <?php if ($passo > 1): ?>
+                <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo - 1; ?>">⬅ Passo anterior</a>
+            <?php endif; ?>
+            <?php if ($passo < 4): ?>
+                <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo + 1; ?>">Próximo passo ➔</a>
+            <?php endif; ?>
+        </div>
+
+        <!-- Informações de progresso -->
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="color: var(--text-muted); font-size: 0.75rem;">
+                🔹 Equação: <?php echo htmlspecialchars($termoA . ' ' . $sinalB . ' = ' . $c); ?>
+            </div>
+            <div style="color: var(--text-muted); font-size: 0.75rem;">
+                🔹 Dificuldade: <span style="text-transform: capitalize;"><?php echo htmlspecialchars($equacaoDados['dificuldade'] ?? 'Fácil'); ?></span>
+            </div>
+            <?php if ($tentativas_realizadas > 0): ?>
+                <div style="color: var(--text-muted); font-size: 0.75rem;">
+                    🔹 Tentativas: <?php echo $tentativas_realizadas; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 
 </body>
