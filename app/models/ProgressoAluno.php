@@ -81,58 +81,94 @@ class ProgressoAluno
         }
     }
     
-    /**
-     * Registra uma tentativa do aluno
-     */
-    public function registrarTentativa($aluno_id, $equacao_id, $passo, $resposta, $correto)
-    {
-        try {
-            // Verifica se já existe registro de tentativa para este passo
-            $sql = "SELECT id FROM progresso_tentativas 
-                    WHERE aluno_id = :aluno_id 
-                    AND equacao_id = :equacao_id 
-                    AND passo = :passo";
+/**
+ * Registra uma tentativa do aluno
+ */
+public function registrarTentativa($aluno_id, $equacao_id, $passo, $resposta, $correto)
+{
+    try {
+        // VERIFICA SE A TABELA EXISTE
+        $sql = "SHOW TABLES LIKE 'progresso_tentativas'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $tabelaExiste = $stmt->fetch();
+        
+        if (!$tabelaExiste) {
+            error_log("Tabela progresso_tentativas não existe. Criando...");
+            $this->criarTabelaTentativas();
+        }
+        
+        // Verifica se já existe registro de tentativa para este passo
+        $sql = "SELECT id FROM progresso_tentativas 
+                WHERE aluno_id = :aluno_id 
+                AND equacao_id = :equacao_id 
+                AND passo = :passo";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':aluno_id' => $aluno_id,
+            ':equacao_id' => $equacao_id,
+            ':passo' => $passo
+        ]);
+        $existe = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($existe) {
+            // Atualiza a tentativa existente
+            $sql = "UPDATE progresso_tentativas 
+                    SET resposta = :resposta, 
+                        correto = :correto, 
+                        data_tentativa = NOW() 
+                    WHERE id = :id";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([
+            return $stmt->execute([
+                ':resposta' => $resposta,
+                ':correto' => $correto ? 1 : 0,
+                ':id' => $existe['id']
+            ]);
+        } else {
+            // Insere nova tentativa
+            $sql = "INSERT INTO progresso_tentativas 
+                    (aluno_id, equacao_id, passo, resposta, correto, data_tentativa) 
+                    VALUES 
+                    (:aluno_id, :equacao_id, :passo, :resposta, :correto, NOW())";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
                 ':aluno_id' => $aluno_id,
                 ':equacao_id' => $equacao_id,
-                ':passo' => $passo
+                ':passo' => $passo,
+                ':resposta' => $resposta,
+                ':correto' => $correto ? 1 : 0
             ]);
-            $existe = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($existe) {
-                // Atualiza a tentativa existente
-                $sql = "UPDATE progresso_tentativas 
-                        SET resposta = :resposta, 
-                            correto = :correto, 
-                            data_tentativa = NOW() 
-                        WHERE id = :id";
-                $stmt = $this->db->prepare($sql);
-                return $stmt->execute([
-                    ':resposta' => $resposta,
-                    ':correto' => $correto ? 1 : 0,
-                    ':id' => $existe['id']
-                ]);
-            } else {
-                // Insere nova tentativa
-                $sql = "INSERT INTO progresso_tentativas 
-                        (aluno_id, equacao_id, passo, resposta, correto, data_tentativa) 
-                        VALUES 
-                        (:aluno_id, :equacao_id, :passo, :resposta, :correto, NOW())";
-                $stmt = $this->db->prepare($sql);
-                return $stmt->execute([
-                    ':aluno_id' => $aluno_id,
-                    ':equacao_id' => $equacao_id,
-                    ':passo' => $passo,
-                    ':resposta' => $resposta,
-                    ':correto' => $correto ? 1 : 0
-                ]);
-            }
-        } catch (PDOException $e) {
-            error_log("Erro ao registrar tentativa: " . $e->getMessage());
-            return false;
         }
+    } catch (PDOException $e) {
+        error_log("Erro ao registrar tentativa: " . $e->getMessage());
+        return false;
     }
+}
+
+/**
+ * Cria a tabela de tentativas se não existir
+ */
+private function criarTabelaTentativas()
+{
+    try {
+        $sql = "CREATE TABLE IF NOT EXISTS progresso_tentativas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            aluno_id INT NOT NULL,
+            equacao_id INT NOT NULL,
+            passo INT NOT NULL,
+            resposta VARCHAR(255),
+            correto TINYINT(1) DEFAULT 0,
+            data_tentativa DATETIME NOT NULL,
+            INDEX idx_aluno_equacao (aluno_id, equacao_id)
+        )";
+        $this->db->exec($sql);
+        error_log("Tabela progresso_tentativas criada com sucesso");
+        return true;
+    } catch (PDOException $e) {
+        error_log("Erro ao criar tabela progresso_tentativas: " . $e->getMessage());
+        return false;
+    }
+}
     
     /**
      * Verifica se uma equação já foi concluída pelo aluno

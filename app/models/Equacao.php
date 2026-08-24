@@ -267,4 +267,104 @@ class Equacao
                 return null;
         }
     }
+ /**
+ * Obtém todas as equações com o status de progresso do aluno
+ * 
+ * @param int $aluno_id ID do aluno
+ * @return array Lista de equações com status
+ */
+public function getEquacoesComStatus($aluno_id)
+{
+    try {
+        $sql = "SELECT 
+                    e.*,
+                    CONCAT(
+                        CASE 
+                            WHEN e.a = 1 THEN 'x' 
+                            WHEN e.a = -1 THEN '-x' 
+                            ELSE CONCAT(e.a, 'x') 
+                        END,
+                        CASE 
+                            WHEN e.b > 0 THEN CONCAT(' + ', e.b)
+                            WHEN e.b < 0 THEN CONCAT(' - ', ABS(e.b))
+                            ELSE ''
+                        END,
+                        ' = ', e.c
+                    ) AS equacao_formatada,
+                    p.passo_atual,
+                    p.concluida,
+                    p.data_inicio,
+                    p.data_conclusao,
+                    p.tentativas,
+                    CASE 
+                        WHEN p.concluida = 1 THEN 'Concluído'
+                        WHEN p.passo_atual IS NOT NULL AND p.passo_atual > 0 THEN CONCAT('Passo ', p.passo_atual, '/4')
+                        ELSE 'Pendente'
+                    END AS status_progresso
+                FROM equacoes e
+                LEFT JOIN progresso_aluno p 
+                    ON e.id = p.equacao_id 
+                    AND p.aluno_id = :aluno_id
+                ORDER BY 
+                    FIELD(e.dificuldade, 'facil', 'medio', 'dificil'),
+                    e.id ASC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':aluno_id' => $aluno_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $result ?: [];
+        
+    } catch (PDOException $e) {
+        error_log("Erro ao buscar equações com status: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Obtém o status de uma equação específica para o aluno
+ */
+public function getStatusEquacao($aluno_id, $equacao_id)
+{
+    try {
+        $sql = "SELECT 
+                    p.concluida,
+                    p.passo_atual,
+                    CASE 
+                        WHEN p.concluida = 1 THEN 'Concluído'
+                        WHEN p.passo_atual IS NOT NULL AND p.passo_atual > 0 THEN CONCAT('Passo ', p.passo_atual, '/4')
+                        ELSE 'Pendente'
+                    END AS status_progresso
+                FROM equacoes e
+                LEFT JOIN progresso_aluno p 
+                    ON e.id = p.equacao_id 
+                    AND p.aluno_id = :aluno_id
+                WHERE e.id = :equacao_id";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':aluno_id' => $aluno_id,
+            ':equacao_id' => $equacao_id
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$result) {
+            return [
+                'concluida' => false,
+                'passo_atual' => null,
+                'status_progresso' => 'Pendente'
+            ];
+        }
+        
+        return $result;
+        
+    } catch (PDOException $e) {
+        error_log("Erro ao buscar status da equação: " . $e->getMessage());
+        return [
+            'concluida' => false,
+            'passo_atual' => null,
+            'status_progresso' => 'Pendente'
+        ];
+    }
+}
 }

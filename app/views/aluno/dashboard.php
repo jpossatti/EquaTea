@@ -1,7 +1,7 @@
 <?php
 /**
  * app/views/aluno/dashboard.php
- * Painel do Aluno - Com controle de sessão
+ * Painel do Aluno - Com controle de sessão e status das equações
  */
 
 // ===== CONTROLE DE SESSÃO =====
@@ -27,6 +27,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 1800))
     header('Location: index.php?view=login');
     exit;
 }
+
+// Atualiza o tempo da sessão
+$_SESSION['login_time'] = time();
 // ===== FIM CONTROLE DE SESSÃO =====
 
 // 1. CARREGAMENTO DAS DEPENDÊNCIAS
@@ -65,6 +68,7 @@ if ($aluno_id && class_exists('Aluno')) {
             if ($aluno && is_array($aluno)) {
                 // Atualiza o aluno_id na sessão
                 $_SESSION['aluno_id'] = $aluno['id'] ?? null;
+                $aluno_id = $aluno['id'] ?? null;
             }
         }
     } catch (Exception $e) {
@@ -112,30 +116,80 @@ if ($aluno_id && $progresso_disponivel && class_exists('ProgressoAluno')) {
         }
     } catch (Exception $e) {
         // Mantém os dados padrão
+        error_log("Erro ao buscar progresso: " . $e->getMessage());
     }
 }
 
-// 4. BUSCA DAS EQUAÇÕES
+// 4. BUSCA DAS EQUAÇÕES COM STATUS
 $equacoes = [];
+$concluidas = 0;
+$pendentes = 0;
+$em_andamento = 0;
+
 try {
     if (class_exists('Equacao')) {
         $equacaoModel = new Equacao();
-        $equacoesBD = $equacaoModel->buscarTodas();
         
-        if (!empty($equacoesBD) && is_array($equacoesBD)) {
-            $equacoes = $equacoesBD;
+        // Verifica se o método existe
+        if (method_exists($equacaoModel, 'getEquacoesComStatus')) {
+            // Usa o método que já retorna com status
+            $equacoes = $equacaoModel->getEquacoesComStatus($aluno_id);
+        } else {
+            // Fallback: busca todas e adiciona status manualmente
+            $equacoesBD = $equacaoModel->buscarTodas();
+            
+            if (!empty($equacoesBD) && is_array($equacoesBD)) {
+                foreach ($equacoesBD as $eq) {
+                    // Busca o status para cada equação
+                    if (method_exists($equacaoModel, 'getStatusEquacao')) {
+                        $status = $equacaoModel->getStatusEquacao($aluno_id, $eq['id']);
+                        $eq['status_progresso'] = $status['status_progresso'] ?? 'Pendente';
+                        $eq['concluida'] = $status['concluida'] ?? false;
+                        $eq['passo_atual'] = $status['passo_atual'] ?? null;
+                    } else {
+                        $eq['status_progresso'] = 'Pendente';
+                        $eq['concluida'] = false;
+                        $eq['passo_atual'] = null;
+                    }
+                    
+                    // Gera a equação formatada
+                    $a = (int)($eq['a'] ?? 1);
+                    $b = (int)($eq['b'] ?? 0);
+                    $c = (int)($eq['c'] ?? 0);
+                    $termoA = ($a === 1) ? 'x' : (($a === -1) ? '-x' : "{$a}x");
+                    $sinalB = ($b >= 0) ? '+ ' . $b : '- ' . abs($b);
+                    $eq['equacao_formatada'] = "{$termoA} {$sinalB} = {$c}";
+                    
+                    $equacoes[] = $eq;
+                }
+            }
+        }
+        
+        // Conta os status
+        if (!empty($equacoes)) {
+            foreach ($equacoes as $eq) {
+                $status = $eq['status_progresso'] ?? 'Pendente';
+                if ($status === 'Concluído' || ($eq['concluida'] ?? false)) {
+                    $concluidas++;
+                } elseif (($eq['passo_atual'] ?? 0) > 0) {
+                    $em_andamento++;
+                } else {
+                    $pendentes++;
+                }
+            }
         }
     }
 } catch (Exception $e) {
-    // Mantém $equacoes vazio
+    error_log("Erro ao buscar equações: " . $e->getMessage());
+    $equacoes = [];
 }
 
 // 5. SE NÃO HOUVER EQUAÇÕES, USA LISTA DE EXEMPLO
 if (empty($equacoes)) {
     $equacoes = [
-        ['id' => 1, 'a' => 1, 'b' => 3, 'c' => 7, 'dificuldade' => 'Fácil', 'status' => 'Pendente'],
-        ['id' => 2, 'a' => 2, 'b' => -4, 'c' => 10, 'dificuldade' => 'Fácil', 'status' => 'Pendente'],
-        ['id' => 3, 'a' => 1, 'b' => 2, 'c' => 8, 'dificuldade' => 'Fácil', 'status' => 'Pendente']
+        ['id' => 1, 'a' => 2, 'b' => 5, 'c' => 11, 'dificuldade' => 'facil', 'status_progresso' => 'Pendente', 'concluida' => false, 'passo_atual' => null, 'equacao_formatada' => '2x + 5 = 11'],
+        ['id' => 2, 'a' => 3, 'b' => 4, 'c' => 19, 'dificuldade' => 'medio', 'status_progresso' => 'Pendente', 'concluida' => false, 'passo_atual' => null, 'equacao_formatada' => '3x + 4 = 19'],
+        ['id' => 3, 'a' => 1, 'b' => 6, 'c' => 9, 'dificuldade' => 'facil', 'status_progresso' => 'Pendente', 'concluida' => false, 'passo_atual' => null, 'equacao_formatada' => 'x + 6 = 9']
     ];
 }
 
@@ -284,14 +338,14 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
         /* STATS GRID */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
             margin-bottom: 30px;
         }
 
         .stat-card {
             background-color: var(--card-bg);
-            padding: 20px;
+            padding: 18px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             display: flex;
@@ -308,19 +362,20 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
 
         .stat-card.green { border-left-color: var(--accent-green); }
         .stat-card.orange { border-left-color: #f39c12; }
+        .stat-card.purple { border-left-color: #9b59b6; }
 
-        .stat-icon { font-size: 2rem; }
+        .stat-icon { font-size: 1.8rem; }
 
         .stat-info h4 {
             margin: 0;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #777;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .stat-info .value {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             margin-top: 4px;
             color: var(--primary-color);
@@ -342,10 +397,15 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
         }
 
         /* TABLE */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
+            font-size: 0.9rem;
         }
 
         th, td {
@@ -363,30 +423,50 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
             background-color: #f8f9fa;
         }
 
+        .equation-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            background: #f8f9fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
         /* BADGES */
         .badge {
-            padding: 4px 10px;
-            border-radius: 4px;
+            padding: 4px 12px;
+            border-radius: 12px;
             font-size: 0.8rem;
             font-weight: 600;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .badge-pending { 
+        .badge-pendente { 
+            background-color: #f8f9fa; 
+            color: #6c757d; 
+            border: 1px solid #dee2e6;
+        }
+
+        .badge-andamento { 
             background-color: #fff3cd; 
             color: #856404; 
+            border: 1px solid #ffc107;
         }
 
-        .badge-success { 
+        .badge-concluido { 
             background-color: #d4edda; 
             color: #155724; 
+            border: 1px solid #28a745;
         }
 
         .badge-dificuldade {
-            padding: 2px 10px;
+            padding: 3px 10px;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
+            text-transform: uppercase;
         }
 
         .badge-facil { background-color: #d4edda; color: #155724; }
@@ -395,14 +475,16 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
 
         /* BUTTON ACTION */
         .btn-action {
-            display: inline-block;
-            padding: 6px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 16px;
             background-color: var(--accent-blue);
             color: white;
             text-decoration: none;
             border-radius: 4px;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: background-color 0.2s, transform 0.2s;
         }
 
@@ -413,6 +495,22 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
 
         .btn-action:active {
             transform: scale(0.98);
+        }
+
+        .btn-action.btn-view {
+            background-color: #6c757d;
+        }
+
+        .btn-action.btn-view:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-action.btn-continue {
+            background-color: #f39c12;
+        }
+
+        .btn-action.btn-continue:hover {
+            background-color: #d68910;
         }
 
         /* ALERTS */
@@ -450,6 +548,55 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
             font-size: 1rem;
         }
 
+        /* PROGRESS SUMMARY */
+        .progress-summary {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 20px;
+        }
+
+        .summary-number {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .summary-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* FOOTER */
+        .footer-info {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .footer-info p {
+            margin: 5px 0;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 768px) {
             header {
@@ -465,15 +612,15 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
             }
 
             .stats-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .stat-card {
-                padding: 15px;
+                padding: 12px 15px;
             }
 
             table {
-                font-size: 14px;
+                font-size: 0.8rem;
             }
 
             th, td {
@@ -482,7 +629,14 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
 
             .card-table {
                 padding: 15px;
-                overflow-x: auto;
+            }
+
+            .progress-summary {
+                gap: 10px;
+            }
+
+            .summary-item {
+                padding: 5px 10px;
             }
         }
 
@@ -495,13 +649,22 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
                 font-size: 1.2rem;
             }
 
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
             .stat-info .value {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
             }
 
             .btn-action {
-                font-size: 0.75rem;
+                font-size: 0.7rem;
                 padding: 4px 10px;
+            }
+
+            .badge {
+                font-size: 0.7rem;
+                padding: 3px 8px;
             }
         }
     </style>
@@ -573,9 +736,17 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
                 <div class="stat-icon">⭐</div>
                 <div class="stat-info">
                     <h4>Nível Atual</h4>
-                    <div class="value" style="font-size: 1.1rem; margin-top:8px;">
+                    <div class="value" style="font-size: 1rem; margin-top: 6px;">
                         <?php echo $dados_progresso['nivel_atual'] ?? 'Nível 1 - Básico'; ?>
                     </div>
+                </div>
+            </div>
+
+            <div class="stat-card purple">
+                <div class="stat-icon">📚</div>
+                <div class="stat-info">
+                    <h4>Total de Equações</h4>
+                    <div class="value"><?php echo count($equacoes); ?></div>
                 </div>
             </div>
         </div>
@@ -591,7 +762,7 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
                     <p style="font-size: 0.9rem; color: #aaa;">Volte mais tarde ou entre em contato com seu professor.</p>
                 </div>
             <?php else: ?>
-                <div style="overflow-x: auto;">
+                <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
@@ -605,43 +776,80 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
                         <tbody>
                             <?php foreach ($equacoes as $eq): ?>
                                 <?php
-                                    // Gera o texto da equação
-                                    if (!empty($eq['expressao'])) {
-                                        $textoEquacao = $eq['expressao'];
-                                    } else {
+                                    // Pega os dados da equação
+                                    $eq_id = (int)($eq['id'] ?? 0);
+                                    $eq_text = $eq['equacao_formatada'] ?? '';
+                                    
+                                    // Se não tiver equacao_formatada, gera
+                                    if (empty($eq_text)) {
                                         $a = (int)($eq['a'] ?? 1);
                                         $b = (int)($eq['b'] ?? 0);
                                         $c = (int)($eq['c'] ?? 0);
-
                                         $termoA = ($a === 1) ? 'x' : (($a === -1) ? '-x' : "{$a}x");
                                         $sinalB = ($b >= 0) ? '+ ' . $b : '- ' . abs($b);
-                                        $textoEquacao = "{$termoA} {$sinalB} = {$c}";
+                                        $eq_text = "{$termoA} {$sinalB} = {$c}";
                                     }
                                     
                                     // Determina o status
-                                    $status = $eq['status'] ?? 'Pendente';
-                                    $statusClass = ($status === 'Concluído') ? 'badge-success' : 'badge-pending';
+                                    $concluida = $eq['concluida'] ?? false;
+                                    $passo_atual = $eq['passo_atual'] ?? null;
+                                    $status = $eq['status_progresso'] ?? 'Pendente';
                                     
-                                    // Determina a dificuldade
-                                    $dificuldade = $eq['dificuldade'] ?? 'Fácil';
-                                    $dificuldadeClass = 'badge-' . strtolower($dificuldade);
+                                    // Define classes e ícones para cada status
+                                    $statusClass = '';
+                                    $statusIcon = '';
+                                    $statusText = '';
+                                    $actionText = '';
+                                    $actionClass = '';
+                                    $actionLink = '';
+                                    
+                                    if ($concluida || $status === 'Concluído') {
+                                        $statusClass = 'badge-concluido';
+                                        $statusIcon = '✅';
+                                        $statusText = 'Concluído';
+                                        $actionText = 'Ver';
+                                        $actionClass = 'btn-view';
+                                        $actionLink = 'index.php?view=parabens&id=' . $eq_id;
+                                    } elseif ($passo_atual && $passo_atual > 0 && $passo_atual < 4) {
+                                        $statusClass = 'badge-andamento';
+                                        $statusIcon = '🔄';
+                                        $statusText = 'Passo ' . $passo_atual . '/4';
+                                        $actionText = 'Continuar';
+                                        $actionClass = 'btn-continue';
+                                        $actionLink = 'index.php?view=exercicio&id=' . $eq_id . '&passo=' . $passo_atual;
+                                    } else {
+                                        $statusClass = 'badge-pendente';
+                                        $statusIcon = '📝';
+                                        $statusText = 'Pendente';
+                                        $actionText = 'Resolver';
+                                        $actionClass = '';
+                                        $actionLink = 'index.php?view=exercicio&id=' . $eq_id . '&passo=1';
+                                    }
+                                    
+                                    // Dificuldade
+                                    $dificuldade = $eq['dificuldade'] ?? 'facil';
+                                    $dificuldadeLabel = ucfirst($dificuldade);
                                 ?>
                                 <tr>
-                                    <td><?php echo (int)($eq['id'] ?? 0); ?></td>
-                                    <td><strong><?php echo htmlspecialchars($textoEquacao); ?></strong></td>
+                                    <td><?php echo $eq_id; ?></td>
                                     <td>
-                                        <span class="badge-dificuldade <?php echo $dificuldadeClass; ?>">
-                                            <?php echo htmlspecialchars($dificuldade); ?>
+                                        <span class="equation-display">
+                                            <?php echo htmlspecialchars($eq_text); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-dificuldade badge-<?php echo strtolower($dificuldade); ?>">
+                                            <?php echo $dificuldadeLabel; ?>
                                         </span>
                                     </td>
                                     <td>
                                         <span class="badge <?php echo $statusClass; ?>">
-                                            <?php echo $status; ?>
+                                            <?php echo $statusIcon . ' ' . $statusText; ?>
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="index.php?view=exercicio&id=<?php echo (int)($eq['id'] ?? 0); ?>&passo=1" class="btn-action">
-                                            ▶️ Resolver
+                                        <a href="<?php echo $actionLink; ?>" class="btn-action <?php echo $actionClass; ?>">
+                                            <?php echo $actionText; ?>
                                         </a>
                                     </td>
                                 </tr>
@@ -650,14 +858,30 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
                     </table>
                 </div>
                 
-                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center; color: #6c757d; font-size: 14px;">
-                    Total: <strong><?php echo count($equacoes); ?></strong> equação(ões) disponível(eis)
+                <!-- RESUMO DE PROGRESSO -->
+                <div class="progress-summary">
+                    <div class="summary-item">
+                        <span class="summary-number"><?php echo count($equacoes); ?></span>
+                        <span class="summary-label">Total</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number" style="color: #28a745;"><?php echo $concluidas; ?></span>
+                        <span class="summary-label">✅ Concluídas</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number" style="color: #f39c12;"><?php echo $em_andamento; ?></span>
+                        <span class="summary-label">🔄 Em andamento</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number" style="color: #6c757d;"><?php echo $pendentes; ?></span>
+                        <span class="summary-label">📝 Pendentes</span>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
 
         <!-- RODAPÉ INFORMATIVO -->
-        <div style="margin-top: 30px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center; color: #888; font-size: 0.85rem;">
+        <div class="footer-info">
             <p>💡 Dica: Resolva as equações passo a passo. Cada passo correto te aproxima da solução final!</p>
             <p style="margin-top: 5px;">📚 EquaTEA - Aprendendo equações de 1º grau de forma divertida</p>
         </div>
