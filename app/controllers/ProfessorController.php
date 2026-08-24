@@ -1,348 +1,425 @@
 <?php
 /**
  * ProfessorController.php
- * Controlador atualizado sem a restrição para o coeficiente C
+ * Controlador para as funcionalidades do professor.
  */
-
-if (!defined('BASE_URL')) {
-    define('BASE_URL', 'index.php?view=');
-}
-
-if (!defined('VIEWS_PATH')) {
-    define('VIEWS_PATH', dirname(__DIR__) . '/views');
-}
-
-$base_dir = dirname(__DIR__);
-$models = ['Aluno.php', 'Equacao.php', 'RegistroErro.php', 'Usuario.php'];
-
-foreach ($models as $model_file) {
-    $path = $base_dir . '/models/' . $model_file;
-    if (file_exists($path)) {
-        require_once $path;
-    }
-}
-
 class ProfessorController
 {
     private $aluno;
+    private $professor;
     private $equacao;
+    private $progresso;
     private $registroErro;
-    private $usuario;
-
+    private $db;
+    
     public function __construct()
     {
-        $this->aluno        = class_exists('Aluno') ? new Aluno() : null;
-        $this->equacao      = class_exists('Equacao') ? new Equacao() : null;
-        $this->registroErro = class_exists('RegistroErro') ? new RegistroErro() : null;
-        $this->usuario      = class_exists('Usuario') ? new Usuario() : null;
-    }
-
-    public function dashboard()
-    {
-        $dados_alunos = ($this->aluno && method_exists($this->aluno, 'getAll')) ? $this->aluno->getAll() : [];
-        $dados_equacoes = ($this->equacao && method_exists($this->equacao, 'getAll')) ? $this->equacao->getAll() : [];
-        $erros_comuns = ($this->registroErro && method_exists($this->registroErro, 'getEstatisticas')) ? $this->registroErro->getEstatisticas() : [];
-
-        $dados = [
-            'total_alunos'    => count($dados_alunos),
-            'total_equacoes'  => count($dados_equacoes),
-            'dados_alunos'    => $dados_alunos,
-            'dados_equacoes'  => $dados_equacoes,
-            'erros_comuns'    => $erros_comuns
-        ];
-
-        extract($dados);
-
-        $view_path = VIEWS_PATH . '/professor/dashboard.php';
-        if (file_exists($view_path)) {
-            include_once $view_path;
-        } else {
-            echo "<h2>Erro: View do Dashboard Professor não encontrada em: {$view_path}</h2>";
+        $base_dir = dirname(__DIR__);
+        
+        $models = ['Aluno.php', 'Professor.php', 'Equacao.php', 'Progresso.php', 'ProgressoAluno.php', 'RegistroErro.php'];
+        foreach ($models as $model_file) {
+            $path = $base_dir . '/models/' . $model_file;
+            if (file_exists($path)) {
+                require_once $path;
+            }
         }
+        
+        try {
+            $this->db = Database::getInstance()->getConnection();
+        } catch (Exception $e) {
+            $this->db = null;
+        }
+        
+        $this->aluno = class_exists('Aluno') ? new Aluno() : null;
+        $this->professor = class_exists('Professor') ? new Professor() : null;
+        $this->equacao = class_exists('Equacao') ? new Equacao() : null;
+        $this->progresso = class_exists('Progresso') ? new Progresso() : null;
+        $this->progressoAluno = class_exists('ProgressoAluno') ? new ProgressoAluno() : null;
+        $this->registroErro = class_exists('RegistroErro') ? new RegistroErro() : null;
     }
     
-    public function gerenciarAlunos() {
-        // Busca os alunos do banco de dados
-        $alunos = $this->aluno->getAll(); 
+    /**
+     * Dashboard do professor com estatísticas completas
+     */
+    public function dashboard()
+    {
+        // ===== CONTROLE DE SESSÃO =====
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['usuario_id']) || ($_SESSION['tipo_perfil'] ?? '') !== 'professor') {
+            $_SESSION['login_error'] = 'Acesso restrito a professores.';
+            header('Location: index.php?view=login');
+            exit;
+        }
+        // ===== FIM CONTROLE DE SESSÃO =====
         
-        // Inclui a view passando a variável $alunos
-        require_once VIEWS_PATH . '/professor/gerenciar_alunos.php';
-    }
-
-    public function cadastrarAluno()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?view=gerenciar_alunos');
-            exit;
-        }
-
-        $nome      = $_POST['nome'] ?? '';
-        $email     = $_POST['email'] ?? '';
-        $senha     = $_POST['senha'] ?? '';
-        $idade     = $_POST['idade'] ?? 0;
-        $nivel_tea = $_POST['nivel_tea'] ?? '';
-        $escola    = $_POST['escola'] ?? '';
-        $turma     = $_POST['turma'] ?? '';
-
-        if (!empty($nome) && !empty($email) && !empty($senha)) {
-            require_once __DIR__ . '/../models/Usuario.php';
-            require_once __DIR__ . '/../models/Aluno.php';
-            
-            $usuarioModel = new Usuario();
-            $alunoModel = new Aluno();
-
-            $usuario_id = $usuarioModel->criar($nome, $email, $senha, 'aluno');
-
-            if ($usuario_id) {
-                $alunoModel->criar($usuario_id, $idade, $nivel_tea, $escola, $turma);
-                $_SESSION['admin_success'] = 'Aluno cadastrado com sucesso!';
-            } else {
-                $_SESSION['admin_error'] = 'Erro ao criar usuário para o aluno.';
-            }
-        }
-
-        header('Location: index.php?view=gerenciar_alunos');
-        exit;
-    }
-
-    public function exibirFormularioEdicao($id)
-    {
-        require_once __DIR__ . '/../models/Aluno.php';
-        $alunoModel = new Aluno();
+        // ===== 1. BUSCAR DADOS DOS ALUNOS COM ESTATÍSTICAS =====
+        $dados_alunos = [];
+        $total_alunos = 0;
+        $total_equacoes_resolvidas = 0;
+        $total_tentativas = 0;
         
-        // Busca os dados do aluno específico pelo ID
-        $aluno = $alunoModel->buscarPorId($id);
-
-        // Carrega a view de edição
-        require_once __DIR__ . '/../views/professor/editar_aluno.php';
-    }
-
-    public function deletarEquacao($id) {
-        require_once __DIR__ . '/../models/Equacao.php';
-        $model = new Equacao();
-        $model->deletar($id);
-        header('Location: index.php?view=gerenciar_equacoes');
-        exit;
-    }
-
-    public function exibirFormularioEdicaoEquacao($id) {
-        require_once __DIR__ . '/../models/Equacao.php';
-        $model = new Equacao();
-        $equacao = $model->buscarPorId($id);
-        // Carrega a view 'editar_equacao.php'
-        require_once __DIR__ . '/../views/professor/editar_equacao.php';
-    }
-
-    public function resetarSenha()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?view=gerenciar_alunos');
-            exit;
-        }
-
-        $aluno_id   = (int)($_POST['aluno_id'] ?? 0);
-        $nova_senha = trim($_POST['nova_senha'] ?? '');
-
-        if (empty($nova_senha) || strlen($nova_senha) < 4) {
-            $_SESSION['admin_error'] = 'A senha deve ter pelo menos 4 caracteres.';
-            header('Location: index.php?view=gerenciar_alunos');
-            exit;
-        }
-
-        if ($this->aluno && $this->usuario) {
-            $dados = $this->aluno->getDadosCompletos($aluno_id);
-            if ($dados) {
-                $this->usuario->atualizarSenha($dados['usuario_id'], $nova_senha);
-                $_SESSION['admin_success'] = "Senha resetada com sucesso! Nova senha: {$nova_senha}";
-            } else {
-                $_SESSION['admin_error'] = 'Aluno não encontrado.';
-            }
-        }
-
-        header('Location: index.php?view=gerenciar_alunos');
-        exit;
-    }
-
-    public function gerenciarEquacoes()
-    {
-        $dificuldade = $_GET['dificuldade'] ?? null;
-        $dados_equacoes = ($this->equacao && method_exists($this->equacao, 'getAll')) ? $this->equacao->getAll($dificuldade) : [];
-
-        $view_path = VIEWS_PATH . '/professor/gerenciar_equacoes.php';
-        if (file_exists($view_path)) {
-            include_once $view_path;
-        } else {
-            echo "<h2>Erro: View 'gerenciar_equacoes.php' não encontrada.</h2>";
-        }
-    }
-
-    public function cadastrarEquacao()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?view=gerenciar_equacoes');
-            exit;
-        }
-
-        $a           = (int)($_POST['a'] ?? 0);
-        $b           = (int)($_POST['b'] ?? 0);
-        $c           = (int)($_POST['c'] ?? 0);
-        $dificuldade = $_POST['dificuldade'] ?? 'facil';
-
-        // Validação sem restrição no coeficiente C
-        if ($a == 0 || $a < -20 || $a > 20 || $b < -20 || $b > 20) {
-            $_SESSION['admin_error'] = 'Coeficientes "a" e "b" inválidos. "a" não pode ser zero e ambos devem estar entre -20 e 20.';
-            header('Location: index.php?view=gerenciar_equacoes');
-            exit;
-        }
-
-        if ($this->equacao && method_exists($this->equacao, 'criar')) {
-            $resultado = $this->equacao->criar($a, $b, $c, $dificuldade);
-            if ($resultado) {
-                $_SESSION['admin_success'] = 'Equação cadastrada com sucesso!';
-            } else {
-                $_SESSION['admin_error'] = 'A solução da equação precisa ser um número inteiro.';
-            }
-        }
-
-        header('Location: index.php?view=gerenciar_equacoes');
-        exit;
-    }
-
-    public function atualizarEquacao() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['id'] ?? null;
-            $a = $_POST['coef_a'] ?? 0;
-            $b = $_POST['coef_b'] ?? 0;
-            $c = $_POST['coef_c'] ?? 0;
-            $dificuldade = $_POST['dificuldade'] ?? 'Fácil';
-
-            if ($id && $a != 0) {
-                $solucao = ($c - $b) / $a;
-
-                require_once __DIR__ . '/../models/Equacao.php';
-                $model = new Equacao();
+        if ($this->aluno) {
+            try {
+                // Busca todos os alunos
+                $alunos = $this->aluno->listarTodos();
                 
-                // Executa a atualização no banco de dados
-                $model->atualizar($id, $a, $b, $c, $solucao, $dificuldade);
+                if (!empty($alunos) && is_array($alunos)) {
+                    foreach ($alunos as &$aluno) {
+                        $aluno_id = isset($aluno['id']) ? $aluno['id'] : (isset($aluno['aluno_id']) ? $aluno['aluno_id'] : null);
+                        
+                        if ($aluno_id) {
+                            // Busca estatísticas do aluno
+                            $estatisticas = $this->getEstatisticasAluno($aluno_id);
+                            
+                            $aluno['total_equacoes'] = $estatisticas['total_resolvidas'] ?? 0;
+                            $aluno['total_tentativas'] = $estatisticas['total_tentativas'] ?? 0;
+                            $aluno['taxa_acerto'] = $estatisticas['taxa_acerto'] ?? '0%';
+                            $aluno['nivel'] = $estatisticas['nivel'] ?? 'Básico';
+                            $aluno['ultima_atividade'] = $estatisticas['ultima_atividade'] ?? '-';
+                            
+                            // Acumula totais
+                            $total_equacoes_resolvidas += ($aluno['total_equacoes'] ?? 0);
+                            $total_tentativas += ($aluno['total_tentativas'] ?? 0);
+                        } else {
+                            $aluno['total_equacoes'] = 0;
+                            $aluno['total_tentativas'] = 0;
+                            $aluno['taxa_acerto'] = '0%';
+                            $aluno['nivel'] = 'Básico';
+                            $aluno['ultima_atividade'] = '-';
+                        }
+                    }
+                    
+                    $dados_alunos = $alunos;
+                    $total_alunos = count($dados_alunos);
+                }
+            } catch (Exception $e) {
+                error_log("Erro ao buscar alunos: " . $e->getMessage());
+                $dados_alunos = [];
             }
-
-            header('Location: index.php?view=gerenciar_equacoes');
-            exit;
         }
-    }
-
-    public function atualizar()
-    {
-        // Verifica se os dados vieram via POST
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['id'] ?? null;
-            $nome = $_POST['nome'] ?? '';
-            $email = $_POST['email'] ?? '';
-            $nivelTea = $_POST['nivel_tea'] ?? '';
-            $turma = $_POST['turma'] ?? '';
-
-            require_once __DIR__ . '/../models/Aluno.php';
-            $alunoModel = new Aluno();
-            
-            // Executa a atualização no banco
-            $alunoModel->atualizar($id, $nome, $email, $nivelTea, $turma);
-
-            // Redireciona de volta para a tela de gerenciar alunos
-            header('Location: index.php?view=gerenciar_alunos');
-            exit;
+        
+        // ===== 2. BUSCAR EQUAÇÕES =====
+        $dados_equacoes = [];
+        $total_equacoes = 0;
+        
+        if ($this->equacao) {
+            try {
+                $dados_equacoes = $this->equacao->buscarTodas();
+                if (!is_array($dados_equacoes)) {
+                    $dados_equacoes = [];
+                }
+                $total_equacoes = count($dados_equacoes);
+            } catch (Exception $e) {
+                error_log("Erro ao buscar equações: " . $e->getMessage());
+                $dados_equacoes = [];
+            }
         }
-    }
-
-    public function listarEquacoes() {
-        // Define as constantes se não estiverem definidas
+        
+        // ===== 3. BUSCAR ERROS =====
+        $total_erros = 0;
+        if ($this->registroErro) {
+            try {
+                $erros = $this->registroErro->getEstatisticas();
+                if (!empty($erros) && is_array($erros)) {
+                    foreach ($erros as $e) {
+                        $total_erros += ($e['quantidade'] ?? 0);
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Erro ao buscar erros: " . $e->getMessage());
+            }
+        }
+        
+        // ===== 4. BUSCAR ERROS COMUNS =====
+        $erros_comuns = [];
+        if ($this->registroErro) {
+            try {
+                $erros_comuns = $this->registroErro->getEstatisticas();
+                if (!is_array($erros_comuns)) {
+                    $erros_comuns = [];
+                }
+            } catch (Exception $e) {
+                $erros_comuns = [];
+            }
+        }
+        
+        // ===== 5. DADOS PARA VIEW =====
+        $dados = [
+            'dados_alunos' => $dados_alunos,
+            'dados_equacoes' => $dados_equacoes,
+            'erros_comuns' => $erros_comuns,
+            'total_alunos' => $total_alunos,
+            'total_equacoes' => $total_equacoes,
+            'total_equacoes_resolvidas' => $total_equacoes_resolvidas,
+            'total_tentativas' => $total_tentativas,
+            'total_erros' => $total_erros
+        ];
+        
+        // Define constantes para a view
         if (!defined('VIEWS_PATH')) {
             define('VIEWS_PATH', dirname(__DIR__) . '/views');
         }
         
-        // Carrega o modelo
-        require_once __DIR__ . '/../models/Equacao.php';
-        $equacaoModel = new Equacao();
-        $equacoes = $equacaoModel->buscarTodas();
-        
-        // Garante que a variável existe
-        $dados_equacoes = $equacoes ?: [];
-        
-        // Define a view atual para o menu
-        $view = 'gerenciar_equacoes';
-        $GLOBALS['current_view'] = 'gerenciar_equacoes';
-        
-        // Caminho da view
-        $view_path = VIEWS_PATH . '/professor/gerenciar_equacoes.php';
-        
+        // Carrega a view
+        $view_path = VIEWS_PATH . '/professor/dashboard.php';
         if (file_exists($view_path)) {
+            extract($dados);
             include_once $view_path;
         } else {
-            // Tenta carregar com caminho alternativo
-            $alt_path = __DIR__ . '/../views/professor/gerenciar_equacoes.php';
+            $alt_path = __DIR__ . '/../views/professor/dashboard.php';
             if (file_exists($alt_path)) {
+                extract($dados);
                 include_once $alt_path;
             } else {
-                echo "<h2>Erro: View não encontrada.</h2>";
+                echo "<h2>Erro: View do Dashboard Professor não encontrada.</h2>";
+                echo "<p>Caminhos procurados:</p>";
+                echo "<ul>";
+                echo "<li>{$view_path}</li>";
+                echo "<li>{$alt_path}</li>";
+                echo "</ul>";
             }
         }
     }
-
-    public function deletarAluno()
+    
+    /**
+     * Obtém estatísticas completas de um aluno
+     */
+    private function getEstatisticasAluno($aluno_id)
     {
-        $id = $_GET['id'] ?? null;
-        if ($id) {
-            require_once __DIR__ . '/../models/Aluno.php';
-            $alunoModel = new Aluno();
-            $alunoModel->deletar($id);
+        $estatisticas = [
+            'total_resolvidas' => 0,
+            'total_tentativas' => 0,
+            'taxa_acerto' => '0%',
+            'nivel' => 'Básico',
+            'ultima_atividade' => '-'
+        ];
+        
+        try {
+            if ($this->db) {
+                // 1. Total de equações resolvidas (concluídas)
+                $sql = "SELECT COUNT(*) as total FROM progresso_aluno 
+                        WHERE aluno_id = :aluno_id AND concluida = 1";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([':aluno_id' => $aluno_id]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                $estatisticas['total_resolvidas'] = (int)($result['total'] ?? 0);
+                
+                // 2. Total de tentativas
+                $sql = "SELECT COUNT(*) as total FROM progresso_tentativas 
+                        WHERE aluno_id = :aluno_id";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([':aluno_id' => $aluno_id]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                $estatisticas['total_tentativas'] = (int)($result['total'] ?? 0);
+                
+                // 3. Taxa de acertos
+                $sql = "SELECT 
+                            COUNT(*) as total_tentativas,
+                            SUM(correto) as total_acertos 
+                        FROM progresso_tentativas 
+                        WHERE aluno_id = :aluno_id";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([':aluno_id' => $aluno_id]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                $total_tentativas = (int)($result['total_tentativas'] ?? 0);
+                $total_acertos = (int)($result['total_acertos'] ?? 0);
+                
+                if ($total_tentativas > 0) {
+                    $estatisticas['taxa_acerto'] = round(($total_acertos / $total_tentativas) * 100) . '%';
+                } else {
+                    $estatisticas['taxa_acerto'] = '0%';
+                }
+                
+                // 4. Nível baseado no total de equações resolvidas
+                $total_resolvidas = $estatisticas['total_resolvidas'];
+                if ($total_resolvidas >= 30) {
+                    $estatisticas['nivel'] = 'Avançado';
+                } elseif ($total_resolvidas >= 20) {
+                    $estatisticas['nivel'] = 'Intermediário Avançado';
+                } elseif ($total_resolvidas >= 10) {
+                    $estatisticas['nivel'] = 'Intermediário';
+                } elseif ($total_resolvidas >= 5) {
+                    $estatisticas['nivel'] = 'Iniciante Avançado';
+                } else {
+                    $estatisticas['nivel'] = 'Básico';
+                }
+                
+                // 5. Última atividade
+                $sql = "SELECT MAX(data_tentativa) as ultima FROM progresso_tentativas 
+                        WHERE aluno_id = :aluno_id";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([':aluno_id' => $aluno_id]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($result && $result['ultima']) {
+                    $estatisticas['ultima_atividade'] = date('d/m/Y H:i', strtotime($result['ultima']));
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao buscar estatísticas do aluno $aluno_id: " . $e->getMessage());
         }
         
-        // Redireciona de volta para a lista de alunos
-        header('Location: index.php?view=gerenciar_alunos');
-        exit;
+        return $estatisticas;
     }
-
+    
     /**
-     * Relatório de erros do professor
+     * Lista todas as equações para gerenciamento
      */
-    public function relatorio()
+    public function listarEquacoes()
     {
-        // Verifica se o professor está logado
-        if (!isset($_SESSION['usuario_id']) || $_SESSION['tipo_perfil'] !== 'professor') {
+        // ===== CONTROLE DE SESSÃO =====
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['usuario_id']) || ($_SESSION['tipo_perfil'] ?? '') !== 'professor') {
             header('Location: index.php?view=login');
             exit;
         }
-
-        // Filtros
-        $filtro_aluno = $_GET['aluno'] ?? '';
-        $filtro_passo = $_GET['passo'] ?? '';
-
-        // Busca alunos para o filtro
-        $dados_alunos = ($this->aluno && method_exists($this->aluno, 'getAll')) ? $this->aluno->getAll() : [];
-
-        // Busca os erros do banco
-        if ($this->registroErro && method_exists($this->registroErro, 'getAll')) {
-            $dados_relatorio = $this->registroErro->getAll($filtro_aluno, $filtro_passo);
-        } else {
-            $dados_relatorio = [];
-        }
-
-        // Define a view atual para o menu
-        $view = 'relatorio';
-        $GLOBALS['current_view'] = 'relatorio';
-
-        // Caminho da view
-        $view_path = VIEWS_PATH . '/professor/relatorio.php';
+        // ===== FIM CONTROLE DE SESSÃO =====
         
+        $dados_equacoes = [];
+        if ($this->equacao) {
+            try {
+                $dados_equacoes = $this->equacao->buscarTodas();
+                if (!is_array($dados_equacoes)) {
+                    $dados_equacoes = [];
+                }
+            } catch (Exception $e) {
+                $dados_equacoes = [];
+            }
+        }
+        
+        if (!defined('VIEWS_PATH')) {
+            define('VIEWS_PATH', dirname(__DIR__) . '/views');
+        }
+        
+        $view_path = VIEWS_PATH . '/professor/equacoes.php';
         if (file_exists($view_path)) {
             include_once $view_path;
         } else {
-            // Tenta carregar com caminho alternativo
-            $alt_path = __DIR__ . '/../views/professor/relatorio.php';
-            if (file_exists($alt_path)) {
-                include_once $alt_path;
-            } else {
-                echo "<h2>Erro: View do Relatório não encontrada.</h2>";
-            }
+            echo "<h2>Erro: View de Equações não encontrada.</h2>";
         }
     }
+    
+    /**
+ * Gerenciar alunos
+ */
+public function gerenciarAlunos()
+{
+    // ===== CONTROLE DE SESSÃO =====
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['usuario_id']) || ($_SESSION['tipo_perfil'] ?? '') !== 'professor') {
+        header('Location: index.php?view=login');
+        exit;
+    }
+    // ===== FIM CONTROLE DE SESSÃO =====
+    
+    // Processa ações
+    $action = $_GET['action'] ?? null;
+    
+    if ($action === 'deletar') {
+        $this->deletarAluno();
+        return;
+    }
+    
+    if ($action === 'resetar_senha') {
+        $this->resetarSenha();
+        return;
+    }
+    
+    if ($action === 'cadastrar') {
+        $this->exibirFormularioCadastro();
+        return;
+    }
+    
+    // Busca alunos com estatísticas
+    $dados_alunos = [];
+    if ($this->aluno) {
+        try {
+            $alunos = $this->aluno->listarTodos();
+            
+            if (!empty($alunos) && is_array($alunos)) {
+                foreach ($alunos as &$aluno) {
+                    $aluno_id = isset($aluno['id']) ? $aluno['id'] : (isset($aluno['aluno_id']) ? $aluno['aluno_id'] : null);
+                    
+                    if ($aluno_id) {
+                        // Busca total de equações resolvidas
+                        $estatisticas = $this->getEstatisticasAluno($aluno_id);
+                        $aluno['total_equacoes'] = $estatisticas['total_resolvidas'] ?? 0;
+                    } else {
+                        $aluno['total_equacoes'] = 0;
+                    }
+                }
+                $dados_alunos = $alunos;
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao buscar alunos: " . $e->getMessage());
+            $dados_alunos = [];
+        }
+    }
+    
+    // Define constantes para a view
+    if (!defined('VIEWS_PATH')) {
+        define('VIEWS_PATH', dirname(__DIR__) . '/views');
+    }
+    
+    // Carrega a view
+    $view_path = VIEWS_PATH . '/professor/alunos.php';
+    if (file_exists($view_path)) {
+        include_once $view_path;
+    } else {
+        // Fallback: exibe mensagem de erro com debug
+        echo "<h2>Erro: View de Alunos não encontrada.</h2>";
+        echo "<p>Caminho procurado: <code>{$view_path}</code></p>";
+        echo "<p>Dados disponíveis: " . count($dados_alunos) . " alunos</p>";
+        echo "<h3>Dados:</h3>";
+        echo "<pre>" . print_r($dados_alunos, true) . "</pre>";
+    }
+}
+
+/**
+ * Exibe formulário de cadastro de aluno
+ */
+private function exibirFormularioCadastro()
+{
+    // Redireciona para o formulário de cadastro
+    // Pode ser implementado como uma view separada
+    header('Location: ?view=editar_aluno');
+    exit;
+}
+    
+    /**
+     * Exibe relatório de erros
+     */
+    public function relatorio()
+    {
+        // ===== CONTROLE DE SESSÃO =====
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['usuario_id']) || ($_SESSION['tipo_perfil'] ?? '') !== 'professor') {
+            header('Location: index.php?view=login');
+            exit;
+        }
+        // ===== FIM CONTROLE DE SESSÃO =====
+        
+        // Redireciona para o RelatorioController
+        require_once __DIR__ . '/RelatorioController.php';
+        $controller = new RelatorioController();
+        $controller->relatorio();
+    }
+    
+    // ===== MÉTODOS PARA CRUD DE ALUNOS E EQUAÇÕES =====
+    // (mantenha os métodos existentes: cadastrarAluno, atualizar, deletarAluno, resetarSenha,
+    // cadastrarEquacao, atualizarEquacao, deletarEquacao, exibirFormularioEdicao, 
+    // exibirFormularioEdicaoEquacao)
 }

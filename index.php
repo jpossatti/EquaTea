@@ -1,4 +1,4 @@
-<<?php
+<?php
 /**
  * index.php - Roteador Central
  */
@@ -83,6 +83,15 @@ if ($action === 'verificar_resposta') {
     exit;
 }
 
+// Ações do Relatório (Exportação)
+if ($action === 'exportar_csv') {
+    verificarAutenticacao('professor');
+    require_once __DIR__ . '/app/controllers/RelatorioController.php';
+    $controller = new RelatorioController();
+    $controller->exportarCSV();
+    exit;
+}
+
 // 2. ROTEAMENTO DE VIEWS
 $view = $_GET['view'] ?? $_POST['view'] ?? 'login';
 
@@ -162,10 +171,11 @@ switch ($view) {
         $controller->listarEquacoes();
         break;
 
+    // ===== ROTA DO RELATÓRIO (CORRIGIDA) =====
     case 'relatorio':
         verificarAutenticacao('professor');
-        require_once __DIR__ . '/app/controllers/ProfessorController.php';
-        $controller = new ProfessorController();
+        require_once __DIR__ . '/app/controllers/RelatorioController.php';
+        $controller = new RelatorioController();
         $controller->relatorio();
         break;
 

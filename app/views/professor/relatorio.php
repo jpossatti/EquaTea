@@ -6,7 +6,6 @@
 
 $page_title = 'Relatório de Erros - EquaTEA';
 
-// Filtros recebidos via GET
 $filtro_aluno = $_GET['aluno'] ?? '';
 $filtro_passo = $_GET['passo'] ?? '';
 
@@ -22,20 +21,28 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         <form method="GET" action="" class="filtros-form">
             <input type="hidden" name="view" value="relatorio">
             <div class="filtro-grupo">
-                <label for="aluno">Aluno:</label>
+                <label for="aluno">👨‍🎓 Aluno:</label>
                 <select id="aluno" name="aluno">
                     <option value="">Todos os alunos</option>
-                    <?php if (!empty($dados_alunos)): ?>
+                    <?php if (!empty($dados_alunos) && is_array($dados_alunos)): ?>
                         <?php foreach ($dados_alunos as $a): ?>
-                            <option value="<?php echo $a['aluno_id']; ?>" <?php echo $filtro_aluno == $a['aluno_id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($a['nome']); ?>
-                            </option>
+                            <?php 
+                                $alunoId = isset($a['aluno_id']) ? $a['aluno_id'] : (isset($a['id']) ? $a['id'] : '');
+                                $nomeAluno = $a['nome'] ?? (isset($a['aluno']) ? $a['aluno'] : 'Aluno');
+                            ?>
+                            <?php if (!empty($alunoId)): ?>
+                                <option value="<?php echo $alunoId; ?>" <?php echo $filtro_aluno == $alunoId ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($nomeAluno); ?>
+                                </option>
+                            <?php endif; ?>
                         <?php endforeach; ?>
+                    <?php else: ?>
+                        <option value="" disabled>Nenhum aluno cadastrado</option>
                     <?php endif; ?>
                 </select>
             </div>
             <div class="filtro-grupo">
-                <label for="passo">Passo:</label>
+                <label for="passo">📌 Passo:</label>
                 <select id="passo" name="passo">
                     <option value="">Todos os passos</option>
                     <option value="1" <?php echo $filtro_passo == '1' ? 'selected' : ''; ?>>Passo 1</option>
@@ -61,44 +68,62 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         <table class="tabela-relatorio" id="tabela-relatorio">
             <thead>
                 <tr>
-                    <th>Aluno</th>
-                    <th>Equação</th>
-                    <th>Passo</th>
-                    <th>Tipo de Erro</th>
-                    <th>Data</th>
+                    <th>👨‍🎓 Aluno</th>
+                    <th>📐 Equação</th>
+                    <th>📌 Passo</th>
+                    <th>❌ Tipo de Erro</th>
+                    <th>📝 Resposta Fornecida</th>
+                    <th>✅ Resposta Esperada</th>
+                    <th>📅 Data</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($dados_relatorio)): ?>
+                <?php if (!empty($dados_relatorio) && is_array($dados_relatorio)): ?>
                     <?php foreach ($dados_relatorio as $r): ?>
                         <?php 
-                        // Aplica filtros
-                        $show = true;
-                        if ($filtro_aluno && isset($r['aluno_id']) && $r['aluno_id'] != $filtro_aluno) {
-                            $show = false;
-                        }
-                        if ($filtro_passo && isset($r['passo']) && $r['passo'] != $filtro_passo) {
-                            $show = false;
-                        }
-                        if (!$show) continue;
+                            $tipoErro = $r['tipo_erro'] ?? 'outro';
+                            $tipoLabels = [
+                                'operacao_inversa' => 'Operação Inversa',
+                                'calculo_errado' => 'Cálculo Errado',
+                                'sinal_trocado' => 'Sinal Trocado',
+                                'divisao_incorreta' => 'Divisão Incorreta',
+                                'identificacao_errada' => 'Identificação Errada',
+                                'outro' => 'Outro'
+                            ];
+                            $tipoLabel = $tipoLabels[$tipoErro] ?? 'Outro';
                         ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($r['aluno'] ?? 'N/A'); ?></td>
-                            <td><?php echo htmlspecialchars($r['equacao'] ?? 'N/A'); ?></td>
+                            <td><strong><?php echo htmlspecialchars($r['aluno'] ?? 'N/A'); ?></strong></td>
+                            <td><code><?php echo htmlspecialchars($r['equacao'] ?? 'N/A'); ?></code></td>
                             <td>Passo <?php echo $r['passo'] ?? '?'; ?></td>
                             <td>
-                                <span class="badge-tipo-erro <?php echo $r['tipo_erro'] ?? 'outro'; ?>">
-                                    <?php echo ucfirst(str_replace('_', ' ', $r['tipo_erro'] ?? 'Outro')); ?>
+                                <span class="badge-tipo-erro <?php echo $tipoErro; ?>">
+                                    <?php echo $tipoLabel; ?>
                                 </span>
+                            </td>
+                            <td>
+                                <?php if (!empty($r['resposta_fornecida'])): ?>
+                                    <code><?php echo htmlspecialchars($r['resposta_fornecida']); ?></code>
+                                <?php else: ?>
+                                    <span style="color: #999;">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($r['resposta_esperada'])): ?>
+                                    <code><?php echo htmlspecialchars($r['resposta_esperada']); ?></code>
+                                <?php else: ?>
+                                    <span style="color: #999;">—</span>
+                                <?php endif; ?>
                             </td>
                             <td><?php echo isset($r['data_erro']) ? date('d/m/Y H:i', strtotime($r['data_erro'])) : 'N/A'; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="5" style="text-align:center; padding: 40px; color: #888;">
-                            <p style="font-size: 16px;">📭 Nenhum erro registrado até o momento.</p>
-                            <p style="font-size: 14px;">Os erros cometidos pelos alunos aparecerão aqui automaticamente.</p>
+                        <td colspan="7" style="text-align:center; padding: 40px; color: #888;">
+                            <div style="font-size: 48px; margin-bottom: 10px;">📭</div>
+                            <p style="font-size: 16px; font-weight: 500;">Nenhum erro registrado até o momento.</p>
+                            <p style="font-size: 14px; margin-top: 5px;">Os erros cometidos pelos alunos aparecerão aqui automaticamente.</p>
                         </td>
                     </tr>
                 <?php endif; ?>
@@ -106,10 +131,32 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         </table>
     </div>
 
-    <!-- Gráfico de Erros por Tipo -->
-    <?php if (!empty($dados_relatorio)): ?>
+    <!-- Estatísticas -->
+    <?php if (!empty($dados_relatorio) && is_array($dados_relatorio)): 
+        $total_erros = count($dados_relatorio);
+        $alunos_com_erro = array_unique(array_column($dados_relatorio, 'aluno_id'));
+        $total_alunos_com_erro = count($alunos_com_erro);
+    ?>
         <div class="grafico-section">
-            <h3>📊 Erros por Tipo</h3>
+            <h3>📊 Estatísticas de Erros</h3>
+            
+            <div class="resumo-erros">
+                <div class="resumo-item">
+                    <span class="resumo-numero"><?php echo $total_erros; ?></span>
+                    <span class="resumo-label">Total de erros</span>
+                </div>
+                <div class="resumo-item">
+                    <span class="resumo-numero" style="color: #3498db;"><?php echo $total_alunos_com_erro; ?></span>
+                    <span class="resumo-label">Alunos com erros</span>
+                </div>
+                <div class="resumo-item">
+                    <span class="resumo-numero" style="color: #f39c12;"><?php echo count(array_unique(array_column($dados_relatorio, 'equacao_id'))); ?></span>
+                    <span class="resumo-label">Equações com erros</span>
+                </div>
+            </div>
+            
+            <!-- Gráfico de Erros por Tipo -->
+            <h4 style="margin-top: 20px; margin-bottom: 15px; color: #2c3e50;">❌ Erros por Tipo</h4>
             <div class="grafico-barras">
                 <?php
                 $tipos = [
@@ -117,6 +164,7 @@ include_once __DIR__ . '/../partials/menu_professor.php';
                     'calculo_errado' => 'Cálculo Errado',
                     'sinal_trocado' => 'Sinal Trocado',
                     'divisao_incorreta' => 'Divisão Incorreta',
+                    'identificacao_errada' => 'Identificação Errada',
                     'outro' => 'Outros'
                 ];
                 $totais = [];
@@ -130,6 +178,7 @@ include_once __DIR__ . '/../partials/menu_professor.php';
                     'calculo_errado' => '#f39c12',
                     'sinal_trocado' => '#3498db',
                     'divisao_incorreta' => '#2ecc71',
+                    'identificacao_errada' => '#9b59b6',
                     'outro' => '#95a5a6'
                 ];
                 ?>
@@ -141,17 +190,58 @@ include_once __DIR__ . '/../partials/menu_professor.php';
                     <div class="grafico-item">
                         <span class="label"><?php echo $label; ?></span>
                         <div class="barra-wrapper">
-                            <div class="barra" style="width: <?php echo $percent; ?>%; background: <?php echo $cor; ?>;"></div>
+                            <div class="barra" style="width: <?php echo $percent; ?>%; background: <?php echo $cor; ?>;">
+                                <?php if ($count > 0): ?>
+                                    <span style="color: white; font-size: 11px; padding-left: 8px; line-height: 24px;">
+                                        <?php echo $count; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <span class="valor"><?php echo $count; ?></span>
                     </div>
                 <?php endforeach; ?>
             </div>
             
-            <!-- Resumo -->
-            <div class="resumo-erros">
-                <span>Total de erros: <strong><?php echo count($dados_relatorio); ?></strong></span>
-                <span>Alunos com erros: <strong><?php echo count(array_unique(array_column($dados_relatorio, 'aluno_id' ?? 'aluno'))); ?></strong></span>
+            <!-- Gráfico de Erros por Passo -->
+            <h4 style="margin-top: 25px; margin-bottom: 15px; color: #2c3e50;">📌 Erros por Passo</h4>
+            <div class="grafico-barras">
+                <?php
+                $passos = [
+                    1 => 'Passo 1',
+                    2 => 'Passo 2',
+                    3 => 'Passo 3',
+                    4 => 'Passo 4'
+                ];
+                $totais_passos = [];
+                foreach ($dados_relatorio as $r) {
+                    $passo = $r['passo'] ?? 0;
+                    if ($passo >= 1 && $passo <= 4) {
+                        $totais_passos[$passo] = ($totais_passos[$passo] ?? 0) + 1;
+                    }
+                }
+                $max_passos = max($totais_passos) ?: 1;
+                $cores_passos = ['#e74c3c', '#f39c12', '#3498db', '#2ecc71'];
+                ?>
+                <?php foreach ($passos as $key => $label): 
+                    $count = $totais_passos[$key] ?? 0;
+                    $percent = $count > 0 ? round(($count / $max_passos) * 100) : 0;
+                    $cor = $cores_passos[$key - 1] ?? '#95a5a6';
+                ?>
+                    <div class="grafico-item">
+                        <span class="label"><?php echo $label; ?></span>
+                        <div class="barra-wrapper">
+                            <div class="barra" style="width: <?php echo $percent; ?>%; background: <?php echo $cor; ?>;">
+                                <?php if ($count > 0): ?>
+                                    <span style="color: white; font-size: 11px; padding-left: 8px; line-height: 24px;">
+                                        <?php echo $count; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <span class="valor"><?php echo $count; ?></span>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
     <?php endif; ?>
@@ -161,11 +251,9 @@ include_once __DIR__ . '/../partials/menu_professor.php';
     function exportarCSV() {
         const tabela = document.getElementById('tabela-relatorio');
         let csv = [];
-        // Cabeçalhos
-        const headers = ['Aluno', 'Equação', 'Passo', 'Tipo de Erro', 'Data'];
+        const headers = ['Aluno', 'Equação', 'Passo', 'Tipo de Erro', 'Resposta Fornecida', 'Resposta Esperada', 'Data'];
         csv.push(headers.join(','));
         
-        // Dados
         const rows = tabela.querySelectorAll('tbody tr');
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
@@ -173,19 +261,14 @@ include_once __DIR__ . '/../partials/menu_professor.php';
                 const rowData = [];
                 cells.forEach(cell => {
                     let text = cell.textContent.trim();
-                    // Remove a palavra "Passo" do número
-                    if (text.includes('Passo')) {
-                        text = text.replace('Passo ', '');
-                    }
-                    // Remove quebras de linha
                     text = text.replace(/\n/g, ' ');
-                    rowData.push(text);
+                    text = text.replace(/\s+/g, ' ');
+                    rowData.push('"' + text + '"');
                 });
                 csv.push(rowData.join(','));
             }
         });
         
-        // Download
         const blob = new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -195,9 +278,25 @@ include_once __DIR__ . '/../partials/menu_professor.php';
     
     function exportarExcel() {
         const tabela = document.getElementById('tabela-relatorio');
-        let html = '<html><head><meta charset="UTF-8"><title>Relatório de Erros</title></head><body>';
-        html += '<h1>Relatório de Erros - EquaTEA</h1>';
+        let html = '<html><head><meta charset="UTF-8"><title>Relatório de Erros</title>';
+        html += '<style>';
+        html += 'body { font-family: Arial, sans-serif; padding: 20px; }';
+        html += 'h1 { color: #2c3e50; }';
+        html += 'table { border-collapse: collapse; width: 100%; margin-top: 20px; }';
+        html += 'th { background: #f8f9fa; border: 1px solid #ddd; padding: 8px 12px; text-align: left; }';
+        html += 'td { border: 1px solid #ddd; padding: 8px 12px; }';
+        html += '.badge-tipo-erro { display: inline-block; padding: 2px 8px; border-radius: 4px; }';
+        html += '.badge-tipo-erro.operacao_inversa { background: #fde8e8; color: #721c24; }';
+        html += '.badge-tipo-erro.calculo_errado { background: #fff3cd; color: #856404; }';
+        html += '.badge-tipo-erro.sinal_trocado { background: #cce5ff; color: #004085; }';
+        html += '.badge-tipo-erro.divisao_incorreta { background: #d4edda; color: #155724; }';
+        html += '.badge-tipo-erro.identificacao_errada { background: #e8d5f5; color: #6c1a8c; }';
+        html += '.badge-tipo-erro.outro { background: #e9ecef; color: #6c757d; }';
+        html += '</style>';
+        html += '</head><body>';
+        html += '<h1>📈 Relatório de Erros - EquaTEA</h1>';
         html += '<p>Gerado em: ' + new Date().toLocaleString() + '</p>';
+        html += '<p>Total de erros: <?php echo count($dados_relatorio ?? []); ?></p>';
         html += tabela.outerHTML;
         html += '</body></html>';
         
@@ -212,6 +311,8 @@ include_once __DIR__ . '/../partials/menu_professor.php';
 <style>
     .relatorio-container { 
         padding: 20px 0; 
+        max-width: 1200px;
+        margin: 0 auto;
     }
     
     .relatorio-container h1 {
@@ -254,6 +355,12 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         border-radius: 6px; 
         font-size: 15px; 
         background: #fff;
+        cursor: pointer;
+    }
+    
+    .filtro-grupo select:focus {
+        border-color: #3498db;
+        outline: none;
     }
     
     .btn-filtrar { 
@@ -359,16 +466,26 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         font-weight: 600; 
         color: #495057;
         border-bottom: 2px solid #dee2e6;
+        white-space: nowrap;
     }
     
     .tabela-relatorio td { 
         padding: 10px 16px; 
         border-bottom: 1px solid #f1f3f5; 
         color: #495057;
+        vertical-align: middle;
     }
     
     .tabela-relatorio tbody tr:hover {
         background-color: #f8f9fa;
+    }
+    
+    .tabela-relatorio code {
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #2c3e50;
     }
     
     .badge-tipo-erro { 
@@ -399,6 +516,11 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         color: #155724; 
     }
     
+    .badge-tipo-erro.identificacao_errada { 
+        background: #e8d5f5; 
+        color: #6c1a8c; 
+    }
+    
     .badge-tipo-erro.outro { 
         background: #e9ecef; 
         color: #6c757d; 
@@ -416,6 +538,13 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         margin-top: 0;
         margin-bottom: 16px;
         color: #2c3e50;
+    }
+    
+    .grafico-section h4 {
+        margin-top: 20px;
+        margin-bottom: 15px;
+        color: #2c3e50;
+        font-weight: 500;
     }
     
     .grafico-barras { 
@@ -442,12 +571,16 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         background: #e9ecef; 
         border-radius: 4px; 
         overflow: hidden; 
+        position: relative;
     }
     
     .grafico-item .barra { 
         height: 100%; 
         border-radius: 4px; 
         transition: width 1s ease; 
+        display: flex;
+        align-items: center;
+        min-width: 30px;
     }
     
     .grafico-item .valor { 
@@ -458,17 +591,31 @@ include_once __DIR__ . '/../partials/menu_professor.php';
     }
     
     .resumo-erros {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid #e9ecef;
         display: flex;
         gap: 30px;
-        font-size: 14px;
-        color: #555;
+        flex-wrap: wrap;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 20px;
     }
     
-    .resumo-erros strong {
+    .resumo-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .resumo-numero {
+        font-size: 28px;
+        font-weight: 700;
         color: #2c3e50;
+    }
+    
+    .resumo-label {
+        font-size: 13px;
+        color: #888;
+        margin-top: 2px;
     }
     
     @media (max-width: 768px) {
@@ -499,7 +646,17 @@ include_once __DIR__ . '/../partials/menu_professor.php';
         
         .resumo-erros {
             flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tabela-relatorio {
+            font-size: 13px;
+        }
+        
+        .tabela-relatorio th,
+        .tabela-relatorio td {
+            padding: 8px 10px;
         }
     }
     
