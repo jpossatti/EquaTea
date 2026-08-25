@@ -1,11 +1,18 @@
 <?php
 /**
  * app/views/admin/dashboard.php
- * Dashboard do Administrador
+ * Dashboard do Administrador - Layout similar ao do Professor
  */
 
 // Dados do Admin
 $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
+
+// Estatísticas (vindas do controller)
+$total_usuarios = $total_usuarios ?? 0;
+$total_alunos = $total_alunos ?? 0;
+$total_professores = $total_professores ?? 0;
+$total_equacoes = $total_equacoes ?? 0;
+$usuarios = $usuarios ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -14,34 +21,25 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EquaTEA - Painel Administrativo</title>
+    <link rel="stylesheet" href="/public/css/style.css">
     <style>
         :root {
             --primary-color: #1a237e;
-            --accent-green: #2ecc71;
             --accent-blue: #3498db;
-            --accent-orange: #f39c12;
-            --accent-red: #e74c3c;
             --bg-light: #f4f7f6;
             --card-bg: #ffffff;
             --text-color: #333333;
             --border-color: #e0e0e0;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-light);
-            margin: 0;
-            padding: 0;
             color: var(--text-color);
         }
 
-        /* HEADER */
         .admin-header {
             background: linear-gradient(135deg, #1a237e, #283593);
             color: white;
@@ -49,37 +47,15 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             flex-wrap: wrap;
             gap: 10px;
         }
 
-        .admin-header .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
+        .admin-header .logo { font-size: 1.5rem; font-weight: bold; }
+        .admin-header .logo span { color: #64b5f6; }
+        .admin-header .logo small { font-size: 0.7rem; opacity: 0.8; }
 
-        .admin-header .logo span {
-            color: #64b5f6;
-        }
-
-        .admin-header .logo small {
-            font-size: 0.7rem;
-            font-weight: normal;
-            opacity: 0.8;
-        }
-
-        .admin-header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .admin-header .user-name {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
+        .admin-header .user-info { display: flex; align-items: center; gap: 15px; }
         .admin-header .btn-logout {
             color: white;
             text-decoration: none;
@@ -89,14 +65,10 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             font-size: 0.85rem;
             transition: background 0.3s;
         }
+        .admin-header .btn-logout:hover { background: #c0392b; }
 
-        .admin-header .btn-logout:hover {
-            background: #c0392b;
-        }
-
-        /* NAVEGAÇÃO */
         .admin-nav {
-            background-color: #ffffff;
+            background: white;
             border-bottom: 1px solid var(--border-color);
             padding: 10px 24px;
             display: flex;
@@ -111,64 +83,40 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             font-weight: 600;
             padding: 8px 16px;
             border-radius: 4px;
-            transition: background-color 0.2s, color 0.2s;
+            transition: all 0.2s;
         }
 
-        .admin-nav a:hover,
-        .admin-nav a.active {
-            background-color: #e8eaf6;
-            color: var(--primary-color);
-        }
+        .admin-nav a:hover { background: #e8eaf6; color: var(--primary-color); }
+        .admin-nav a.active { background: var(--primary-color); color: white; }
 
-        .admin-nav a.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        /* CONTAINER */
         .container {
             max-width: 1200px;
             margin: 30px auto;
             padding: 0 15px;
         }
 
-        /* WELCOME */
-        .welcome-card {
-            background: linear-gradient(135deg, #1a237e, #283593);
-            color: white;
-            padding: 25px 30px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 18px;
+            margin-top: -8px;
         }
 
-        .welcome-card h2 {
-            margin: 0 0 8px 0;
-            font-size: 1.6rem;
-        }
-
-        .welcome-card p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        /* STATS */
+        /* Cards de Estatísticas */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
         }
 
         .stat-card {
-            background-color: var(--card-bg);
-            padding: 18px 20px;
+            background: #fff;
+            padding: 16px 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             display: flex;
             align-items: center;
             gap: 15px;
-            border-left: 5px solid var(--accent-blue);
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
@@ -177,91 +125,125 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .stat-card.green { border-left-color: var(--accent-green); }
-        .stat-card.orange { border-left-color: var(--accent-orange); }
-        .stat-card.red { border-left-color: var(--accent-red); }
-        .stat-card.purple { border-left-color: #9b59b6; }
-
-        .stat-icon { font-size: 2rem; }
-
-        .stat-info h4 {
-            margin: 0;
-            font-size: 0.8rem;
-            color: #777;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .stat-icon {
+            font-size: 28px;
         }
 
-        .stat-info .value {
-            font-size: 1.6rem;
-            font-weight: bold;
-            margin-top: 2px;
-            color: var(--primary-color);
-        }
-
-        /* CARD */
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            margin-bottom: 20px;
-        }
-
-        .card h3 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            color: var(--primary-color);
+        .stat-card > div {
             display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        /* Ações Rápidas */
+        .acoes-rapidas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 20px 0 30px;
+        }
+
+        .acao-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            color: #2c3e50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        /* TABLE */
-        .table-responsive {
-            overflow-x: auto;
+        .acao-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            border-color: var(--accent-blue);
         }
 
-        table {
+        .acao-icon {
+            font-size: 32px;
+        }
+
+        /* Tabela */
+        .btn-ver-todos {
+            display: inline-block;
+            padding: 6px 16px;
+            background: #f8f9fa;
+            color: #555;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-ver-todos:hover {
+            background: #e9ecef;
+        }
+
+        .usuarios-table {
             width: 100%;
             border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-top: 10px;
+        }
+
+        .usuarios-table th {
+            background: #f8f9fa;
+            padding: 12px 16px;
             text-align: left;
-            font-size: 0.9rem;
-        }
-
-        th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f8f9fa;
-            color: #555;
             font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
-        tbody tr:hover {
+        .usuarios-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #f1f3f5;
+            color: #495057;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .usuarios-table tbody tr:hover {
             background-color: #f8f9fa;
         }
 
-        /* BADGES */
+        /* Badges */
         .badge {
+            display: inline-block;
             padding: 3px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 12px;
             font-weight: 600;
-            display: inline-block;
         }
 
         .badge-success { background: #d4edda; color: #155724; }
+        .badge-info { background: #cce5ff; color: #004085; }
         .badge-warning { background: #fff3cd; color: #856404; }
         .badge-danger { background: #f8d7da; color: #721c24; }
-        .badge-info { background: #d1ecf1; color: #0c5460; }
-        .badge-secondary { background: #e9ecef; color: #6c757d; }
 
         .badge-aluno { background: #cce5ff; color: #004085; }
         .badge-professor { background: #d4edda; color: #155724; }
@@ -270,73 +252,6 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
         .badge-ativo { background: #d4edda; color: #155724; }
         .badge-inativo { background: #f8d7da; color: #721c24; }
 
-        /* BUTTONS */
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 12px;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .btn-action:hover {
-            transform: scale(1.02);
-        }
-
-        .btn-action.btn-edit {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-action.btn-edit:hover {
-            background: #2980b9;
-        }
-
-        .btn-action.btn-delete {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-action.btn-delete:hover {
-            background: #c0392b;
-        }
-
-        .btn-action.btn-add {
-            background: #28a745;
-            color: white;
-            padding: 8px 20px;
-            font-size: 0.85rem;
-        }
-
-        .btn-action.btn-add:hover {
-            background: #218838;
-        }
-
-        .btn-action.btn-view {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-action.btn-view:hover {
-            background: #5a6268;
-        }
-
-        .btn-action.btn-back {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-action.btn-back:hover {
-            background: #5a6268;
-        }
-
-        /* ALERTAS */
         .alert {
             padding: 12px 18px;
             border-radius: 6px;
@@ -356,213 +271,24 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             border: 1px solid #f5c6cb;
         }
 
-        /* MODAL SIMPLES */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 600px;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .modal h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        .modal .form-group {
-            margin-bottom: 15px;
-        }
-
-        .modal .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        .modal .form-group input,
-        .modal .form-group select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .modal .form-group input:focus,
-        .modal .form-group select:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
-        }
-
-        .modal .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .modal .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: flex-end;
-        }
-
-        .modal .btn-submit {
-            padding: 10px 24px;
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .modal .btn-submit:hover {
-            background: #2980b9;
-        }
-
-        .modal .btn-cancel {
-            padding: 10px 24px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .modal .btn-cancel:hover {
-            background: #5a6268;
-        }
-
-        /* AÇÕES RÁPIDAS */
-        .acoes-rapidas {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .acao-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text-color);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            font-weight: 500;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .acao-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-            border-color: var(--accent-blue);
-        }
-
-        .acao-icon {
-            font-size: 2.2rem;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        /* FOOTER */
-        .footer-info {
-            margin-top: 30px;
-            padding: 15px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            text-align: center;
-            color: #888;
-            font-size: 0.85rem;
-        }
-
-        /* RESPONSIVE */
         @media (max-width: 768px) {
-            .admin-header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .admin-nav {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .modal .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .stat-card {
-                padding: 12px 15px;
-            }
-
-            .stat-info .value {
-                font-size: 1.2rem;
-            }
-
-            table {
-                font-size: 0.8rem;
-            }
-
-            th, td {
-                padding: 6px 8px;
-            }
-
-            .card {
-                padding: 15px;
-            }
+            .admin-header { flex-direction: column; text-align: center; }
+            .admin-nav { flex-direction: column; align-items: center; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .acoes-rapidas { grid-template-columns: 1fr; }
+            .usuarios-table { font-size: 13px; }
+            .usuarios-table th,
+            .usuarios-table td { padding: 8px 10px; }
+            .usuarios-table th { font-size: 11px; }
+            .stat-value { font-size: 22px; }
         }
 
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .admin-header .logo {
-                font-size: 1.2rem;
-            }
-
-            .welcome-card h2 {
-                font-size: 1.2rem;
-            }
-
-            .modal {
-                padding: 20px;
-                margin: 10px;
-            }
+            .stats-grid { grid-template-columns: 1fr; }
+            .usuarios-table { font-size: 12px; }
+            .usuarios-table th,
+            .usuarios-table td { padding: 6px 8px; }
+            .badge { font-size: 10px; padding: 2px 8px; }
         }
     </style>
 </head>
@@ -605,48 +331,42 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             </div>
         <?php endif; ?>
 
-        <!-- WELCOME -->
-        <div class="welcome-card">
-            <h2>👑 Bem-vindo, <?php echo htmlspecialchars($nome_admin); ?>!</h2>
-            <p>Gerencie todos os aspectos do sistema EquaTEA de forma centralizada.</p>
-        </div>
+        <h1>👑 Olá, <?php echo htmlspecialchars($nome_admin); ?>!</h1>
+        <p class="subtitle">Gerencie todos os aspectos do sistema EquaTEA de forma centralizada</p>
 
-        <!-- ESTATÍSTICAS -->
+        <!-- Cards de Estatísticas -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">👤</div>
-                <div class="stat-info">
-                    <h4>Total de Usuários</h4>
-                    <div class="value"><?php echo $total_usuarios ?? 0; ?></div>
+                <div>
+                    <span class="stat-value"><?php echo $total_usuarios; ?></span>
+                    <span class="stat-label">Usuários</span>
                 </div>
             </div>
-
-            <div class="stat-card green">
+            <div class="stat-card">
                 <div class="stat-icon">👨‍🎓</div>
-                <div class="stat-info">
-                    <h4>Alunos</h4>
-                    <div class="value"><?php echo $total_alunos ?? 0; ?></div>
+                <div>
+                    <span class="stat-value"><?php echo $total_alunos; ?></span>
+                    <span class="stat-label">Alunos</span>
                 </div>
             </div>
-
-            <div class="stat-card orange">
+            <div class="stat-card">
                 <div class="stat-icon">👨‍🏫</div>
-                <div class="stat-info">
-                    <h4>Professores</h4>
-                    <div class="value"><?php echo $total_professores ?? 0; ?></div>
+                <div>
+                    <span class="stat-value"><?php echo $total_professores; ?></span>
+                    <span class="stat-label">Professores</span>
                 </div>
             </div>
-
-            <div class="stat-card purple">
+            <div class="stat-card">
                 <div class="stat-icon">📐</div>
-                <div class="stat-info">
-                    <h4>Equações</h4>
-                    <div class="value"><?php echo $total_equacoes ?? 0; ?></div>
+                <div>
+                    <span class="stat-value"><?php echo $total_equacoes; ?></span>
+                    <span class="stat-label">Equações</span>
                 </div>
             </div>
         </div>
 
-        <!-- AÇÕES RÁPIDAS -->
+        <!-- Ações Rápidas -->
         <div class="acoes-rapidas">
             <a href="index.php?view=admin/gerenciar" class="acao-card">
                 <span class="acao-icon">👤</span>
@@ -658,88 +378,74 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             </a>
         </div>
 
-        <!-- ÚLTIMOS USUÁRIOS -->
-        <div class="card">
-            <h3>📋 Últimos Usuários Cadastrados</h3>
-
-            <?php if (!empty($usuarios) && is_array($usuarios)): ?>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Email</th>
-                                <th>Perfil</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach (array_slice($usuarios, 0, 10) as $user): ?>
-                                <?php
-                                    $perfilLabels = [
-                                        'aluno' => 'Aluno',
-                                        'professor' => 'Professor',
-                                        'admin' => 'Administrador'
-                                    ];
-                                    $statusClass = $user['ativo'] ? 'badge-ativo' : 'badge-inativo';
-                                    $statusText = $user['ativo'] ? 'Ativo' : 'Inativo';
-                                    $perfilClass = 'badge-' . $user['tipo_perfil'];
-                                ?>
-                                <tr>
-                                    <td>
-                                        <strong><?php echo htmlspecialchars($user['nome'] ?? 'N/A'); ?></strong>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($user['email'] ?? 'N/A'); ?></td>
-                                    <td>
-                                        <span class="badge <?php echo $perfilClass; ?>">
-                                            <?php echo $perfilLabels[$user['tipo_perfil']] ?? $user['tipo_perfil']; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge <?php echo $statusClass; ?>">
-                                            <?php echo $statusText; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="index.php?view=admin/gerenciar" class="btn-action btn-edit">
-                                            ✏️ Editar
-                                        </a>
-                                        <?php if ($user['id'] != $_SESSION['usuario_id']): ?>
-                                            <a href="index.php?view=admin/excluir_usuario&id=<?php echo $user['id']; ?>" 
-                                               class="btn-action btn-delete"
-                                               onclick="return confirm('Tem certeza que deseja excluir este usuário?');">
-                                                🗑️
-                                            </a>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <?php if (count($usuarios) > 10): ?>
-                    <div style="text-align: center; margin-top: 15px;">
-                        <a href="index.php?view=admin/gerenciar" class="btn-action btn-view">
-                            Ver todos os <?php echo count($usuarios); ?> usuários →
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-            <?php else: ?>
-                <div style="text-align: center; padding: 20px; color: #6c757d;">
-                    <p style="font-size: 16px;">📭 Nenhum usuário cadastrado ainda.</p>
-                    <p>Clique em "Gerenciar Usuários" para criar o primeiro.</p>
-                </div>
-            <?php endif; ?>
+        <!-- Tabela de Usuários -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="margin: 0;">👤 Últimos Usuários</h2>
+            <a href="index.php?view=admin/gerenciar" class="btn-ver-todos">Ver todos →</a>
         </div>
 
-        <!-- RODAPÉ -->
-        <div class="footer-info">
-            <p>🔒 Painel Administrativo - EquaTEA</p>
-            <p style="margin-top: 5px; font-size: 0.8rem;">Gerencie usuários, equações e acompanhe o progresso do sistema.</p>
-        </div>
+        <?php if (!empty($usuarios) && is_array($usuarios)): ?>
+            <table class="usuarios-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Status</th>
+                        <th>Dados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach (array_slice($usuarios, 0, 10) as $user): ?>
+                        <?php
+                            $perfilLabels = [
+                                'aluno' => 'Aluno',
+                                'professor' => 'Professor',
+                                'admin' => 'Administrador'
+                            ];
+                            $statusClass = $user['ativo'] ? 'badge-ativo' : 'badge-inativo';
+                            $statusText = $user['ativo'] ? 'Ativo' : 'Inativo';
+                            $perfilClass = 'badge-' . $user['tipo_perfil'];
+                            
+                            $dadosPerfil = '';
+                            if ($user['tipo_perfil'] === 'aluno') {
+                                $dadosPerfil = "Idade: {$user['idade']} | Nível: {$user['nivel_tea']}";
+                            } elseif ($user['tipo_perfil'] === 'professor') {
+                                $dadosPerfil = "Disciplina: {$user['disciplina']}";
+                            }
+                        ?>
+                        <tr>
+                            <td>
+                                <strong><?php echo htmlspecialchars($user['nome'] ?? 'N/A'); ?></strong>
+                            </td>
+                            <td><?php echo htmlspecialchars($user['email'] ?? 'N/A'); ?></td>
+                            <td>
+                                <span class="badge <?php echo $perfilClass; ?>">
+                                    <?php echo $perfilLabels[$user['tipo_perfil']] ?? $user['tipo_perfil']; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge <?php echo $statusClass; ?>">
+                                    <?php echo $statusText; ?>
+                                </span>
+                            </td>
+                            <td style="font-size: 12px; color: #888;">
+                                <?php echo htmlspecialchars($dadosPerfil); ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 10px; text-align: right; font-size: 14px; color: #888;">
+                Total: <strong><?php echo count($usuarios); ?></strong> usuários
+            </div>
+        <?php else: ?>
+            <div style="text-align: center; padding: 30px; background: #fff; border-radius: 8px; color: #6c757d; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                <p style="font-size: 16px;">📭 Nenhum usuário encontrado.</p>
+                <p>Clique em "Gerenciar Usuários" para cadastrar novos usuários.</p>
+            </div>
+        <?php endif; ?>
 
     </div>
 

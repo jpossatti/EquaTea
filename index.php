@@ -57,15 +57,18 @@ $routes = [
     'professor/equacoes' => ['controller' => 'ProfessorController', 'method' => 'equacoes'],
     'professor/relatorios' => ['controller' => 'ProfessorController', 'method' => 'relatorios'],
     
-    // Admin
-    'admin/dashboard' => ['controller' => 'AdminController', 'method' => 'dashboard'],
-    'admin/gerenciar' => ['controller' => 'AdminController', 'method' => 'gerenciarUsuarios'],
-    'admin/equacoes' => ['controller' => 'AdminController', 'method' => 'gerenciarEquacoes'],
-    'admin/criar_usuario' => ['controller' => 'AdminController', 'method' => 'criarUsuario'],
-    'admin/editar_usuario' => ['controller' => 'AdminController', 'method' => 'editarUsuario'],
-    'admin/excluir_usuario' => ['controller' => 'AdminController', 'method' => 'excluirUsuario'],
-    'admin/criar_equacao' => ['controller' => 'AdminController', 'method' => 'criarEquacao'],
-    'admin/excluir_equacao' => ['controller' => 'AdminController', 'method' => 'excluirEquacao'],
+// Admin
+'admin/dashboard' => ['controller' => 'AdminController', 'method' => 'dashboard'],
+'admin/gerenciar' => ['controller' => 'AdminController', 'method' => 'gerenciarUsuarios'],
+'admin/equacoes' => ['controller' => 'AdminController', 'method' => 'gerenciarEquacoes'],
+'admin/criar_usuario' => ['controller' => 'AdminController', 'method' => 'criarUsuario'],
+'admin/editar_usuario' => ['controller' => 'AdminController', 'method' => 'editarUsuario'],
+'admin/editar_usuario_salvar' => ['controller' => 'AdminController', 'method' => 'editarUsuarioSalvar'],
+'admin/excluir_usuario' => ['controller' => 'AdminController', 'method' => 'excluirUsuario'],
+'admin/criar_equacao' => ['controller' => 'AdminController', 'method' => 'criarEquacao'],
+'admin/editar_equacao' => ['controller' => 'AdminController', 'method' => 'editarEquacao'],
+'admin/editar_equacao_salvar' => ['controller' => 'AdminController', 'method' => 'editarEquacaoSalvar'],
+'admin/excluir_equacao' => ['controller' => 'AdminController', 'method' => 'excluirEquacao'],
 ];
 
 // Processa a rota

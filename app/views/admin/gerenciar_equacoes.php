@@ -1,12 +1,11 @@
 <?php
 /**
  * app/views/admin/gerenciar_equacoes.php
- * Gerenciamento de Equações
+ * Gerenciamento de Equações - Versão Admin
  */
 
 $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -14,7 +13,6 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EquaTEA - Gerenciar Equações</title>
     <style>
-        /* Mesmo estilo do dashboard */
         :root {
             --primary-color: #1a237e;
             --accent-blue: #3498db;
@@ -87,6 +85,21 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             padding: 0 15px;
         }
 
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .page-header .subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
         .card {
             background: white;
             border-radius: 8px;
@@ -104,7 +117,13 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             gap: 10px;
         }
 
-        .card-header h3 { margin: 0; color: var(--primary-color); }
+        .card-header h3 { 
+            margin: 0; 
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         .table-responsive { overflow-x: auto; }
 
@@ -126,6 +145,7 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             font-weight: 600;
             font-size: 0.8rem;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         tbody tr:hover { background: #f8f9fa; }
@@ -138,7 +158,7 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
         }
 
         .badge {
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
@@ -153,11 +173,11 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border: none;
             border-radius: 4px;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-decoration: none;
             cursor: pointer;
             transition: all 0.2s;
@@ -165,8 +185,17 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
 
         .btn-action:hover { transform: scale(1.02); }
 
-        .btn-action.btn-delete { background: #e74c3c; color: white; }
-        .btn-action.btn-delete:hover { background: #c0392b; }
+        .btn-action.btn-delete { 
+            background: #dc3545; 
+            color: white; 
+        }
+        .btn-action.btn-delete:hover { background: #c82333; }
+
+        .btn-action.btn-edit { 
+            background: #17a2b8; 
+            color: white; 
+        }
+        .btn-action.btn-edit:hover { background: #138496; }
 
         .btn-action.btn-add {
             background: #28a745;
@@ -176,8 +205,28 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
         }
 
         .btn-action.btn-add:hover { background: #218838; }
-        .btn-action.btn-back { background: #6c757d; color: white; }
+
+        .btn-action.btn-back { 
+            background: #6c757d; 
+            color: white; 
+        }
         .btn-action.btn-back:hover { background: #5a6268; }
+
+        .btn-action.btn-submit {
+            background: var(--accent-blue);
+            color: white;
+            padding: 10px 24px;
+            font-size: 0.9rem;
+        }
+
+        .btn-action.btn-submit:hover { background: #2980b9; }
+
+        .btn-action.btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-action.btn-cancel:hover { background: #5a6268; }
 
         .alert {
             padding: 12px 18px;
@@ -186,120 +235,146 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             font-weight: 500;
         }
 
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
-        /* MODAL */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+        .alert-success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+        }
+        .alert-error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
         }
 
-        .modal-overlay.active { display: flex; }
-
-        .modal {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 95%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        /* Formulário */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .modal h3 { margin-top: 0; color: var(--primary-color); }
-
-        .modal .form-group {
+        .form-group {
             margin-bottom: 15px;
         }
 
-        .modal .form-group label {
+        .form-group label {
             display: block;
             font-weight: 600;
             margin-bottom: 5px;
             font-size: 0.9rem;
+            color: #495057;
         }
 
-        .modal .form-group input,
-        .modal .form-group select {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 0.9rem;
+            transition: border-color 0.3s;
         }
 
-        .modal .form-group input:focus,
-        .modal .form-group select:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--accent-blue);
             box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
         }
 
-        .modal .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+        .form-group small {
+            color: #6c757d;
+            font-size: 0.75rem;
         }
 
-        .modal .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: flex-end;
-        }
-
-        .modal .btn-submit {
-            padding: 10px 24px;
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .modal .btn-submit:hover { background: #2980b9; }
-
-        .modal .btn-cancel {
-            padding: 10px 24px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .modal .btn-cancel:hover { background: #5a6268; }
-
-        .modal .formula-preview {
+        .preview-box {
             background: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
             text-align: center;
+        }
+
+        .preview-box .label {
+            color: #64748b;
+            margin-right: 10px;
+        }
+
+        .preview-box .equation {
             font-family: 'Courier New', monospace;
             font-size: 1.2rem;
-            color: var(--primary-color);
-            margin-top: 10px;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .preview-box .result {
+            margin-left: 15px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .preview-box .result.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .preview-box .result.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin: 5px 0;
+        }
+
+        .total-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
         }
 
         @media (max-width: 768px) {
             .admin-header { flex-direction: column; text-align: center; }
             .admin-nav { flex-direction: column; align-items: center; }
-            .modal .form-row { grid-template-columns: 1fr; }
-            .card-header { flex-direction: column; align-items: stretch; }
+            .form-grid { grid-template-columns: 1fr 1fr; }
+            .card-header { flex-direction: column; align-items: stretch; text-align: center; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 6px 8px; }
+            .card { padding: 15px; }
         }
 
         @media (max-width: 480px) {
             .admin-header .logo { font-size: 1.2rem; }
-            .modal { padding: 20px; margin: 10px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .page-header h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
@@ -330,6 +405,12 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
     <!-- CONTEÚDO -->
     <div class="container">
 
+        <div class="page-header">
+            <h1>📐 Gerenciar Equações</h1>
+            <p class="subtitle">Cadastre, edite e remova equações do sistema</p>
+        </div>
+
+        <!-- Mensagens de Alerta -->
         <?php if (isset($_SESSION['admin_success'])): ?>
             <div class="alert alert-success">
                 ✅ <?php echo $_SESSION['admin_success']; unset($_SESSION['admin_success']); ?>
@@ -342,13 +423,62 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
             </div>
         <?php endif; ?>
 
+        <!-- FORMULÁRIO DE CADASTRO -->
+        <div class="card">
+            <div class="card-header">
+                <h3>➕ Cadastrar Nova Equação</h3>
+            </div>
+            
+            <form method="POST" action="index.php?view=admin/criar_equacao" id="formEquacao">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="a">Coeficiente a *</label>
+                        <input type="number" id="a" name="a" min="-20" max="20" placeholder="Ex: 2" required oninput="previewFormula()">
+                        <small>Não pode ser zero</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="b">Coeficiente b *</label>
+                        <input type="number" id="b" name="b" min="-20" max="20" placeholder="Ex: 5" required oninput="previewFormula()">
+                    </div>
+                    <div class="form-group">
+                        <label for="c">Coeficiente c *</label>
+                        <input type="number" id="c" name="c" min="-20" max="20" placeholder="Ex: 11" required oninput="previewFormula()">
+                    </div>
+                    <div class="form-group">
+                        <label for="dificuldade">Dificuldade *</label>
+                        <select id="dificuldade" name="dificuldade" required>
+                            <option value="facil">Fácil</option>
+                            <option value="medio">Médio</option>
+                            <option value="dificil">Difícil</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Pré-visualização -->
+                <div class="preview-box">
+                    <span class="label">Pré-visualização:</span>
+                    <span class="equation" id="previewEquation">ax + b = c</span>
+                    <span class="result" id="previewResult">x = ?</span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-action btn-add">
+                        ✔ Cadastrar Equação
+                    </button>
+                    <button type="reset" onclick="setTimeout(previewFormula, 50)" class="btn-action btn-cancel">
+                        🔄 Limpar
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- LISTA DE EQUAÇÕES -->
         <div class="card">
             <div class="card-header">
-                <h3>📐 Lista de Equações</h3>
-                <button class="btn-action btn-add" onclick="abrirModal()">
-                    ➕ Nova Equação
-                </button>
+                <h3>📋 Lista de Equações</h3>
+                <span style="color: #6c757d; font-size: 0.9rem;">
+                    Total: <strong><?php echo isset($equacoes) ? count($equacoes) : 0; ?></strong>
+                </span>
             </div>
 
             <?php if (!empty($equacoes) && is_array($equacoes)): ?>
@@ -359,8 +489,8 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
                                 <th>ID</th>
                                 <th>Equação</th>
                                 <th>Dificuldade</th>
-                                <th>Solução</th>
-                                <th>Ação</th>
+                                <th>Solução (x)</th>
+                                <th style="text-align: center;">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -398,11 +528,17 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
                                     <td>
                                         <strong>x = <?php echo $solucao; ?></strong>
                                     </td>
-                                    <td>
+                                    <td style="text-align: center;">
+                                        <a href="index.php?view=admin/editar_equacao&id=<?php echo $eq['id']; ?>" 
+                                           class="btn-action btn-edit"
+                                           title="Editar equação">
+                                            ✏️ Editar
+                                        </a>
                                         <a href="index.php?view=admin/excluir_equacao&id=<?php echo $eq['id']; ?>" 
                                            class="btn-action btn-delete"
-                                           onclick="return confirm('Tem certeza que deseja excluir esta equação?');">
-                                            🗑️
+                                           onclick="return confirm('Tem certeza que deseja excluir esta equação? Esta ação não pode ser desfeita.');"
+                                           title="Excluir equação">
+                                            🗑️ Excluir
                                         </a>
                                     </td>
                                 </tr>
@@ -411,19 +547,21 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
                     </table>
                 </div>
                 
-                <div style="margin-top: 10px; text-align: right; font-size: 14px; color: #888;">
-                    Total: <strong><?php echo count($equacoes); ?></strong> equações
+                <div class="total-info">
+                    Total: <strong><?php echo count($equacoes); ?></strong> equações cadastradas
                 </div>
 
             <?php else: ?>
-                <div style="text-align: center; padding: 30px; color: #6c757d;">
-                    <p style="font-size: 18px;">📭 Nenhuma equação cadastrada.</p>
-                    <p>Clique em "Nova Equação" para criar a primeira.</p>
+                <div class="empty-state">
+                    <div class="icon">📭</div>
+                    <p><strong>Nenhuma equação cadastrada ainda.</strong></p>
+                    <p>Utilize o formulário acima para cadastrar a primeira equação.</p>
                 </div>
             <?php endif; ?>
         </div>
 
-        <div style="margin-top: 10px;">
+        <!-- BOTÃO VOLTAR -->
+        <div style="margin-top: 10px; text-align: center;">
             <a href="index.php?view=admin/dashboard" class="btn-action btn-back">
                 ⬅ Voltar para Dashboard
             </a>
@@ -431,79 +569,58 @@ $nome_admin = $_SESSION['usuario_nome'] ?? 'Administrador';
 
     </div>
 
-    <!-- MODAL DE CRIAÇÃO -->
-    <div class="modal-overlay" id="modalEquacao">
-        <div class="modal">
-            <h3>➕ Nova Equação</h3>
-            
-            <form method="POST" action="index.php?view=admin/criar_equacao">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="a">a (coeficiente)</label>
-                        <input type="number" id="a" name="a" value="1" required onchange="previewFormula()">
-                    </div>
-                    <div class="form-group">
-                        <label for="b">b</label>
-                        <input type="number" id="b" name="b" value="0" required onchange="previewFormula()">
-                    </div>
-                    <div class="form-group">
-                        <label for="c">c</label>
-                        <input type="number" id="c" name="c" value="1" required onchange="previewFormula()">
-                    </div>
-                </div>
-
-                <div class="formula-preview" id="formulaPreview">
-                    1x + 0 = 1
-                </div>
-
-                <div class="form-group">
-                    <label for="dificuldade">Dificuldade</label>
-                    <select id="dificuldade" name="dificuldade">
-                        <option value="facil">Fácil</option>
-                        <option value="medio">Médio</option>
-                        <option value="dificil">Difícil</option>
-                    </select>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="fecharModal()">Cancelar</button>
-                    <button type="submit" class="btn-submit">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    <!-- SCRIPT PARA PRÉ-VISUALIZAÇÃO -->
     <script>
-        function abrirModal() {
-            document.getElementById('modalEquacao').classList.add('active');
-            previewFormula();
-        }
-
-        function fecharModal() {
-            document.getElementById('modalEquacao').classList.remove('active');
-        }
-
         function previewFormula() {
-            const a = document.getElementById('a').value || 1;
-            const b = document.getElementById('b').value || 0;
-            const c = document.getElementById('c').value || 0;
-            
-            const termoA = a == 1 ? 'x' : (a == -1 ? '-x' : a + 'x');
-            const sinalB = b >= 0 ? '+ ' + b : '- ' + Math.abs(b);
-            const preview = termoA + ' ' + sinalB + ' = ' + c;
-            
-            document.getElementById('formulaPreview').textContent = preview;
+            const a = parseFloat(document.getElementById('a').value);
+            const b = parseFloat(document.getElementById('b').value);
+            const c = parseFloat(document.getElementById('c').value);
+
+            const elemEq = document.getElementById('previewEquation');
+            const elemRes = document.getElementById('previewResult');
+
+            if (isNaN(a) || isNaN(b) || isNaN(c) || a === 0) {
+                elemEq.innerText = "ax + b = c";
+                elemRes.innerText = "x = ?";
+                elemRes.className = "result";
+                return;
+            }
+
+            // Formata a equação
+            let eqText = '';
+            if (a === 1) {
+                eqText = 'x';
+            } else if (a === -1) {
+                eqText = '-x';
+            } else {
+                eqText = `${a}x`;
+            }
+
+            if (b > 0) {
+                eqText += ` + ${b}`;
+            } else if (b < 0) {
+                eqText += ` - ${Math.abs(b)}`;
+            }
+
+            eqText += ` = ${c}`;
+            elemEq.innerText = eqText;
+
+            // Calcula a solução
+            const x = (c - b) / a;
+
+            if (Number.isInteger(x)) {
+                elemRes.innerText = `✔ x = ${x}`;
+                elemRes.className = "result success";
+            } else {
+                elemRes.innerText = `⚠️ x = ${x.toFixed(2)} (não inteiro)`;
+                elemRes.className = "result warning";
+            }
         }
 
-        // Fechar modal ao clicar fora
-        document.getElementById('modalEquacao').addEventListener('click', function(e) {
-            if (e.target === this) {
-                fecharModal();
-            }
+        // Executa a pré-visualização ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            previewFormula();
         });
-
-        // Inicializa preview
-        previewFormula();
     </script>
 
 </body>
