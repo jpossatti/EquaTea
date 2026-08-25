@@ -41,34 +41,54 @@ if (strpos($view, '&') !== false) {
 
 // Mapeamento de rotas
 $routes = [
-    // Auth
+    // ===== AUTH =====
     'login' => ['controller' => 'AuthController', 'method' => 'showLogin'],
     'fazer_login' => ['controller' => 'AuthController', 'method' => 'login'],
     'logout' => ['controller' => 'AuthController', 'method' => 'logout'],
     
-    // Aluno
+    // ===== ALUNO =====
     'aluno/dashboard' => ['controller' => 'AlunoController', 'method' => 'dashboard'],
     'aluno/exercicio' => ['controller' => 'AlunoController', 'method' => 'exercicio'],
     'aluno/parabens' => ['controller' => 'AlunoController', 'method' => 'parabens'],
     
-    // Professor
-    'professor/dashboard' => ['controller' => 'ProfessorController', 'method' => 'dashboard'],
-    'professor/alunos' => ['controller' => 'ProfessorController', 'method' => 'alunos'],
-    'professor/equacoes' => ['controller' => 'ProfessorController', 'method' => 'equacoes'],
-    'professor/relatorios' => ['controller' => 'ProfessorController', 'method' => 'relatorios'],
+    // ===== PROFESSOR =====
+// Dashboard
+'professor/dashboard' => ['controller' => 'ProfessorController', 'method' => 'dashboard'],
+
+// Gerenciar Alunos
+'gerenciar_alunos' => ['controller' => 'ProfessorController', 'method' => 'gerenciarAlunos'],
+'editar_aluno' => ['controller' => 'ProfessorController', 'method' => 'editarAluno'],
+'salvar_edicao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicao'],
+'deletar_aluno' => ['controller' => 'ProfessorController', 'method' => 'deletarAluno'],
+'resetar_senha' => ['controller' => 'ProfessorController', 'method' => 'resetarSenha'],
+'cadastrar_aluno' => ['controller' => 'ProfessorController', 'method' => 'cadastrarAluno'],
+
+// Gerenciar Equações
+'gerenciar_equacoes' => ['controller' => 'ProfessorController', 'method' => 'gerenciarEquacoes'],
+'editar_equacao' => ['controller' => 'ProfessorController', 'method' => 'editarEquacao'],
+'salvar_edicao_equacao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicaoEquacao'],
+'deletar_equacao' => ['controller' => 'ProfessorController', 'method' => 'deletarEquacao'],
+'cadastrar_equacao' => ['controller' => 'ProfessorController', 'method' => 'cadastrarEquacao'],
+
+// Relatórios
+'relatorio' => ['controller' => 'ProfessorController', 'method' => 'relatorio'],
+    // ===== ADMIN =====
+    // Dashboard
+    'admin/dashboard' => ['controller' => 'AdminController', 'method' => 'dashboard'],
     
-// Admin
-'admin/dashboard' => ['controller' => 'AdminController', 'method' => 'dashboard'],
-'admin/gerenciar' => ['controller' => 'AdminController', 'method' => 'gerenciarUsuarios'],
-'admin/equacoes' => ['controller' => 'AdminController', 'method' => 'gerenciarEquacoes'],
-'admin/criar_usuario' => ['controller' => 'AdminController', 'method' => 'criarUsuario'],
-'admin/editar_usuario' => ['controller' => 'AdminController', 'method' => 'editarUsuario'],
-'admin/editar_usuario_salvar' => ['controller' => 'AdminController', 'method' => 'editarUsuarioSalvar'],
-'admin/excluir_usuario' => ['controller' => 'AdminController', 'method' => 'excluirUsuario'],
-'admin/criar_equacao' => ['controller' => 'AdminController', 'method' => 'criarEquacao'],
-'admin/editar_equacao' => ['controller' => 'AdminController', 'method' => 'editarEquacao'],
-'admin/editar_equacao_salvar' => ['controller' => 'AdminController', 'method' => 'editarEquacaoSalvar'],
-'admin/excluir_equacao' => ['controller' => 'AdminController', 'method' => 'excluirEquacao'],
+    // Gerenciar Usuários
+    'admin/gerenciar' => ['controller' => 'AdminController', 'method' => 'gerenciarUsuarios'],
+    'admin/criar_usuario' => ['controller' => 'AdminController', 'method' => 'criarUsuario'],
+    'admin/editar_usuario' => ['controller' => 'AdminController', 'method' => 'editarUsuario'],
+    'admin/editar_usuario_salvar' => ['controller' => 'AdminController', 'method' => 'editarUsuarioSalvar'],
+    'admin/excluir_usuario' => ['controller' => 'AdminController', 'method' => 'excluirUsuario'],
+    
+    // Gerenciar Equações (Admin)
+    'admin/equacoes' => ['controller' => 'AdminController', 'method' => 'gerenciarEquacoes'],
+    'admin/criar_equacao' => ['controller' => 'AdminController', 'method' => 'criarEquacao'],
+    'admin/editar_equacao' => ['controller' => 'AdminController', 'method' => 'editarEquacao'],
+    'admin/editar_equacao_salvar' => ['controller' => 'AdminController', 'method' => 'editarEquacaoSalvar'],
+    'admin/excluir_equacao' => ['controller' => 'AdminController', 'method' => 'excluirEquacao'],
 ];
 
 // Processa a rota
@@ -77,7 +97,6 @@ if (isset($routes[$view])) {
     $controllerFile = BASE_PATH . '/app/controllers/' . $route['controller'] . '.php';
     
     if (file_exists($controllerFile)) {
-        // Usa require_once para evitar duplicação
         require_once $controllerFile;
         
         if (class_exists($route['controller'])) {
@@ -86,7 +105,7 @@ if (isset($routes[$view])) {
             if (method_exists($controller, $route['method'])) {
                 $controller->{$route['method']}();
             } else {
-                die("Erro: Método {$route['method']} não encontrado.");
+                die("Erro: Método {$route['method']} não encontrado no controller " . $route['controller']);
             }
         } else {
             die("Erro: Classe {$route['controller']} não encontrada.");

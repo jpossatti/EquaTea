@@ -61,25 +61,25 @@ include_once __DIR__ . '/../partials/menu_professor.php';
     </div>
 
     <!-- Ações Rápidas -->
-    <div class="acoes-rapidas">
-        <a href="?view=gerenciar_alunos" class="acao-card">
-            <span class="acao-icon">👨‍🎓</span>
-            Gerenciar Alunos
-        </a>
-        <a href="?view=gerenciar_equacoes" class="acao-card">
-            <span class="acao-icon">📝</span>
-            Gerenciar Equações
-        </a>
-        <a href="?view=relatorio" class="acao-card">
-            <span class="acao-icon">📈</span>
-            Relatórios
-        </a>
-    </div>
+<div class="acoes-rapidas">
+    <a href="index.php?view=gerenciar_alunos" class="acao-card">
+        <span class="acao-icon">👨‍🎓</span>
+        Gerenciar Alunos
+    </a>
+    <a href="index.php?view=gerenciar_equacoes" class="acao-card">
+        <span class="acao-icon">📐</span>
+        Gerenciar Equações
+    </a>
+    <a href="index.php?view=relatorio" class="acao-card">
+        <span class="acao-icon">📈</span>
+        Relatórios
+    </a>
+</div>
 
     <!-- Tabela de Alunos -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
         <h2 style="margin: 0;">👨‍🎓 Alunos</h2>
-        <a href="?view=gerenciar_alunos" class="btn-ver-todos">Ver todos →</a>
+        <a href="index.php?view=gerenciar_alunos" class="btn-ver-todos">Ver todos →</a>
     </div>
 
     <?php if (!empty($dados_alunos) && is_array($dados_alunos)): ?>

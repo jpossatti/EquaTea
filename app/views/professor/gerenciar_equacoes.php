@@ -1,7 +1,7 @@
 <?php
 /**
  * gerenciar_equacoes.php
- * View para gestão de equações - Versão completa e corrigida
+ * View para gestão de equações - Versão Completa Corrigida
  */
 
 // Garante que as variáveis existem
@@ -11,16 +11,6 @@ if (!isset($dados_equacoes) && isset($equacoes)) {
 if (!isset($dados_equacoes)) {
     $dados_equacoes = [];
 }
-
-// Garante que $equacoes também existe para compatibilidade
-if (!isset($equacoes) && isset($dados_equacoes)) {
-    $equacoes = $dados_equacoes;
-}
-
-// Log para debug
-error_log("=== gerenciar_equacoes.php carregada ===");
-error_log("dados_equacoes: " . (isset($dados_equacoes) ? count($dados_equacoes) : 'NÃO DEFINIDO') . " registros");
-error_log("equacoes: " . (isset($equacoes) ? count($equacoes) : 'NÃO DEFINIDO') . " registros");
 
 $page_title = 'Gerenciar Equações - EquaTEA';
 $view = 'gerenciar_equacoes';
@@ -40,13 +30,13 @@ $dados_equacoes = $dados_equacoes ?? [];
     <!-- Mensagens de Alerta -->
     <?php if (!empty($_SESSION['admin_success'])): ?>
         <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
-            <?php echo $_SESSION['admin_success']; unset($_SESSION['admin_success']); ?>
+            ✅ <?php echo htmlspecialchars($_SESSION['admin_success']); unset($_SESSION['admin_success']); ?>
         </div>
     <?php endif; ?>
 
     <?php if (!empty($_SESSION['admin_error'])): ?>
         <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
-            <?php echo $_SESSION['admin_error']; unset($_SESSION['admin_error']); ?>
+            ⚠️ <?php echo htmlspecialchars($_SESSION['admin_error']); unset($_SESSION['admin_error']); ?>
         </div>
     <?php endif; ?>
 
@@ -54,7 +44,7 @@ $dados_equacoes = $dados_equacoes ?? [];
     <div class="card" style="background: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px;">
         <h2 style="margin-top: 0; text-align: center; color: #2c3e50;">➕ Cadastrar Nova Equação</h2>
         
-        <form method="POST" action="index.php?action=cadastrar_equacao" id="formEquacao">
+        <form method="POST" action="index.php?view=cadastrar_equacao" id="formEquacao">
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                 <div>
                     <label for="a"><strong>Coeficiente a *</strong></label>
@@ -66,9 +56,8 @@ $dados_equacoes = $dados_equacoes ?? [];
                     <input type="number" id="b" name="b" min="-20" max="20" placeholder="Ex: 8" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;" oninput="atualizarPreview()">
                 </div>
                 <div>
-                    <!-- Coeficiente C sem restrição de min/max -->
                     <label for="c"><strong>Coeficiente c *</strong></label>
-                    <input type="number" id="c" name="c" placeholder="Ex: 43" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;" oninput="atualizarPreview()">
+                    <input type="number" id="c" name="c" min="-20" max="20" placeholder="Ex: 43" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;" oninput="atualizarPreview()">
                 </div>
                 <div>
                     <label for="dificuldade"><strong>Dificuldade *</strong></label>
@@ -89,11 +78,11 @@ $dados_equacoes = $dados_equacoes ?? [];
                 </span>
             </div>
 
-            <div style="text-align: center; gap: 10px; display: flex; justify-content: center;">
-                <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+            <div style="text-align: center; gap: 10px; display: flex; justify-content: center; flex-wrap: wrap;">
+                <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s;">
                     ✔ Cadastrar Equação
                 </button>
-                <button type="reset" onclick="setTimeout(atualizarPreview, 50)" style="background-color: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                <button type="reset" onclick="setTimeout(atualizarPreview, 50)" style="background-color: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s;">
                     🔄 Limpar
                 </button>
             </div>
@@ -106,6 +95,7 @@ $dados_equacoes = $dados_equacoes ?? [];
 
         <?php if (empty($dados_equacoes)): ?>
             <div style="text-align: center; padding: 40px; color: #6c757d;">
+                <p style="font-size: 48px; margin-bottom: 10px;">📭</p>
                 <p style="font-size: 18px;">Nenhuma equação cadastrada ainda.</p>
                 <p>Utilize o formulário acima para cadastrar uma nova equação.</p>
             </div>
@@ -123,46 +113,72 @@ $dados_equacoes = $dados_equacoes ?? [];
                     </thead>
                     <tbody>
                         <?php foreach ($dados_equacoes as $eq): ?>
+                            <?php
+                                $a = (int)($eq['a'] ?? 1);
+                                $b = (int)($eq['b'] ?? 0);
+                                $c = (int)($eq['c'] ?? 0);
+                                $solucao = $eq['solucao'] ?? '?';
+                                
+                                // Formata a equação corretamente
+                                if ($a === 1) {
+                                    $termoA = 'x';
+                                } elseif ($a === -1) {
+                                    $termoA = '-x';
+                                } else {
+                                    $termoA = $a . 'x';
+                                }
+                                
+                                if ($b > 0) {
+                                    $termoB = ' + ' . $b;
+                                } elseif ($b < 0) {
+                                    $termoB = ' - ' . abs($b);
+                                } else {
+                                    $termoB = '';
+                                }
+                                
+                                $equacaoFormatada = $termoA . $termoB . ' = ' . $c;
+                                
+                                $dificuldade = $eq['dificuldade'] ?? 'facil';
+                                $badgeColors = [
+                                    'facil' => '#28a745',
+                                    'medio' => '#ffc107',
+                                    'dificil' => '#dc3545'
+                                ];
+                                $color = $badgeColors[$dificuldade] ?? '#6c757d';
+                                
+                                $dificuldadeLabels = [
+                                    'facil' => 'Fácil',
+                                    'medio' => 'Médio',
+                                    'dificil' => 'Difícil'
+                                ];
+                            ?>
                             <tr style="border-bottom: 1px solid #e9ecef; transition: background-color 0.2s;">
                                 <td style="padding: 10px 16px; color: #495057;"><?= htmlspecialchars($eq['id'] ?? '') ?></td>
                                 <td style="padding: 10px 16px; color: #495057;">
-                                    <strong><?= htmlspecialchars($eq['a'] ?? '') ?>x</strong>
-                                    <?php 
-                                    $b = $eq['b'] ?? 0;
-                                    if ($b >= 0): ?>
-                                        + <?= htmlspecialchars($b) ?>
-                                    <?php else: ?>
-                                        - <?= htmlspecialchars(abs($b)) ?>
-                                    <?php endif; ?>
-                                    = <?= htmlspecialchars($eq['c'] ?? '') ?>
+                                    <strong><?= htmlspecialchars($equacaoFormatada) ?></strong>
                                 </td>
                                 <td style="padding: 10px 16px; color: #495057;">
-                                    <?= htmlspecialchars($eq['solucao'] ?? 'N/A') ?>
+                                    <strong>x = <?= htmlspecialchars($solucao) ?></strong>
                                 </td>
                                 <td style="padding: 10px 16px;">
-                                    <?php 
-                                    $dificuldade = $eq['dificuldade'] ?? 'facil';
-                                    $badgeColors = [
-                                        'facil' => '#28a745',
-                                        'medio' => '#ffc107',
-                                        'dificil' => '#dc3545'
-                                    ];
-                                    $color = $badgeColors[$dificuldade] ?? '#6c757d';
-                                    ?>
                                     <span style="display: inline-block; padding: 4px 12px; border-radius: 12px; background-color: <?= $color ?>; color: white; font-size: 12px; font-weight: 500;">
-                                        <?= ucfirst(htmlspecialchars($dificuldade)) ?>
+                                        <?= $dificuldadeLabels[$dificuldade] ?? ucfirst($dificuldade) ?>
                                     </span>
                                 </td>
                                 <td style="padding: 10px 16px; text-align: center;">
                                     <a href="index.php?view=editar_equacao&id=<?= $eq['id'] ?>" 
-                                       style="display: inline-block; padding: 4px 8px; margin: 0 2px; text-decoration: none; background-color: #17a2b8; color: white; border-radius: 4px; font-size: 14px;" 
-                                       title="Editar">
+                                       style="display: inline-block; padding: 4px 8px; margin: 0 2px; text-decoration: none; background-color: #17a2b8; color: white; border-radius: 4px; font-size: 14px; transition: opacity 0.2s;" 
+                                       title="Editar"
+                                       onmouseover="this.style.opacity='0.8'"
+                                       onmouseout="this.style.opacity='1'">
                                         ✏️
                                     </a>
-                                    <a href="index.php?action=deletar_equacao&id=<?= $eq['id'] ?>" 
+                                    <a href="index.php?view=gerenciar_equacoes&action=deletar&id=<?= $eq['id'] ?>" 
                                        onclick="return confirm('Deseja realmente excluir esta equação? Esta ação não pode ser desfeita.');" 
-                                       style="display: inline-block; padding: 4px 8px; margin: 0 2px; text-decoration: none; background-color: #dc3545; color: white; border-radius: 4px; font-size: 14px;" 
-                                       title="Excluir">
+                                       style="display: inline-block; padding: 4px 8px; margin: 0 2px; text-decoration: none; background-color: #dc3545; color: white; border-radius: 4px; font-size: 14px; transition: opacity 0.2s;" 
+                                       title="Excluir"
+                                       onmouseover="this.style.opacity='0.8'"
+                                       onmouseout="this.style.opacity='1'">
                                         🗑️
                                     </a>
                                 </td>
@@ -176,6 +192,12 @@ $dados_equacoes = $dados_equacoes ?? [];
                 Total: <strong><?= count($dados_equacoes) ?></strong> equações cadastradas
             </div>
         <?php endif; ?>
+    </div>
+
+    <div style="text-align: center; margin-top: 10px;">
+        <a href="index.php?view=professor/dashboard" style="display: inline-block; padding: 10px 20px; background-color: #6c757d; color: white; border-radius: 5px; text-decoration: none; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">
+            ⬅ Voltar para Dashboard
+        </a>
     </div>
 
 </div>
@@ -199,24 +221,33 @@ $dados_equacoes = $dados_equacoes ?? [];
         }
 
         // Formata a equação
-        let eqText = `${a}x`;
-        if (b >= 0) {
-            eqText += ` + ${b}`;
+        let eqText = '';
+        if (a === 1) {
+            eqText = 'x';
+        } else if (a === -1) {
+            eqText = '-x';
         } else {
-            eqText += ` - ${Math.abs(b)}`;
+            eqText = a + 'x';
         }
-        eqText += ` = ${c}`;
+
+        if (b > 0) {
+            eqText += ' + ' + b;
+        } else if (b < 0) {
+            eqText += ' - ' + Math.abs(b);
+        }
+
+        eqText += ' = ' + c;
         elemEq.innerText = eqText;
 
         // Calcula a solução
         const x = (c - b) / a;
 
         if (Number.isInteger(x)) {
-            elemRes.innerText = `✔ x = ${x}`;
+            elemRes.innerText = '✔ x = ' + x;
             elemRes.style.backgroundColor = "#d1e7dd";
             elemRes.style.color = "#0f5132";
         } else {
-            elemRes.innerText = `⚠️ x = ${x.toFixed(2)} (não inteiro)`;
+            elemRes.innerText = '⚠️ x = ' + x.toFixed(2) + ' (não inteiro)';
             elemRes.style.backgroundColor = "#fff3cd";
             elemRes.style.color = "#664d03";
         }
@@ -243,6 +274,14 @@ $dados_equacoes = $dados_equacoes ?? [];
         opacity: 0.8;
     }
     
+    .alert-success,
+    .alert-danger {
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    
     @media (max-width: 768px) {
         .list-table {
             font-size: 14px;
@@ -253,6 +292,16 @@ $dados_equacoes = $dados_equacoes ?? [];
         }
         .card {
             padding: 15px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .list-table {
+            font-size: 12px;
+        }
+        .list-table th, 
+        .list-table td {
+            padding: 6px 8px;
         }
     }
 </style>
