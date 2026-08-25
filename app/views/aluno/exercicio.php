@@ -610,14 +610,14 @@ switch ($passo) {
         </form>
 
         <div class="nav-links">
-            <a href="index.php?view=aluno/dashboard">⬅ Voltar ao Dashboard</a>
-            <?php if ($passo > 1): ?>
-                <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo - 1; ?>">⬅ Passo anterior</a>
-            <?php endif; ?>
-            <?php if ($passo < 4): ?>
-                <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo + 1; ?>">Próximo passo ➔</a>
-            <?php endif; ?>
-        </div>
+    <a href="index.php?view=aluno/dashboard">⬅ Voltar ao Dashboard</a>
+    <?php if ($passo > 1): ?>
+        <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo - 1; ?>">⬅ Passo anterior</a>
+    <?php endif; ?>
+    <?php if ($passo < 4): ?>
+        <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo + 1; ?>">Próximo passo ➔</a>
+    <?php endif; ?>
+</div>
 
         <!-- Informações de progresso -->
         <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">

@@ -680,18 +680,18 @@ $GLOBALS['current_view'] = 'aluno/dashboard';
         <div class="user-info">
             <span class="user-name">👤 <?php echo htmlspecialchars($nome_aluno); ?></span>
             <a href="index.php?view=logout" class="btn-logout" onclick="return confirm('Deseja realmente sair?');">
-                🚪 Sair
-            </a>
+    🚪 Sair
+</a>
         </div>
     </header>
 
-    <!-- NAVEGAÇÃO -->
-    <nav>
-        <a href="index.php?view=aluno/dashboard" class="active">📊 Dashboard</a>
-        <a href="index.php?view=exercicio">📝 Novo Exercício</a>
-        <a href="index.php?view=parabens">🎉 Concluído</a>
-        <a href="index.php?view=logout" onclick="return confirm('Deseja realmente sair?');">🚪 Sair</a>
-    </nav>
+   <!-- NAVEGAÇÃO -->
+<nav>
+    <a href="index.php?view=aluno/dashboard" class="active">📊 Dashboard</a>
+    <a href="index.php?view=exercicio">📝 Novo Exercício</a>
+    <a href="index.php?view=parabens">🎉 Concluído</a>
+    <a href="index.php?view=logout" onclick="return confirm('Deseja realmente sair?');">🚪 Sair</a>
+</nav>
 
     <!-- CONTEÚDO -->
     <div class="container">

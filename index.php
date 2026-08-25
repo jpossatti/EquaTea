@@ -47,31 +47,43 @@ $routes = [
     'logout' => ['controller' => 'AuthController', 'method' => 'logout'],
     
     // ===== ALUNO =====
+    // Dashboard
     'aluno/dashboard' => ['controller' => 'AlunoController', 'method' => 'dashboard'],
+    'aluno' => ['controller' => 'AlunoController', 'method' => 'dashboard'], // Atalho
+    
+    // Exercício
     'aluno/exercicio' => ['controller' => 'AlunoController', 'method' => 'exercicio'],
+    'exercicio' => ['controller' => 'AlunoController', 'method' => 'exercicio'], // Atalho
+    
+    // Parabéns
     'aluno/parabens' => ['controller' => 'AlunoController', 'method' => 'parabens'],
+    'parabens' => ['controller' => 'AlunoController', 'method' => 'parabens'], // Atalho
+    
+    // Verificar Resposta (POST)
+    'verificar_resposta' => ['controller' => 'AlunoController', 'method' => 'verificarResposta'],
     
     // ===== PROFESSOR =====
-// Dashboard
-'professor/dashboard' => ['controller' => 'ProfessorController', 'method' => 'dashboard'],
-
-// Gerenciar Alunos
-'gerenciar_alunos' => ['controller' => 'ProfessorController', 'method' => 'gerenciarAlunos'],
-'editar_aluno' => ['controller' => 'ProfessorController', 'method' => 'editarAluno'],
-'salvar_edicao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicao'],
-'deletar_aluno' => ['controller' => 'ProfessorController', 'method' => 'deletarAluno'],
-'resetar_senha' => ['controller' => 'ProfessorController', 'method' => 'resetarSenha'],
-'cadastrar_aluno' => ['controller' => 'ProfessorController', 'method' => 'cadastrarAluno'],
-
-// Gerenciar Equações
-'gerenciar_equacoes' => ['controller' => 'ProfessorController', 'method' => 'gerenciarEquacoes'],
-'editar_equacao' => ['controller' => 'ProfessorController', 'method' => 'editarEquacao'],
-'salvar_edicao_equacao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicaoEquacao'],
-'deletar_equacao' => ['controller' => 'ProfessorController', 'method' => 'deletarEquacao'],
-'cadastrar_equacao' => ['controller' => 'ProfessorController', 'method' => 'cadastrarEquacao'],
-
-// Relatórios
-'relatorio' => ['controller' => 'ProfessorController', 'method' => 'relatorio'],
+    // Dashboard
+    'professor/dashboard' => ['controller' => 'ProfessorController', 'method' => 'dashboard'],
+    
+    // Gerenciar Alunos
+    'gerenciar_alunos' => ['controller' => 'ProfessorController', 'method' => 'gerenciarAlunos'],
+    'editar_aluno' => ['controller' => 'ProfessorController', 'method' => 'editarAluno'],
+    'salvar_edicao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicao'],
+    'deletar_aluno' => ['controller' => 'ProfessorController', 'method' => 'deletarAluno'],
+    'resetar_senha' => ['controller' => 'ProfessorController', 'method' => 'resetarSenha'],
+    'cadastrar_aluno' => ['controller' => 'ProfessorController', 'method' => 'cadastrarAluno'],
+    
+    // Gerenciar Equações
+    'gerenciar_equacoes' => ['controller' => 'ProfessorController', 'method' => 'gerenciarEquacoes'],
+    'editar_equacao' => ['controller' => 'ProfessorController', 'method' => 'editarEquacao'],
+    'salvar_edicao_equacao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicaoEquacao'],
+    'deletar_equacao' => ['controller' => 'ProfessorController', 'method' => 'deletarEquacao'],
+    'cadastrar_equacao' => ['controller' => 'ProfessorController', 'method' => 'cadastrarEquacao'],
+    
+    // Relatórios
+    'relatorio' => ['controller' => 'ProfessorController', 'method' => 'relatorio'],
+    
     // ===== ADMIN =====
     // Dashboard
     'admin/dashboard' => ['controller' => 'AdminController', 'method' => 'dashboard'],
@@ -91,9 +103,18 @@ $routes = [
     'admin/excluir_equacao' => ['controller' => 'AdminController', 'method' => 'excluirEquacao'],
 ];
 
-// Processa a rota
-if (isset($routes[$view])) {
+// Verifica se a view é uma ação POST (sem view na URL)
+$action = $_GET['action'] ?? null;
+if ($action && isset($routes[$action])) {
+    $route = $routes[$action];
+} elseif (isset($routes[$view])) {
     $route = $routes[$view];
+} else {
+    $route = null;
+}
+
+// Processa a rota
+if ($route) {
     $controllerFile = BASE_PATH . '/app/controllers/' . $route['controller'] . '.php';
     
     if (file_exists($controllerFile)) {

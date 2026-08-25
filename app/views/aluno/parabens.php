@@ -186,9 +186,9 @@ if (file_exists(__DIR__ . '/../partials/menu_aluno.php')) {
         </div>
 
         <div class="parabens-acoes">
-            <a href="index.php?view=dashboard" class="btn-proximo">🚀 Escolher Outro Exercício</a>
-            <a href="index.php?view=dashboard" class="btn-voltar">📊 Dashboard</a>
-        </div>
+    <a href="index.php?view=exercicio" class="btn-proximo">🚀 Próximo Exercício</a>
+    <a href="index.php?view=aluno/dashboard" class="btn-voltar">📊 Dashboard</a>
+</div>
     </div>
 </main>
 
