@@ -1,195 +1,104 @@
 <?php
 /**
- * index.php - Roteador Central
+ * index.php
+ * Ponto de entrada principal do sistema
  */
-require_once __DIR__ . '/app/config/auth.php';
 
+// Define o caminho base
+define('BASE_PATH', __DIR__);
+
+// Carrega configurações
+if (file_exists(BASE_PATH . '/app/config/config.php')) {
+    require_once BASE_PATH . '/app/config/config.php';
+}
+
+// Define constantes
+if (!defined('BASE_URL')) {
+    define('BASE_URL', 'index.php?view=');
+}
+
+if (!defined('VIEWS_PATH')) {
+    define('VIEWS_PATH', BASE_PATH . '/app/views');
+}
+
+// Carrega a configuração do banco
+if (!class_exists('Database')) {
+    require_once BASE_PATH . '/app/config/Database.php';
+}
+
+// Inicia a sessão
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Carrega a conexão com o banco de dados
-$caminhoDb = __DIR__ . '/app/config/Database.php';
-if (file_exists($caminhoDb)) {
-    require_once $caminhoDb;
+// Determina a view
+$view = $_GET['view'] ?? 'login';
+
+// Remove parâmetros extras
+if (strpos($view, '&') !== false) {
+    $view = substr($view, 0, strpos($view, '&'));
 }
 
-// 1. PROCESSAMENTO DAS AÇÕES (POST/GET)
-$action = $_GET['action'] ?? $_POST['action'] ?? null;
+// Mapeamento de rotas
+$routes = [
+    // Auth
+    'login' => ['controller' => 'AuthController', 'method' => 'showLogin'],
+    'fazer_login' => ['controller' => 'AuthController', 'method' => 'login'],
+    'logout' => ['controller' => 'AuthController', 'method' => 'logout'],
+    
+    // Aluno
+    'aluno/dashboard' => ['controller' => 'AlunoController', 'method' => 'dashboard'],
+    'aluno/exercicio' => ['controller' => 'AlunoController', 'method' => 'exercicio'],
+    'aluno/parabens' => ['controller' => 'AlunoController', 'method' => 'parabens'],
+    
+    // Professor
+    'professor/dashboard' => ['controller' => 'ProfessorController', 'method' => 'dashboard'],
+    'professor/alunos' => ['controller' => 'ProfessorController', 'method' => 'alunos'],
+    'professor/equacoes' => ['controller' => 'ProfessorController', 'method' => 'equacoes'],
+    'professor/relatorios' => ['controller' => 'ProfessorController', 'method' => 'relatorios'],
+    
+    // Admin
+    'admin/dashboard' => ['controller' => 'AdminController', 'method' => 'dashboard'],
+    'admin/gerenciar' => ['controller' => 'AdminController', 'method' => 'gerenciarUsuarios'],
+    'admin/equacoes' => ['controller' => 'AdminController', 'method' => 'gerenciarEquacoes'],
+    'admin/criar_usuario' => ['controller' => 'AdminController', 'method' => 'criarUsuario'],
+    'admin/editar_usuario' => ['controller' => 'AdminController', 'method' => 'editarUsuario'],
+    'admin/excluir_usuario' => ['controller' => 'AdminController', 'method' => 'excluirUsuario'],
+    'admin/criar_equacao' => ['controller' => 'AdminController', 'method' => 'criarEquacao'],
+    'admin/excluir_equacao' => ['controller' => 'AdminController', 'method' => 'excluirEquacao'],
+];
 
-// Ações do Professor
-if ($action === 'salvar_edicao') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-    $controller = new ProfessorController();
-    $controller->atualizar();
-    exit;
-}
-
-if ($action === 'cadastrar_aluno') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-    $controller = new ProfessorController();
-    $controller->cadastrarAluno();
-    exit;
-}
-
-if ($action === 'resetar_senha') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-    $controller = new ProfessorController();
-    $controller->resetarSenha();
-    exit;
-}
-
-if ($action === 'deletar_aluno') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-    $controller = new ProfessorController();
-    $controller->deletarAluno();
-    exit;
-}
-
-if ($action === 'cadastrar_equacao') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-    $controller = new ProfessorController();
-    $controller->cadastrarEquacao();
-    exit;
-}
-
-if ($action === 'deletar_equacao') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-    $controller = new ProfessorController();
-    $controller->deletarEquacao($_GET['id']);
-    exit;
-}
-
-if ($action === 'salvar_edicao_equacao') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/ProfessorController.php';
-    $controller = new ProfessorController();
-    $controller->atualizarEquacao();
-    exit;
-}
-
-// Ações do Aluno
-if ($action === 'verificar_resposta') {
-    verificarAutenticacao('aluno');
-    require_once __DIR__ . '/app/controllers/AlunoController.php';
-    $controller = new AlunoController();
-    $controller->verificarResposta();
-    exit;
-}
-
-// Ações do Relatório (Exportação)
-if ($action === 'exportar_csv') {
-    verificarAutenticacao('professor');
-    require_once __DIR__ . '/app/controllers/RelatorioController.php';
-    $controller = new RelatorioController();
-    $controller->exportarCSV();
-    exit;
-}
-
-// 2. ROTEAMENTO DE VIEWS
-$view = $_GET['view'] ?? $_POST['view'] ?? 'login';
-
-// Define a variável global para o menu
-$GLOBALS['current_view'] = $view;
-
-switch ($view) {
-    // ===== LOGIN / AUTENTICAÇÃO =====
-    case 'login':
-        require_once __DIR__ . '/app/controllers/AuthController.php';
-        $auth = new AuthController();
-        $auth->showLogin();
-        break;
-
-    case 'fazer_login':
-        require_once __DIR__ . '/app/models/Usuario.php';
-        require_once __DIR__ . '/app/controllers/AuthController.php';
-        $auth = new AuthController();
-        $auth->login();
-        break;
-
-    case 'logout':
-        require_once __DIR__ . '/app/controllers/AuthController.php';
-        $auth = new AuthController();
-        $auth->logout();
-        break;
-
-    // ===== ROTAS DO ALUNO =====
-    case 'aluno/dashboard':
-    case 'dashboard':
-        verificarAutenticacao('aluno');
-        require_once __DIR__ . '/app/controllers/AlunoController.php';
-        $controller = new AlunoController();
-        $controller->dashboard();
-        break;
-
-    case 'exercicio':
-        verificarAutenticacao('aluno');
-        require_once __DIR__ . '/app/controllers/AlunoController.php';
-        $controller = new AlunoController();
-        $controller->exercicio();
-        break;
-
-    case 'parabens':
-        verificarAutenticacao('aluno');
-        require_once __DIR__ . '/app/controllers/AlunoController.php';
-        $controller = new AlunoController();
-        $controller->parabens();
-        break;
-
-    // ===== ROTAS DO PROFESSOR =====
-    case 'editar_equacao':
-        verificarAutenticacao('professor');
-        require_once __DIR__ . '/app/controllers/ProfessorController.php';
-        $controller = new ProfessorController();
-        $controller->exibirFormularioEdicaoEquacao($_GET['id'] ?? null);
-        break;
-
-    case 'editar_aluno':
-        verificarAutenticacao('professor');
-        require_once __DIR__ . '/app/controllers/ProfessorController.php';
-        $controller = new ProfessorController();
-        $controller->exibirFormularioEdicao($_GET['id'] ?? null);
-        break;
-
-    case 'gerenciar_alunos':
-        verificarAutenticacao('professor');
-        require_once __DIR__ . '/app/controllers/ProfessorController.php';
-        $controller = new ProfessorController();
-        $controller->gerenciarAlunos();
-        break;
-
-    case 'gerenciar_equacoes':
-        verificarAutenticacao('professor');
-        require_once __DIR__ . '/app/controllers/ProfessorController.php';
-        $controller = new ProfessorController();
-        $controller->listarEquacoes();
-        break;
-
-    // ===== ROTA DO RELATÓRIO (CORRIGIDA) =====
-    case 'relatorio':
-        verificarAutenticacao('professor');
-        require_once __DIR__ . '/app/controllers/RelatorioController.php';
-        $controller = new RelatorioController();
-        $controller->relatorio();
-        break;
-
-    case 'professor/dashboard':
-    case 'dashboard_professor':
-    case 'professor':
-        verificarAutenticacao('professor');
-        require_once __DIR__ . '/app/models/Professor.php';
-        require_once __DIR__ . '/app/controllers/ProfessorController.php';
-        $controller = new ProfessorController();
-        $controller->dashboard();
-        break;
-
-    default:
-        header("Location: index.php?view=login");
-        exit;
+// Processa a rota
+if (isset($routes[$view])) {
+    $route = $routes[$view];
+    $controllerFile = BASE_PATH . '/app/controllers/' . $route['controller'] . '.php';
+    
+    if (file_exists($controllerFile)) {
+        // Usa require_once para evitar duplicação
+        require_once $controllerFile;
+        
+        if (class_exists($route['controller'])) {
+            $controller = new $route['controller']();
+            
+            if (method_exists($controller, $route['method'])) {
+                $controller->{$route['method']}();
+            } else {
+                die("Erro: Método {$route['method']} não encontrado.");
+            }
+        } else {
+            die("Erro: Classe {$route['controller']} não encontrada.");
+        }
+    } else {
+        die("Erro: Controller não encontrado em " . $controllerFile);
+    }
+} else {
+    // Fallback: tenta carregar a view diretamente
+    $viewFile = VIEWS_PATH . '/' . $view . '.php';
+    if (file_exists($viewFile)) {
+        include $viewFile;
+    } else {
+        echo "<h2>Erro: Página não encontrada.</h2>";
+        echo "<p>View solicitada: " . htmlspecialchars($view) . "</p>";
+        echo "<p><a href='index.php?view=login'>Voltar ao login</a></p>";
+    }
 }
