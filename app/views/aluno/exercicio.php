@@ -13,7 +13,6 @@ if (session_status() === PHP_SESSION_NONE) {
 $equacaoId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 1;
 $passo     = filter_input(INPUT_GET, 'passo', FILTER_VALIDATE_INT) ?: 1;
 $erro      = filter_input(INPUT_GET, 'erro', FILTER_VALIDATE_INT) ?: 0;
-$debug     = filter_input(INPUT_GET, 'debug', FILTER_VALIDATE_INT) ?: 0;
 
 // SE O PASSO FOR MAIOR QUE 4, REDIRECIONA DIRETO PARA A TELA DE PARABÉNS
 if ($passo > 4) {
@@ -39,16 +38,16 @@ if (!$equacaoDados || !is_array($equacaoDados)) {
     $equacaoDados = [
         'id'          => $equacaoId,
         'a'           => 2,
-        'b'           => 5,
-        'c'           => 11,
-        'dificuldade' => 'facil'
+        'b'           => 7,
+        'c'           => 19,
+        'dificuldade' => 'medio'
     ];
 }
 
 // Coeficientes da equação ATUAL do exercício
 $a = (int)($equacaoDados['a'] ?? 2);
-$b = (int)($equacaoDados['b'] ?? 5);
-$c = (int)($equacaoDados['c'] ?? 11);
+$b = (int)($equacaoDados['b'] ?? 7);
+$c = (int)($equacaoDados['c'] ?? 19);
 
 // Formatação da equação
 $termoA = ($a === 1) ? 'x' : (($a === -1) ? '-x' : "{$a}x");
@@ -165,24 +164,6 @@ if ($aluno_id && class_exists('ProgressoAluno')) {
         error_log("Erro ao buscar tentativas do passo: " . $e->getMessage());
     }
 }
-
-// 8. Resposta esperada para debug
-$respostaEsperada = '';
-$termoX = ($a === 1) ? 'x' : (($a === -1) ? '-x' : "{$a}x");
-switch ($passo) {
-    case 1:
-        $respostaEsperada = $termoX;
-        break;
-    case 2:
-        $respostaEsperada = $termoX . ' = ' . ($c - $b);
-        break;
-    case 3:
-        $respostaEsperada = $termoX . ' = ' . ($c - $b);
-        break;
-    case 4:
-        $respostaEsperada = 'x = ' . (($a !== 0) ? (($c - $b) / $a) : 0);
-        break;
-}
 ?>
 
 <!DOCTYPE html>
@@ -203,7 +184,6 @@ switch ($passo) {
             --border-color: #333333;
             --error-color: #e74c3c;
             --success-color: #2ecc71;
-            --debug-bg: #1a1a2e;
         }
 
         * {
@@ -459,58 +439,6 @@ switch ($passo) {
             text-decoration: underline;
         }
 
-        /* ===== DEBUG STYLES ===== */
-        .debug-panel {
-            background: var(--debug-bg);
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 6px;
-            font-size: 12px;
-            font-family: 'Courier New', monospace;
-            max-height: 300px;
-            overflow: auto;
-            color: #aaa;
-            border: 1px solid #2a2a4a;
-        }
-
-        .debug-panel strong {
-            color: #f1c40f;
-        }
-
-        .debug-panel .debug-success {
-            color: var(--success-color);
-        }
-
-        .debug-panel .debug-error {
-            color: var(--error-color);
-        }
-
-        .debug-panel .debug-info {
-            color: var(--primary-cyan);
-        }
-
-        .debug-toggle {
-            background: transparent;
-            border: 1px solid #444;
-            color: #888;
-            padding: 4px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s;
-        }
-
-        .debug-toggle:hover {
-            border-color: var(--primary-cyan);
-            color: var(--primary-cyan);
-        }
-
-        .debug-toggle.active {
-            border-color: var(--primary-cyan);
-            color: var(--primary-cyan);
-            background: rgba(0, 210, 211, 0.1);
-        }
-
         @media (max-width: 480px) {
             .exercise-card {
                 padding: 20px;
@@ -545,11 +473,6 @@ switch ($passo) {
                         🔄 <?php echo $tentativas_realizadas; ?> tentativa(s)
                     </span>
                 <?php endif; ?>
-                <button class="debug-toggle <?php echo $debug ? 'active' : ''; ?>" 
-                        onclick="toggleDebug()" 
-                        title="Ativar/Desativar modo debug">
-                    🐞 Debug
-                </button>
             </div>
         </div>
 
@@ -610,14 +533,14 @@ switch ($passo) {
         </form>
 
         <div class="nav-links">
-    <a href="index.php?view=aluno/dashboard">⬅ Voltar ao Dashboard</a>
-    <?php if ($passo > 1): ?>
-        <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo - 1; ?>">⬅ Passo anterior</a>
-    <?php endif; ?>
-    <?php if ($passo < 4): ?>
-        <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo + 1; ?>">Próximo passo ➔</a>
-    <?php endif; ?>
-</div>
+            <a href="index.php?view=aluno/dashboard">⬅ Voltar ao Dashboard</a>
+            <?php if ($passo > 1): ?>
+                <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo - 1; ?>">⬅ Passo anterior</a>
+            <?php endif; ?>
+            <?php if ($passo < 4): ?>
+                <a href="index.php?view=exercicio&id=<?php echo $equacaoId; ?>&passo=<?php echo $passo + 1; ?>">Próximo passo ➔</a>
+            <?php endif; ?>
+        </div>
 
         <!-- Informações de progresso -->
         <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
@@ -633,95 +556,9 @@ switch ($passo) {
                 </div>
             <?php endif; ?>
         </div>
-
-        <!-- ===== PANEL DE DEBUG ===== -->
-        <div id="debugPanel" class="debug-panel" style="display: <?php echo $debug ? 'block' : 'none'; ?>;">
-            <strong>🐞 DEBUG INFO</strong><br><br>
-            
-            <span class="debug-info">📌 DADOS DA EQUAÇÃO</span><br>
-            ID: <?php echo $equacaoId; ?><br>
-            a = <?php echo $a; ?>, b = <?php echo $b; ?>, c = <?php echo $c; ?><br>
-            Termo X: <?php echo $termoX; ?><br>
-            Solução final: x = <?php echo $solucaoFinal; ?><br>
-            <br>
-            
-            <span class="debug-info">📌 DADOS DO PASSO ATUAL</span><br>
-            Passo: <?php echo $passo; ?><br>
-            Resposta esperada: <span class="debug-success"><?php echo htmlspecialchars($respostaEsperada); ?></span><br>
-            Expressão atual: <?php echo htmlspecialchars($expressaoAtual); ?><br>
-            <br>
-            
-            <span class="debug-info">👤 DADOS DO ALUNO</span><br>
-            Aluno ID: <?php echo $aluno_id ?: 'NÃO LOGADO'; ?><br>
-            Tentativas neste passo: <?php echo $tentativas_passo; ?><br>
-            Tentativas totais: <?php echo $tentativas_realizadas; ?><br>
-            Progresso: <?php echo $progresso_atual ? 'Encontrado' : 'Não encontrado'; ?><br>
-            <?php if ($progresso_atual): ?>
-                Passo atual no banco: <?php echo $progresso_atual['passo_atual'] ?? 'N/A'; ?><br>
-                Concluída: <?php echo ($progresso_atual['concluida'] ?? 0) ? '✅ Sim' : '❌ Não'; ?><br>
-            <?php endif; ?>
-            <br>
-            
-            <span class="debug-info">📝 SESSÃO</span><br>
-            <?php 
-            $sessionInfo = [
-                'usuario_id' => $_SESSION['usuario_id'] ?? 'N/A',
-                'aluno_id' => $_SESSION['aluno_id'] ?? 'N/A',
-                'usuario_nome' => $_SESSION['usuario_nome'] ?? 'N/A',
-                'tipo_perfil' => $_SESSION['tipo_perfil'] ?? 'N/A'
-            ];
-            foreach ($sessionInfo as $key => $value) {
-                echo $key . ': ' . htmlspecialchars((string)$value) . '<br>';
-            }
-            ?>
-            <br>
-            
-            <span class="debug-info">💡 VALIDAÇÃO ESPERADA</span><br>
-            <?php if ($passo == 1): ?>
-                Deve ser exatamente: <span class="debug-success"><?php echo $termoX; ?></span>
-            <?php elseif ($passo == 2): ?>
-                Aceita: <span class="debug-success"><?php echo $termoX . ' = ' . ($c - $b); ?></span>, 
-                <span class="debug-success"><?php echo $c . ' - ' . $b; ?></span> ou 
-                <span class="debug-success"><?php echo ($c - $b); ?></span>
-            <?php elseif ($passo == 3): ?>
-                Deve ser: <span class="debug-success"><?php echo $termoX . ' = ' . ($c - $b); ?></span>
-            <?php elseif ($passo == 4): ?>
-                Aceita: <span class="debug-success">x = <?php echo $solucaoFinal; ?></span> ou 
-                <span class="debug-success"><?php echo $solucaoFinal; ?></span>
-            <?php endif; ?>
-        </div>
-        <!-- ===== FIM PANEL DE DEBUG ===== -->
-
     </div>
 
     <script>
-        function toggleDebug() {
-            const panel = document.getElementById('debugPanel');
-            const btn = document.querySelector('.debug-toggle');
-            if (panel.style.display === 'none' || panel.style.display === '') {
-                panel.style.display = 'block';
-                btn.classList.add('active');
-                // Adiciona parâmetro debug na URL sem recarregar
-                const url = new URL(window.location.href);
-                url.searchParams.set('debug', '1');
-                window.history.replaceState({}, '', url);
-            } else {
-                panel.style.display = 'none';
-                btn.classList.remove('active');
-                const url = new URL(window.location.href);
-                url.searchParams.delete('debug');
-                window.history.replaceState({}, '', url);
-            }
-        }
-
-        // Se o debug estiver ativo via URL, abre o painel
-        <?php if ($debug): ?>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('debugPanel').style.display = 'block';
-            document.querySelector('.debug-toggle').classList.add('active');
-        });
-        <?php endif; ?>
-
         // Foco automático no campo de resposta
         document.addEventListener('DOMContentLoaded', function() {
             const input = document.getElementById('resposta');
