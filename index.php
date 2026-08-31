@@ -49,15 +49,15 @@ $routes = [
     // ===== ALUNO =====
     // Dashboard
     'aluno/dashboard' => ['controller' => 'AlunoController', 'method' => 'dashboard'],
-    'aluno' => ['controller' => 'AlunoController', 'method' => 'dashboard'], // Atalho
+    'aluno' => ['controller' => 'AlunoController', 'method' => 'dashboard'],
     
     // Exercício
     'aluno/exercicio' => ['controller' => 'AlunoController', 'method' => 'exercicio'],
-    'exercicio' => ['controller' => 'AlunoController', 'method' => 'exercicio'], // Atalho
+    'exercicio' => ['controller' => 'AlunoController', 'method' => 'exercicio'],
     
     // Parabéns
     'aluno/parabens' => ['controller' => 'AlunoController', 'method' => 'parabens'],
-    'parabens' => ['controller' => 'AlunoController', 'method' => 'parabens'], // Atalho
+    'parabens' => ['controller' => 'AlunoController', 'method' => 'parabens'],
     
     // Verificar Resposta (POST)
     'verificar_resposta' => ['controller' => 'AlunoController', 'method' => 'verificarResposta'],
@@ -68,14 +68,20 @@ $routes = [
     
     // Gerenciar Alunos
     'gerenciar_alunos' => ['controller' => 'ProfessorController', 'method' => 'gerenciarAlunos'],
+    'professor/editar_aluno' => ['controller' => 'ProfessorController', 'method' => 'editarAluno'],
     'editar_aluno' => ['controller' => 'ProfessorController', 'method' => 'editarAluno'],
     'salvar_edicao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicao'],
     'deletar_aluno' => ['controller' => 'ProfessorController', 'method' => 'deletarAluno'],
     'resetar_senha' => ['controller' => 'ProfessorController', 'method' => 'resetarSenha'],
     'cadastrar_aluno' => ['controller' => 'ProfessorController', 'method' => 'cadastrarAluno'],
+    // Adicione no array $routes do index.php:
+
+// ===== DEBUG =====
+'debug_editar_aluno' => ['controller' => 'ProfessorController', 'method' => 'debugEditarAluno'],
     
     // Gerenciar Equações
     'gerenciar_equacoes' => ['controller' => 'ProfessorController', 'method' => 'gerenciarEquacoes'],
+    'professor/editar_equacao' => ['controller' => 'ProfessorController', 'method' => 'editarEquacao'],
     'editar_equacao' => ['controller' => 'ProfessorController', 'method' => 'editarEquacao'],
     'salvar_edicao_equacao' => ['controller' => 'ProfessorController', 'method' => 'salvarEdicaoEquacao'],
     'deletar_equacao' => ['controller' => 'ProfessorController', 'method' => 'deletarEquacao'],

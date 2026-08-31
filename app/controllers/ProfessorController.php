@@ -61,43 +61,56 @@ if (!class_exists('ProfessorController')) {
             }
         }
         
-        /**
-         * Gerenciar alunos
-         */
-        public function gerenciarAlunos()
-        {
-            // Processa ações via GET
-            $action = $_GET['action'] ?? null;
-            
-            if ($action === 'deletar') {
-                $this->deletarAluno();
-                return;
-            }
-            
-            if ($action === 'resetar_senha') {
-                $this->resetarSenha();
-                return;
-            }
-            
-            // Busca alunos
-            $alunos = $this->getDadosAlunosComEstatisticas();
-            
-            // Define constantes para a view
-            if (!defined('VIEWS_PATH')) {
-                define('VIEWS_PATH', dirname(__DIR__) . '/views');
-            }
-            
-            // Carrega a view
-            $view_path = VIEWS_PATH . '/professor/alunos.php';
-            if (file_exists($view_path)) {
-                // Passa os dados para a view
-                $dados_alunos = $alunos;
-                include_once $view_path;
-            } else {
-                echo "<h2>Erro: View de Alunos não encontrada.</h2>";
-                echo "<p>Caminho: {$view_path}</p>";
-            }
+     /**
+ * Gerenciar alunos
+ */
+public function gerenciarAlunos()
+{
+    // Processa ações via GET
+    $action = $_GET['action'] ?? null;
+    
+    if ($action === 'deletar') {
+        $this->deletarAluno();
+        return;
+    }
+    
+    if ($action === 'resetar_senha') {
+        $this->resetarSenha();
+        return;
+    }
+    
+    // Busca alunos
+    $alunos = $this->getDadosAlunosComEstatisticas();
+    
+    // Define constantes para a view
+    if (!defined('VIEWS_PATH')) {
+        define('VIEWS_PATH', dirname(__DIR__) . '/views');
+    }
+    
+    // Carrega a view
+    $view_path = VIEWS_PATH . '/professor/gerenciar_alunos.php';
+    
+    // Verifica se a view existe
+    if (file_exists($view_path)) {
+        // Passa os dados para a view
+        $dados_alunos = $alunos;
+        include_once $view_path;
+    } else {
+        // Fallback: tenta o caminho antigo
+        $alt_path = VIEWS_PATH . '/gerenciar_alunos.php';
+        if (file_exists($alt_path)) {
+            $alunos = $alunos;
+            include_once $alt_path;
+        } else {
+            echo "<h2>Erro: View de Alunos não encontrada.</h2>";
+            echo "<p>Caminhos procurados:</p>";
+            echo "<ul>";
+            echo "<li>{$view_path}</li>";
+            echo "<li>{$alt_path}</li>";
+            echo "</ul>";
         }
+    }
+}
         
         /**
          * Gerenciar equações - CORRIGIDO
@@ -166,81 +179,152 @@ if (!class_exists('ProfessorController')) {
             }
         }
         
-        /**
-         * Editar aluno - Exibe formulário
-         */
-        public function editarAluno()
-        {
-            $id = $_GET['id'] ?? 0;
-            
-            if ($id <= 0) {
-                $_SESSION['admin_error'] = 'ID de aluno inválido.';
-                header('Location: index.php?view=gerenciar_alunos');
-                exit;
-            }
-            
-            $aluno = $this->getAlunoById($id);
-            
-            if (!$aluno) {
-                $_SESSION['admin_error'] = 'Aluno não encontrado.';
-                header('Location: index.php?view=gerenciar_alunos');
-                exit;
-            }
-            
-            // Define constantes para a view
-            if (!defined('VIEWS_PATH')) {
-                define('VIEWS_PATH', dirname(__DIR__) . '/views');
-            }
-            
-            // Carrega a view
-            $view_path = VIEWS_PATH . '/professor/editar_aluno.php';
-            if (file_exists($view_path)) {
-                include_once $view_path;
-            } else {
-                echo "<h2>Erro: View de Edição de Aluno não encontrada.</h2>";
-                echo "<p>Caminho: {$view_path}</p>";
-            }
-        }
-        
-        /**
-         * Salvar edição de aluno
-         */
-        public function salvarEdicao()
-        {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                header('Location: index.php?view=gerenciar_alunos');
-                exit;
-            }
-            
-            $id = (int)($_POST['id'] ?? 0);
-            $nome = trim($_POST['nome'] ?? '');
-            $email = trim($_POST['email'] ?? '');
-            $nivel_tea = $_POST['nivel_tea'] ?? '';
-            $turma = $_POST['turma'] ?? '';
-            
-            if ($id <= 0 || empty($nome) || empty($email)) {
-                $_SESSION['admin_error'] = 'Dados inválidos.';
-                header('Location: index.php?view=gerenciar_alunos');
-                exit;
-            }
-            
-            try {
-                // Atualiza usuário
-                $stmt = $this->db->prepare("UPDATE usuarios SET nome = ?, email = ? WHERE id = ?");
-                $stmt->execute([$nome, $email, $id]);
-                
-                // Atualiza aluno
-                $stmt = $this->db->prepare("UPDATE alunos SET nivel_tea = ?, turma = ? WHERE usuario_id = ?");
-                $stmt->execute([$nivel_tea, $turma, $id]);
-                
-                $_SESSION['admin_success'] = 'Aluno atualizado com sucesso!';
-            } catch (Exception $e) {
-                $_SESSION['admin_error'] = 'Erro ao atualizar aluno: ' . $e->getMessage();
-            }
-            
+       /**
+ * Editar aluno - Exibe formulário (CRIAÇÃO ou EDIÇÃO)
+ */
+public function editarAluno()
+{
+    $id = $_GET['id'] ?? 0;
+    $aluno = null;
+    $is_edit = false;
+    
+    // Se tem ID, tenta buscar o aluno
+    if ($id > 0) {
+        $aluno = $this->getAlunoById($id);
+        if ($aluno) {
+            $is_edit = true;
+        } else {
+            $_SESSION['admin_error'] = 'Aluno não encontrado.';
             header('Location: index.php?view=gerenciar_alunos');
             exit;
         }
+    }
+    
+    // Define constantes para a view
+    if (!defined('VIEWS_PATH')) {
+        define('VIEWS_PATH', dirname(__DIR__) . '/views');
+    }
+    
+    // Carrega a view
+    $view_path = VIEWS_PATH . '/professor/editar_aluno.php';
+    
+    if (file_exists($view_path)) {
+        // Passa os dados para a view
+        include_once $view_path;
+    } else {
+        // Se a view não existir, exibe erro
+        echo "<h2>Erro: View não encontrada!</h2>";
+        echo "<p>Caminho: {$view_path}</p>";
+        echo "<p><a href='index.php?view=gerenciar_alunos'>Voltar</a></p>";
+    }
+}
+        
+        /**
+ * Salvar edição de aluno (CRIAÇÃO ou EDIÇÃO)
+ */
+public function salvarEdicao()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: index.php?view=gerenciar_alunos');
+        exit;
+    }
+    
+    $id = (int)($_POST['id'] ?? 0);
+    $nome = trim($_POST['nome'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $nivel_tea = $_POST['nivel_tea'] ?? 'suporte1';
+    $turma = $_POST['turma'] ?? '';
+    
+    // Verifica se é uma criação (sem ID) ou edição (com ID)
+    $is_new = ($id <= 0);
+    
+    // Validações
+    if (empty($nome) || empty($email)) {
+        $_SESSION['admin_error'] = 'Nome e e-mail são obrigatórios.';
+        header('Location: index.php?view=' . ($is_new ? 'editar_aluno' : 'gerenciar_alunos'));
+        exit;
+    }
+    
+    try {
+        if ($is_new) {
+            // ===== CRIAÇÃO DE NOVO ALUNO =====
+            $senha = $_POST['senha'] ?? '';
+            $confirmar_senha = $_POST['confirmar_senha'] ?? '';
+            $idade = (int)($_POST['idade'] ?? 0);
+            $escola = $_POST['escola'] ?? '';
+            
+            if (empty($senha) || strlen($senha) < 4) {
+                $_SESSION['admin_error'] = 'A senha deve ter pelo menos 4 caracteres.';
+                header('Location: index.php?view=editar_aluno');
+                exit;
+            }
+            
+            if ($senha !== $confirmar_senha) {
+                $_SESSION['admin_error'] = 'As senhas não coincidem.';
+                header('Location: index.php?view=editar_aluno');
+                exit;
+            }
+            
+            if ($idade < 14 || $idade > 21) {
+                $_SESSION['admin_error'] = 'A idade deve estar entre 14 e 21 anos.';
+                header('Location: index.php?view=editar_aluno');
+                exit;
+            }
+            
+            // Verifica se email já existe
+            $stmt = $this->db->prepare("SELECT id FROM usuarios WHERE email = ?");
+            $stmt->execute([$email]);
+            if ($stmt->fetch()) {
+                $_SESSION['admin_error'] = 'Este e-mail já está cadastrado.';
+                header('Location: index.php?view=editar_aluno');
+                exit;
+            }
+            
+            $this->db->beginTransaction();
+            
+            // Cria usuário
+            $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+            $stmt = $this->db->prepare("
+                INSERT INTO usuarios (nome, email, senha_hash, tipo_perfil, ativo)
+                VALUES (?, ?, ?, 'aluno', 1)
+            ");
+            $stmt->execute([$nome, $email, $senha_hash]);
+            $usuario_id = $this->db->lastInsertId();
+            
+            // Cria aluno
+            $stmt = $this->db->prepare("
+                INSERT INTO alunos (usuario_id, idade, nivel_tea, escola, turma)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([$usuario_id, $idade, $nivel_tea, $escola, $turma]);
+            
+            $this->db->commit();
+            $_SESSION['admin_success'] = "Aluno $nome cadastrado com sucesso!";
+            
+        } else {
+            // ===== EDIÇÃO DE ALUNO EXISTENTE =====
+            $this->db->beginTransaction();
+            
+            // Atualiza usuário
+            $stmt = $this->db->prepare("UPDATE usuarios SET nome = ?, email = ? WHERE id = ? AND tipo_perfil = 'aluno'");
+            $stmt->execute([$nome, $email, $id]);
+            
+            // Atualiza aluno
+            $stmt = $this->db->prepare("UPDATE alunos SET nivel_tea = ?, turma = ? WHERE usuario_id = ?");
+            $stmt->execute([$nivel_tea, $turma, $id]);
+            
+            $this->db->commit();
+            $_SESSION['admin_success'] = 'Aluno atualizado com sucesso!';
+        }
+        
+    } catch (Exception $e) {
+        $this->db->rollback();
+        $_SESSION['admin_error'] = 'Erro ao salvar aluno: ' . $e->getMessage();
+    }
+    
+    header('Location: index.php?view=gerenciar_alunos');
+    exit;
+}
         
         /**
          * Deletar aluno
@@ -758,5 +842,94 @@ if (!class_exists('ProfessorController')) {
                 return [];
             }
         }
+    /**
+ * DEBUG - Verificar rota de editar aluno
+ */
+public function debugEditarAluno()
+{
+    // Inicia debug
+    $debug = [];
+    $debug['timestamp'] = date('Y-m-d H:i:s');
+    $debug['method'] = $_SERVER['REQUEST_METHOD'];
+    $debug['get'] = $_GET;
+    $debug['session'] = $_SESSION;
+    $debug['server'] = [
+        'REQUEST_URI' => $_SERVER['REQUEST_URI'],
+        'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
+        'QUERY_STRING' => $_SERVER['QUERY_STRING']
+    ];
+    
+    $id = $_GET['id'] ?? 0;
+    $debug['id_recebido'] = $id;
+    
+    if ($id > 0) {
+        $aluno = $this->getAlunoById($id);
+        $debug['aluno_encontrado'] = $aluno ? 'SIM' : 'NÃO';
+        $debug['aluno_dados'] = $aluno;
+    } else {
+        $debug['aluno_encontrado'] = 'NOVO CADASTRO (sem ID)';
+    }
+    
+    // Exibe o debug
+    ?>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Debug Editar Aluno</title>
+        <style>
+            body { font-family: monospace; background: #121212; color: #e0e0e0; padding: 20px; }
+            h1 { color: #f1c40f; }
+            h2 { color: #3498db; margin-top: 20px; }
+            .debug-box { background: #1a1a2e; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #2a2a4a; overflow: auto; max-height: 400px; }
+            .success { color: #2ecc71; }
+            .error { color: #e74c3c; }
+            .info { color: #3498db; }
+            pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
+            .btn { display: inline-block; padding: 10px 20px; margin: 5px; background: #3498db; color: #fff; text-decoration: none; border-radius: 4px; }
+            .btn:hover { opacity: 0.8; }
+            .btn-danger { background: #e74c3c; }
+            .btn-success { background: #2ecc71; }
+            .btn-warning { background: #f39c12; color: #1a1a2e; }
+        </style>
+    </head>
+    <body>
+        <h1>🐞 DEBUG - Editar Aluno</h1>
+        
+        <div class="debug-box">
+            <h2>📋 Dados da Requisição</h2>
+            <pre><?php print_r($debug); ?></pre>
+        </div>
+        
+        <div class="debug-box">
+            <h2>🔍 Diagnóstico</h2>
+            <ul>
+                <li><span class="info">Controller:</span> ProfessorController carregado</li>
+                <li><span class="info">Método:</span> debugEditarAluno() executado</li>
+                <li><span class="info">ID Recebido:</span> <?= $id ?: 'NENHUM (novo cadastro)' ?></li>
+                <li><span class="info">Aluno Encontrado:</span> <?= $debug['aluno_encontrado'] === 'SIM' ? '<span class="success">✅ SIM</span>' : ($debug['aluno_encontrado'] === 'NOVO CADASTRO (sem ID)' ? '<span class="info">📝 Novo Cadastro</span>' : '<span class="error">❌ NÃO</span>') ?></li>
+                <li><span class="info">View Existe:</span> <?= file_exists(__DIR__ . '/../views/professor/editar_aluno.php') ? '<span class="success">✅ SIM</span>' : '<span class="error">❌ NÃO</span>' ?></li>
+            </ul>
+        </div>
+        
+        <div class="debug-box">
+            <h2>📌 Ações</h2>
+            <a href="index.php?view=editar_aluno" class="btn btn-success">➕ Novo Aluno (view=editar_aluno)</a>
+            <a href="index.php?view=professor/editar_aluno" class="btn">📝 Editar Aluno (view=professor/editar_aluno)</a>
+            <a href="index.php?view=gerenciar_alunos" class="btn btn-danger">⬅ Voltar para Gerenciar</a>
+            <a href="index.php?view=debug_editar_aluno&id=3" class="btn btn-warning">🔍 Debug com ID 3</a>
+        </div>
+        
+        <div class="debug-box">
+            <h2>📊 Sessão Atual</h2>
+            <pre><?php print_r($_SESSION); ?></pre>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+ 
     }
 }

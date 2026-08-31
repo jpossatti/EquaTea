@@ -1,7 +1,7 @@
 <?php
 /**
- * gerenciar_alunos.php
- * Gerenciamento de alunos - Com layout padrão do sistema
+ * professor/gerenciar_alunos.php
+ * Gerenciamento de alunos - Professor
  */
 
 // Controle de Sessão
@@ -23,13 +23,18 @@ $view = 'gerenciar_alunos';
 include_once __DIR__ . '/../partials/header.php';
 include_once __DIR__ . '/../partials/menu_professor.php';
 
-// Garante que $alunos existe
-$alunos = $alunos ?? [];
+// Garante que $dados_alunos existe
+$dados_alunos = $dados_alunos ?? [];
 ?>
 
 <div class="container" style="max-width: 950px; margin: 30px auto; padding: 0 15px;">
     
-    <h1 style="text-align: center; color: #2c3e50;">🎓 Gerenciar Alunos</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+        <h1 style="color: #2c3e50;">🎓 Gerenciar Alunos</h1>
+        <a href="index.php?view=editar_aluno" class="btn-primary" style="display: inline-block; padding: 10px 24px; background: #2c3e50; color: #fff; border-radius: 6px; text-decoration: none; font-weight: 500; transition: background 0.2s;">
+            ➕ Novo Aluno
+        </a>
+    </div>
 
     <!-- Mensagens de Alerta -->
     <?php if (!empty($_SESSION['admin_success'])): ?>
@@ -50,68 +55,14 @@ $alunos = $alunos ?? [];
         </div>
     <?php endif; ?>
 
-    <!-- Formulário de Cadastro -->
-    <div class="card" style="background: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px;">
-        <h2 style="margin-top: 0; text-align: center; color: #2c3e50;">➕ Cadastrar Novo Aluno</h2>
-        
-        <form method="POST" action="index.php?action=cadastrar_aluno">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div>
-                    <label for="nome"><strong>Nome:</strong></label>
-                    <input type="text" id="nome" name="nome" placeholder="Nome completo" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <div>
-                    <label for="email"><strong>E-mail:</strong></label>
-                    <input type="email" id="email" name="email" placeholder="email@escola.com" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <div>
-                    <label for="senha"><strong>Senha (min. 4 caracteres):</strong></label>
-                    <input type="password" id="senha" name="senha" minlength="4" placeholder="••••••••" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                <div>
-                    <label for="idade"><strong>Idade (14-21):</strong></label>
-                    <input type="number" id="idade" name="idade" min="14" max="21" value="15" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <div>
-                    <label for="nivel_tea"><strong>Nível TEA:</strong></label>
-                    <select id="nivel_tea" name="nivel_tea" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="suporte1">Suporte 1</option>
-                        <option value="suporte2">Suporte 2</option>
-                        <option value="suporte3">Suporte 3</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="escola"><strong>Escola:</strong></label>
-                    <input type="text" id="escola" name="escola" placeholder="Nome da Escola" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <div>
-                    <label for="turma"><strong>Turma:</strong></label>
-                    <input type="text" id="turma" name="turma" placeholder="Ex: 1º EM A" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-            </div>
-
-            <div style="text-align: center;">
-                <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s;">
-                    ✔ Cadastrar Aluno
-                </button>
-                <button type="reset" style="background-color: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-left: 10px; transition: background 0.2s;">
-                    🔄 Limpar
-                </button>
-            </div>
-        </form>
-    </div>
-
     <!-- Tabela de Alunos -->
     <div class="card" style="background: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <h2 style="margin-top: 0; text-align: center; color: #2c3e50;">📋 Lista de Alunos</h2>
 
-        <?php if (empty($alunos)): ?>
+        <?php if (empty($dados_alunos)): ?>
             <div style="text-align: center; padding: 40px; color: #6c757d;">
                 <p style="font-size: 18px;">Nenhum aluno cadastrado ainda.</p>
-                <p>Utilize o formulário acima para cadastrar um novo aluno.</p>
+                <p>Clique em "Novo Aluno" para cadastrar.</p>
             </div>
         <?php else: ?>
             <div style="overflow-x: auto;">
@@ -121,19 +72,21 @@ $alunos = $alunos ?? [];
                             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #495057;">ID</th>
                             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #495057;">Nome</th>
                             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #495057;">E-mail</th>
+                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #495057;">Idade</th>
                             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #495057;">Nível TEA</th>
                             <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #495057;">Turma</th>
                             <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #495057;">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($alunos as $aluno): ?>
+                        <?php foreach ($dados_alunos as $aluno): ?>
                             <tr style="border-bottom: 1px solid #e9ecef; transition: background-color 0.2s;">
-                                <td style="padding: 10px 16px; color: #495057;"><?= htmlspecialchars($aluno['id'] ?? $aluno['aluno_id'] ?? '') ?></td>
+                                <td style="padding: 10px 16px; color: #495057;"><?= htmlspecialchars($aluno['id'] ?? $aluno['aluno_id'] ?? '-') ?></td>
                                 <td style="padding: 10px 16px; color: #495057;">
                                     <strong><?= htmlspecialchars($aluno['nome'] ?? '') ?></strong>
                                 </td>
                                 <td style="padding: 10px 16px; color: #495057;"><?= htmlspecialchars($aluno['email'] ?? '') ?></td>
+                                <td style="padding: 10px 16px; color: #495057;"><?= htmlspecialchars($aluno['idade'] ?? '-') ?></td>
                                 <td style="padding: 10px 16px;">
                                     <?php 
                                     $nivel = $aluno['nivel_tea'] ?? 'suporte1';
@@ -155,17 +108,25 @@ $alunos = $alunos ?? [];
                                 </td>
                                 <td style="padding: 10px 16px; color: #495057;"><?= htmlspecialchars($aluno['turma'] ?? 'N/A') ?></td>
                                 <td style="padding: 10px 16px; text-align: center;">
-                                    <a href="index.php?view=editar_aluno&id=<?= $aluno['id'] ?? $aluno['aluno_id'] ?? '' ?>" 
-                                       style="display: inline-block; padding: 4px 8px; margin: 0 2px; text-decoration: none; background-color: #17a2b8; color: white; border-radius: 4px; font-size: 14px; transition: opacity 0.2s;" 
-                                       title="Editar">
-                                        ✏️
-                                    </a>
-                                    <a href="index.php?action=deletar_aluno&id=<?= $aluno['id'] ?? $aluno['aluno_id'] ?? '' ?>" 
-                                       onclick="return confirm('Deseja realmente excluir este aluno? Esta ação não pode ser desfeita.');" 
-                                       style="display: inline-block; padding: 4px 8px; margin: 0 2px; text-decoration: none; background-color: #dc3545; color: white; border-radius: 4px; font-size: 14px; transition: opacity 0.2s;" 
-                                       title="Excluir">
-                                        🗑️
-                                    </a>
+                                    <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+                                        <a href="index.php?view=editar_aluno&id=<?= $aluno['id'] ?? $aluno['aluno_id'] ?? '' ?>" 
+                                           style="display: inline-block; padding: 4px 8px; text-decoration: none; background-color: #17a2b8; color: white; border-radius: 4px; font-size: 14px;" 
+                                           title="Editar">
+                                            ✏️
+                                        </a>
+                                        <a href="index.php?view=gerenciar_alunos&action=resetar_senha&id=<?= $aluno['id'] ?? $aluno['aluno_id'] ?? '' ?>" 
+                                           onclick="return confirm('Deseja resetar a senha deste aluno? A nova senha será 123456.');" 
+                                           style="display: inline-block; padding: 4px 8px; text-decoration: none; background-color: #f39c12; color: white; border-radius: 4px; font-size: 14px;" 
+                                           title="Resetar Senha">
+                                            🔑
+                                        </a>
+                                        <a href="index.php?view=gerenciar_alunos&action=deletar&id=<?= $aluno['id'] ?? $aluno['aluno_id'] ?? '' ?>" 
+                                           onclick="return confirm('Deseja realmente excluir este aluno? Esta ação não pode ser desfeita.');" 
+                                           style="display: inline-block; padding: 4px 8px; text-decoration: none; background-color: #dc3545; color: white; border-radius: 4px; font-size: 14px;" 
+                                           title="Excluir">
+                                            🗑️
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -174,7 +135,7 @@ $alunos = $alunos ?? [];
             </div>
             
             <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center; color: #6c757d; font-size: 14px;">
-                Total: <strong><?= count($alunos) ?></strong> aluno(s) cadastrado(s)
+                Total: <strong><?= count($dados_alunos) ?></strong> aluno(s) cadastrado(s)
             </div>
         <?php endif; ?>
     </div>
@@ -186,13 +147,8 @@ $alunos = $alunos ?? [];
         background-color: #f8f9fa;
     }
     
-    .btn-acao {
-        transition: transform 0.2s, opacity 0.2s;
-    }
-    
-    .btn-acao:hover {
-        transform: scale(1.1);
-        opacity: 0.8;
+    .btn-primary:hover {
+        background: #1a252f !important;
     }
     
     @media (max-width: 768px) {
