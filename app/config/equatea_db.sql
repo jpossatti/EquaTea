@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 25/08/2026 às 00:31
+-- Tempo de geração: 20/09/2026 às 21:21
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -54,18 +54,18 @@ CREATE TABLE `ajuda_exemplos` (
 --
 
 INSERT INTO `ajuda_exemplos` (`id`, `passo`, `a`, `b`, `c`, `solucao`, `descricao`, `data_cadastro`) VALUES
-(1, 1, 2, 3, 7, 2, '2x + 3 = 7 → Termo com x: 2x, sem x: +3 e 7', '2026-08-18 13:54:12'),
-(2, 1, 1, 4, 9, 5, 'x + 4 = 9 → Termo com x: x, sem x: +4 e 9', '2026-08-18 13:54:12'),
-(3, 1, 3, 1, 10, 3, '3x + 1 = 10 → Termo com x: 3x, sem x: +1 e 10', '2026-08-18 13:54:12'),
-(4, 2, 2, 3, 7, 2, '2x + 3 = 7 → Subtraia 3 de ambos: 2x = 7 - 3', '2026-08-18 13:54:12'),
-(5, 2, 1, 4, 9, 5, 'x + 4 = 9 → Subtraia 4 de ambos: x = 9 - 4', '2026-08-18 13:54:12'),
-(6, 2, 3, 1, 10, 3, '3x + 1 = 10 → Subtraia 1 de ambos: 3x = 10 - 1', '2026-08-18 13:54:12'),
-(7, 3, 2, 3, 7, 2, '2x = 7 - 3 → 7 - 3 = 4 → 2x = 4', '2026-08-18 13:54:12'),
-(8, 3, 1, 4, 9, 5, 'x = 9 - 4 → 9 - 4 = 5 → x = 5', '2026-08-18 13:54:12'),
-(9, 3, 3, 1, 10, 3, '3x = 10 - 1 → 10 - 1 = 9 → 3x = 9', '2026-08-18 13:54:12'),
-(10, 4, 2, 3, 7, 2, '2x = 4 → Divida ambos por 2: x = 4 ÷ 2 = 2', '2026-08-18 13:54:12'),
-(11, 4, 1, 4, 9, 5, 'x = 5 (já isolado) → x = 5', '2026-08-18 13:54:12'),
-(12, 4, 3, 1, 10, 3, '3x = 9 → Divida ambos por 3: x = 9 ÷ 3 = 3', '2026-08-18 13:54:12');
+(1, 1, 2, 3, 7, 2, '2x + 3 = 7 → Termo com x: 2x, sem x: +3 e 7', '2026-08-18 16:54:12'),
+(2, 1, 1, 4, 9, 5, 'x + 4 = 9 → Termo com x: x, sem x: +4 e 9', '2026-08-18 16:54:12'),
+(3, 1, 3, 1, 10, 3, '3x + 1 = 10 → Termo com x: 3x, sem x: +1 e 10', '2026-08-18 16:54:12'),
+(4, 2, 2, 3, 7, 2, '2x + 3 = 7 → Subtraia 3 de ambos: 2x = 7 - 3', '2026-08-18 16:54:12'),
+(5, 2, 1, 4, 9, 5, 'x + 4 = 9 → Subtraia 4 de ambos: x = 9 - 4', '2026-08-18 16:54:12'),
+(6, 2, 3, 1, 10, 3, '3x + 1 = 10 → Subtraia 1 de ambos: 3x = 10 - 1', '2026-08-18 16:54:12'),
+(7, 3, 2, 3, 7, 2, '2x = 7 - 3 → 7 - 3 = 4 → 2x = 4', '2026-08-18 16:54:12'),
+(8, 3, 1, 4, 9, 5, 'x = 9 - 4 → 9 - 4 = 5 → x = 5', '2026-08-18 16:54:12'),
+(9, 3, 3, 1, 10, 3, '3x = 10 - 1 → 10 - 1 = 9 → 3x = 9', '2026-08-18 16:54:12'),
+(10, 4, 2, 3, 7, 2, '2x = 4 → Divida ambos por 2: x = 4 ÷ 2 = 2', '2026-08-18 16:54:12'),
+(11, 4, 1, 4, 9, 5, 'x = 5 (já isolado) → x = 5', '2026-08-18 16:54:12'),
+(12, 4, 3, 1, 10, 3, '3x = 9 → Divida ambos por 3: x = 9 ÷ 3 = 3', '2026-08-18 16:54:12');
 
 -- --------------------------------------------------------
 
@@ -88,11 +88,12 @@ CREATE TABLE `alunos` (
 --
 
 INSERT INTO `alunos` (`id`, `usuario_id`, `idade`, `nivel_tea`, `escola`, `turma`, `data_cadastro`) VALUES
-(1, 3, 16, 'suporte1', 'Escola Modelo de Ensino Médio', '1º EM A', '2026-08-18 13:54:11'),
-(2, 4, 17, 'suporte2', 'Escola Modelo de Ensino Médio', '1º EM A', '2026-08-18 13:54:11'),
-(3, 5, 15, 'suporte1', 'Escola Modelo de Ensino Médio', '1º EM B', '2026-08-18 13:54:11'),
-(4, 6, 18, 'suporte2', 'Escola Modelo de Ensino Médio', '2º EM A', '2026-08-18 13:54:11'),
-(5, 7, 16, 'suporte1', 'Escola Modelo de Ensino Médio', '2º EM A', '2026-08-18 13:54:11');
+(1, 3, 16, 'suporte1', 'Escola Modelo de Ensino Médio', '1º EM A', '2026-08-18 16:54:11'),
+(2, 4, 17, 'suporte2', 'Escola Modelo de Ensino Médio', '1º EM A', '2026-08-18 16:54:11'),
+(3, 5, 15, 'suporte1', 'Escola Modelo de Ensino Médio', '1º EM B', '2026-08-18 16:54:11'),
+(4, 6, 18, 'suporte2', 'Escola Modelo de Ensino Médio', '2º EM A', '2026-08-18 16:54:11'),
+(5, 7, 16, 'suporte1', 'Escola Modelo de Ensino Médio', '2º EM A', '2026-08-18 16:54:11'),
+(6, 16, 15, 'suporte2', 'Escola Modelo de Ensino Médio', '8 c', '2026-09-20 19:14:24');
 
 -- --------------------------------------------------------
 
@@ -115,37 +116,37 @@ CREATE TABLE `equacoes` (
 --
 
 INSERT INTO `equacoes` (`id`, `a`, `b`, `c`, `solucao`, `dificuldade`, `data_cadastro`) VALUES
-(1, 1, 3, 7, 4, 'facil', '2026-08-18 13:54:11'),
-(2, 2, 1, 9, 4, 'facil', '2026-08-18 13:54:11'),
-(3, 1, 5, 12, 7, 'facil', '2026-08-18 13:54:11'),
-(4, 3, 2, 14, 4, 'facil', '2026-08-18 13:54:11'),
-(5, 1, 8, 15, 7, 'facil', '2026-08-18 13:54:11'),
-(6, 2, 4, 10, 3, 'facil', '2026-08-18 13:54:11'),
-(7, 1, 2, 8, 6, 'facil', '2026-08-18 13:54:11'),
-(8, 4, 1, 17, 4, 'facil', '2026-08-18 13:54:11'),
-(9, 1, 6, 9, 3, 'facil', '2026-08-18 13:54:11'),
-(10, 2, 5, 11, 3, 'facil', '2026-08-18 13:54:11'),
-(11, 3, 5, 20, 5, 'medio', '2026-08-18 13:54:12'),
-(12, 2, 7, 19, 6, 'medio', '2026-08-18 13:54:12'),
-(13, 5, 3, 18, 3, 'medio', '2026-08-18 13:54:12'),
-(14, 4, -2, 14, 4, 'medio', '2026-08-18 13:54:12'),
-(15, 3, -4, 14, 6, 'medio', '2026-08-18 13:54:12'),
-(16, 6, 2, 20, 3, 'medio', '2026-08-18 13:54:12'),
-(17, 5, -3, 17, 4, 'medio', '2026-08-18 13:54:12'),
-(18, 7, -11, 10, 3, 'medio', '2026-08-18 13:54:12'),
-(19, 4, -11, 9, 5, 'medio', '2026-08-18 13:54:12'),
-(20, 8, -17, 7, 3, 'medio', '2026-08-18 13:54:12'),
-(21, 6, 5, 17, 2, 'dificil', '2026-08-18 13:54:12'),
-(22, 7, 3, 17, 2, 'dificil', '2026-08-18 13:54:12'),
-(23, 8, -3, 13, 2, 'dificil', '2026-08-18 13:54:12'),
-(24, -3, 5, -4, 3, 'dificil', '2026-08-18 13:54:12'),
-(25, 7, -5, 16, 3, 'dificil', '2026-08-18 13:54:12'),
-(26, 9, -5, 13, 2, 'dificil', '2026-08-18 13:54:12'),
-(27, 11, -2, 20, 2, 'dificil', '2026-08-18 13:54:12'),
-(28, -4, -5, -17, 3, 'dificil', '2026-08-18 13:54:12'),
-(29, 5, -7, 13, 4, 'dificil', '2026-08-18 13:54:12'),
-(30, 6, -11, 7, 3, 'dificil', '2026-08-18 13:54:12'),
-(34, 3, 4, 19, 5, 'medio', '2026-08-18 14:34:05');
+(1, 1, 3, 7, 4, 'facil', '2026-08-18 16:54:11'),
+(2, 2, 1, 9, 4, 'facil', '2026-08-18 16:54:11'),
+(3, 1, 5, 12, 7, 'facil', '2026-08-18 16:54:11'),
+(4, 3, 2, 14, 4, 'facil', '2026-08-18 16:54:11'),
+(5, 1, 8, 15, 7, 'facil', '2026-08-18 16:54:11'),
+(6, 2, 4, 10, 3, 'facil', '2026-08-18 16:54:11'),
+(7, 1, 2, 8, 6, 'facil', '2026-08-18 16:54:11'),
+(8, 4, 1, 17, 4, 'facil', '2026-08-18 16:54:11'),
+(9, 1, 6, 9, 3, 'facil', '2026-08-18 16:54:11'),
+(10, 2, 5, 11, 3, 'facil', '2026-08-18 16:54:11'),
+(11, 3, 5, 20, 5, 'medio', '2026-08-18 16:54:12'),
+(12, 2, 7, 19, 6, 'medio', '2026-08-18 16:54:12'),
+(13, 5, 3, 18, 3, 'medio', '2026-08-18 16:54:12'),
+(14, 4, -2, 14, 4, 'medio', '2026-08-18 16:54:12'),
+(15, 3, -4, 14, 6, 'medio', '2026-08-18 16:54:12'),
+(16, 6, 2, 20, 3, 'medio', '2026-08-18 16:54:12'),
+(17, 5, -3, 17, 4, 'medio', '2026-08-18 16:54:12'),
+(18, 7, -11, 10, 3, 'medio', '2026-08-18 16:54:12'),
+(19, 4, -11, 9, 5, 'medio', '2026-08-18 16:54:12'),
+(20, 8, -17, 7, 3, 'medio', '2026-08-18 16:54:12'),
+(21, 6, 5, 17, 2, 'dificil', '2026-08-18 16:54:12'),
+(22, 7, 3, 17, 2, 'dificil', '2026-08-18 16:54:12'),
+(23, 8, -3, 13, 2, 'dificil', '2026-08-18 16:54:12'),
+(24, -3, 5, -4, 3, 'dificil', '2026-08-18 16:54:12'),
+(25, 7, -5, 16, 3, 'dificil', '2026-08-18 16:54:12'),
+(26, 9, -5, 13, 2, 'dificil', '2026-08-18 16:54:12'),
+(27, 11, -2, 20, 2, 'dificil', '2026-08-18 16:54:12'),
+(28, -4, -5, -17, 3, 'dificil', '2026-08-18 16:54:12'),
+(29, 5, -7, 13, 4, 'dificil', '2026-08-18 16:54:12'),
+(30, 6, -11, 7, 3, 'dificil', '2026-08-18 16:54:12'),
+(34, 3, 4, 19, 5, 'medio', '2026-08-18 17:34:05');
 
 -- --------------------------------------------------------
 
@@ -167,13 +168,13 @@ CREATE TABLE `logs_sistema` (
 --
 
 INSERT INTO `logs_sistema` (`id`, `usuario_id`, `acao`, `descricao`, `ip_address`, `data_log`) VALUES
-(1, 1, 'LOGIN', 'Professor Carlos Silva realizou login', '192.168.1.100', '2026-08-18 13:54:12'),
-(2, 1, 'ACESSO_ADMIN', 'Professor acessou o painel administrativo', '192.168.1.100', '2026-08-18 13:54:12'),
-(3, 3, 'LOGIN', 'Aluna Ana Silva realizou login', '192.168.1.102', '2026-08-18 13:54:12'),
-(4, 3, 'EXERCICIO_INICIO', 'Aluna Ana iniciou exercício equação_id=1', '192.168.1.102', '2026-08-18 13:54:12'),
-(5, 3, 'EXERCICIO_CONCLUIDO', 'Aluna Ana concluiu exercício equação_id=1', '192.168.1.102', '2026-08-18 13:54:12'),
-(6, 1, 'EXERCICIO_CONCLUIDO', 'Aluno concluiu equação ID 10 - 2x + 5 = 11', '::1', '2026-08-24 21:20:54'),
-(7, 1, 'EXERCICIO_CONCLUIDO', 'Aluno concluiu equação ID 2 - 2x + 1 = 9', '::1', '2026-08-24 21:34:01');
+(1, 1, 'LOGIN', 'Professor Carlos Silva realizou login', '192.168.1.100', '2026-08-18 16:54:12'),
+(2, 1, 'ACESSO_ADMIN', 'Professor acessou o painel administrativo', '192.168.1.100', '2026-08-18 16:54:12'),
+(3, 3, 'LOGIN', 'Aluna Ana Silva realizou login', '192.168.1.102', '2026-08-18 16:54:12'),
+(4, 3, 'EXERCICIO_INICIO', 'Aluna Ana iniciou exercício equação_id=1', '192.168.1.102', '2026-08-18 16:54:12'),
+(5, 3, 'EXERCICIO_CONCLUIDO', 'Aluna Ana concluiu exercício equação_id=1', '192.168.1.102', '2026-08-18 16:54:12'),
+(6, 1, 'EXERCICIO_CONCLUIDO', 'Aluno concluiu equação ID 10 - 2x + 5 = 11', '::1', '2026-08-25 00:20:54'),
+(7, 1, 'EXERCICIO_CONCLUIDO', 'Aluno concluiu equação ID 2 - 2x + 1 = 9', '::1', '2026-08-25 00:34:01');
 
 -- --------------------------------------------------------
 
@@ -195,8 +196,8 @@ CREATE TABLE `professores` (
 --
 
 INSERT INTO `professores` (`id`, `usuario_id`, `disciplina`, `escola`, `telefone`, `data_cadastro`) VALUES
-(1, 1, 'Matemática', 'Escola Modelo de Ensino Médio', '(11) 9999-8888', '2026-08-18 13:54:11'),
-(2, 2, 'Matemática', 'Escola Modelo de Ensino Médio', '(11) 9999-7777', '2026-08-18 13:54:11');
+(1, 1, 'Matemática', 'Escola Modelo de Ensino Médio', '(11) 9999-8888', '2026-08-18 16:54:11'),
+(2, 2, 'Matemática', 'Escola Modelo de Ensino Médio', '(11) 9999-7777', '2026-08-18 16:54:11');
 
 -- --------------------------------------------------------
 
@@ -281,28 +282,28 @@ CREATE TABLE `registro_erros` (
 --
 
 INSERT INTO `registro_erros` (`id`, `aluno_id`, `equacao_id`, `passo`, `tipo_erro`, `resposta_fornecida`, `resposta_esperada`, `data_erro`) VALUES
-(1, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-18 13:54:12'),
-(2, 1, 1, 3, 'calculo_errado', '2x = 9', '2x = 4', '2026-08-18 13:54:12'),
-(3, 2, 3, 2, 'sinal_trocado', '3x = 14 - 2', '3x = 14 - 5', '2026-08-18 13:54:12'),
-(4, 2, 3, 4, 'divisao_incorreta', 'x = 16 ÷ 3 = 5', 'x = 9 ÷ 3 = 3', '2026-08-18 13:54:12'),
-(5, 4, 4, 2, 'operacao_inversa', '5x = 22 - 6', '5x = 22 + 6', '2026-08-18 13:54:12'),
-(6, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-18 14:34:05'),
-(7, 1, 2, 1, 'identificacao_errada', 'x + 3 = 7', '2x + 1 = 9', '2026-08-18 14:34:05'),
-(8, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-24 21:46:14'),
-(9, 1, 1, 3, 'calculo_errado', '2x = 9', '2x = 4', '2026-08-24 21:46:14'),
-(10, 1, 2, 2, 'sinal_trocado', 'x = 9 - 1', 'x = 9 + 1', '2026-08-24 21:46:14'),
-(11, 1, 3, 4, 'divisao_incorreta', 'x = 12 ÷ 3 = 4', 'x = 9 ÷ 3 = 3', '2026-08-24 21:46:14'),
-(12, 1, 4, 1, 'identificacao_errada', '2x', '3x', '2026-08-24 21:46:14'),
-(13, 2, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-24 21:46:14'),
-(14, 2, 2, 3, 'calculo_errado', 'x = 9 - 1 = 8', 'x = 9 - 1 = 8', '2026-08-24 21:46:14'),
-(15, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-24 21:56:54'),
-(16, 1, 1, 3, 'calculo_errado', '2x = 9', '2x = 4', '2026-08-24 21:56:54'),
-(17, 1, 2, 2, 'sinal_trocado', 'x = 9 - 1', 'x = 9 + 1', '2026-08-24 21:56:54'),
-(18, 1, 3, 4, 'divisao_incorreta', 'x = 12 ÷ 3 = 4', 'x = 9 ÷ 3 = 3', '2026-08-24 21:56:54'),
-(19, 1, 4, 1, 'identificacao_errada', '2x', '3x', '2026-08-24 21:56:54'),
-(20, 3, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-24 21:56:54'),
-(21, 5, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-24 21:56:54'),
-(22, 4, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-24 21:56:54');
+(1, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-18 16:54:12'),
+(2, 1, 1, 3, 'calculo_errado', '2x = 9', '2x = 4', '2026-08-18 16:54:12'),
+(3, 2, 3, 2, 'sinal_trocado', '3x = 14 - 2', '3x = 14 - 5', '2026-08-18 16:54:12'),
+(4, 2, 3, 4, 'divisao_incorreta', 'x = 16 ÷ 3 = 5', 'x = 9 ÷ 3 = 3', '2026-08-18 16:54:12'),
+(5, 4, 4, 2, 'operacao_inversa', '5x = 22 - 6', '5x = 22 + 6', '2026-08-18 16:54:12'),
+(6, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-18 17:34:05'),
+(7, 1, 2, 1, 'identificacao_errada', 'x + 3 = 7', '2x + 1 = 9', '2026-08-18 17:34:05'),
+(8, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-25 00:46:14'),
+(9, 1, 1, 3, 'calculo_errado', '2x = 9', '2x = 4', '2026-08-25 00:46:14'),
+(10, 1, 2, 2, 'sinal_trocado', 'x = 9 - 1', 'x = 9 + 1', '2026-08-25 00:46:14'),
+(11, 1, 3, 4, 'divisao_incorreta', 'x = 12 ÷ 3 = 4', 'x = 9 ÷ 3 = 3', '2026-08-25 00:46:14'),
+(12, 1, 4, 1, 'identificacao_errada', '2x', '3x', '2026-08-25 00:46:14'),
+(13, 2, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-25 00:46:14'),
+(14, 2, 2, 3, 'calculo_errado', 'x = 9 - 1 = 8', 'x = 9 - 1 = 8', '2026-08-25 00:46:14'),
+(15, 1, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-25 00:56:54'),
+(16, 1, 1, 3, 'calculo_errado', '2x = 9', '2x = 4', '2026-08-25 00:56:54'),
+(17, 1, 2, 2, 'sinal_trocado', 'x = 9 - 1', 'x = 9 + 1', '2026-08-25 00:56:54'),
+(18, 1, 3, 4, 'divisao_incorreta', 'x = 12 ÷ 3 = 4', 'x = 9 ÷ 3 = 3', '2026-08-25 00:56:54'),
+(19, 1, 4, 1, 'identificacao_errada', '2x', '3x', '2026-08-25 00:56:54'),
+(20, 3, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-25 00:56:54'),
+(21, 5, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-25 00:56:54'),
+(22, 4, 1, 2, 'operacao_inversa', '2x = 7 + 3', '2x = 7 - 3', '2026-08-25 00:56:54');
 
 -- --------------------------------------------------------
 
@@ -344,14 +345,15 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha_hash`, `tipo_perfil`, `data_cadastro`, `ultimo_acesso`, `ativo`) VALUES
-(1, 'Professor Carlos Silva', 'carlos@escola.com', '$2y$10$F6R2/iZlQhYUSbgfQOD4t.rAEupnxAeAYqt2mlPXAbJQi7Dox7hUW', 'professor', '2026-08-18 13:54:10', '2026-08-24 18:57:34', 1),
-(2, 'Professora Ana Santos', 'ana@escola.com', '$2y$10$Z6xCBLNZL0adiZXkXjSNQ.BP6Z3Oe5vQCwV9dLp0jEcPxqWZer7Ym', 'professor', '2026-08-18 13:54:10', NULL, 1),
-(3, 'Ana Silva', 'ana.silva@escola.com', '$2y$10$AVCMSObP.BBdQcpIsSan5eFXKCQCoLFP.cwb/MfvyMQndbp5zbSBa', 'aluno', '2026-08-18 13:54:11', '2026-08-24 18:20:10', 1),
-(4, 'Carlos Souza', 'carlos.souza@escola.com', '$2y$10$7gjF55ba6nYJaxtjBX0uX.ymkEBMjn.dIBjZhI3uDs7YVlf9t/3rO', 'aluno', '2026-08-18 13:54:11', NULL, 1),
-(5, 'Mariana Costa', 'mariana.costa@escola.com', '$2y$10$Hj1GXHfIWSFoYNGQpF6lCOOU2HbOFMB9TklKroCFa/CJnvyMecJoG', 'aluno', '2026-08-18 13:54:11', NULL, 1),
-(6, 'João Pereira', 'joao.pereira@escola.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'aluno', '2026-08-18 13:54:11', NULL, 1),
-(7, 'Beatriz Lima', 'beatriz.lima@escola.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'aluno', '2026-08-18 13:54:11', NULL, 1),
-(15, 'Administrador', 'admin@equatea.com', '$2y$10$jKX1SNaYN4XvAHi4b2nqYepf7/qPZNKbONODPVXJ15wq6Xha1nd2G', 'professor', '2026-08-22 22:16:56', NULL, 1);
+(1, 'Professor Carlos Silva', 'carlos@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-18 16:54:10', '2026-09-20 16:13:05', 1),
+(2, 'Professora Ana Santos', 'ana@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-18 16:54:10', '2026-09-20 16:17:40', 1),
+(3, 'Ana Silva', 'ana.silva@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', '2026-09-20 16:09:22', 1),
+(4, 'Carlos Souza', 'carlos.souza@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
+(5, 'Mariana Costa', 'mariana.costa@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
+(6, 'João Pereira', 'joao.pereira@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
+(7, 'Beatriz Lima', 'beatriz.lima@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
+(15, 'Administrador', 'admin@equatea.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-23 01:16:56', '2026-09-20 16:18:13', 1),
+(16, 'Emerson', 'emerson@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-09-20 19:14:24', '2026-09-20 16:15:01', 1);
 
 -- --------------------------------------------------------
 
@@ -571,7 +573,7 @@ ALTER TABLE `ajuda_exemplos`
 -- AUTO_INCREMENT de tabela `alunos`
 --
 ALTER TABLE `alunos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `equacoes`
@@ -619,7 +621,7 @@ ALTER TABLE `sessao`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Restrições para tabelas despejadas
