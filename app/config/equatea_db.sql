@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 20/09/2026 às 21:21
+-- Tempo de geração: 23/09/2026 às 22:12
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -334,7 +334,7 @@ CREATE TABLE `usuarios` (
   `nome` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `senha_hash` varchar(255) NOT NULL,
-  `tipo_perfil` enum('aluno','professor') NOT NULL DEFAULT 'aluno',
+  `tipo_perfil` enum('aluno','professor','admin') NOT NULL DEFAULT 'aluno',
   `data_cadastro` timestamp NOT NULL DEFAULT current_timestamp(),
   `ultimo_acesso` datetime DEFAULT NULL,
   `ativo` tinyint(1) DEFAULT 1
@@ -345,15 +345,16 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha_hash`, `tipo_perfil`, `data_cadastro`, `ultimo_acesso`, `ativo`) VALUES
-(1, 'Professor Carlos Silva', 'carlos@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-18 16:54:10', '2026-09-20 16:13:05', 1),
+(1, 'Professor Carlos Silva', 'carlos@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-18 16:54:10', '2026-09-23 16:56:50', 1),
 (2, 'Professora Ana Santos', 'ana@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-18 16:54:10', '2026-09-20 16:17:40', 1),
-(3, 'Ana Silva', 'ana.silva@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', '2026-09-20 16:09:22', 1),
+(3, 'Ana Silva', 'ana.silva@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', '2026-09-23 16:57:28', 1),
 (4, 'Carlos Souza', 'carlos.souza@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
 (5, 'Mariana Costa', 'mariana.costa@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
 (6, 'João Pereira', 'joao.pereira@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
 (7, 'Beatriz Lima', 'beatriz.lima@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-08-18 16:54:11', NULL, 1),
-(15, 'Administrador', 'admin@equatea.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-23 01:16:56', '2026-09-20 16:18:13', 1),
-(16, 'Emerson', 'emerson@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-09-20 19:14:24', '2026-09-20 16:15:01', 1);
+(15, 'José Vitor', 'jvitor@equatea.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'professor', '2026-08-23 01:16:56', '2026-09-20 16:18:13', 1),
+(16, 'Emerson', 'emerson@escola.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'aluno', '2026-09-20 19:14:24', '2026-09-20 16:15:01', 1),
+(18, 'Administrador do Sistema', 'admin@equatea.com', '$2y$10$.nnxT/O2Mb7QNG/Kfh7wY.iOp/DOQXjSFmK/JX1YTfKL0Iap6MBJW', 'admin', '2026-09-23 20:09:34', '2026-09-23 17:11:41', 1);
 
 -- --------------------------------------------------------
 
@@ -621,7 +622,7 @@ ALTER TABLE `sessao`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Restrições para tabelas despejadas
